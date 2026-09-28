@@ -152,6 +152,36 @@ void main() {
       UnavailableReason.wakeWordInitFailed,
     );
   });
+
+  test('bindWakeWord 이후 감지 이벤트가 세션을 시작한다', () async {
+    // 이 배선이 빠져 있어 실기기에서 감지는 되고 아무 일도 일어나지 않았다.
+    final manager = build();
+    final handled = <String>[];
+    manager.bindWakeWord((utterance) async {
+      handled.add(utterance);
+      return const TurnAnswered('반영했어요.');
+    });
+
+    await manager.onForeground();
+    detector.emitDetection();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(handled, ['계란 두 개 썼어']);
+  });
+
+  test('전경이 아니면 감지를 무시한다', () async {
+    final manager = build();
+    final handled = <String>[];
+    manager.bindWakeWord((utterance) async {
+      handled.add(utterance);
+      return const TurnAnswered('반영했어요.');
+    });
+
+    detector.emitDetection();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(handled, isEmpty);
+  });
 }
 
 class _FakeDetector implements WakeWordDetector {
@@ -172,6 +202,9 @@ class _FakeDetector implements WakeWordDetector {
 
   @override
   Future<void> stop() async => calls.add('detector.stop');
+
+  /// 감지 이벤트를 흘려보낸다.
+  void emitDetection() => _controller.add(null);
 
   @override
   Future<void> dispose() async {

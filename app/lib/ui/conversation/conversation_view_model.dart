@@ -39,6 +39,8 @@ class ConversationViewModel extends ChangeNotifier {
   bool get canUndo => _lastOutcome?.undoToken != null;
 
   void _subscribe() {
+    // 호출어 감지를 세션 시작으로 잇는다. 감지기는 세션 매니저가 다룬다.
+    _voice.bindWakeWord(_handle);
     _voice.states.listen((next) {
       _state = next;
       if (next is Listening && next.partialText != null) {
@@ -48,9 +50,6 @@ class ConversationViewModel extends ChangeNotifier {
       notifyListeners();
     });
   }
-
-  /// 호출어가 감지되면 한 번의 대화를 시작한다.
-  Future<void> onWakeWord() => _voice.startSession(_handle);
 
   /// 마이크 버튼. 웨이크워드가 전경 한정이라 보조 경로를 상시 유지한다.
   Future<void> onMicButton() => _voice.startSession(_handle);

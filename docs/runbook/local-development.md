@@ -59,19 +59,6 @@ poetry run uvicorn app.main:app --reload --port 8000
 `seed` 는 멱등이다. 기본 가구 하나와 재료 사전 32건, 기본 양념 10건을 넣는다. 재고는 넣지
 않는다 — 재고는 음성으로 등록하는 것이 제품이다.
 
-### 0. 모델 내려받기 — 처음 한 번
-
-온디바이스 ASR 모델은 git 에 없다. 인코더가 126MB 로 **GitHub 의 파일당 100MB 제한**을
-넘기 때문이다. clone 뒤 한 번 받는다.
-
-```sh
-sh scripts/fetch-model.sh
-```
-
-받지 않으면 앱 빌드가 실패하고 `scripts/verify.sh` 가 그 사실을 먼저 알린다.
-앱에는 여전히 **번들**한다 — 시연에서 네트워크 없이 떠야 하므로 실행 시 내려받기에
-기대지 않는다.
-
 ### 2. 앱
 
 ```sh
@@ -156,7 +143,6 @@ docker compose exec -T db psql -U today_meal -d today_meal -tAc \
 | `flutter: command not found` | Flutter 가 PATH 에 없다 | `brew install --cask flutter` 후 새 터미널을 연다 |
 | `flutter doctor` 가 Android toolchain 실패 | SDK 라이선스 미동의 | `flutter doctor --android-licenses` 를 실행한다 |
 | iOS 빌드가 시작조차 안 됨 | **Xcode 가 없거나 첫 실행 구성요소가 빠졌다** | `sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer` · `sudo xcodebuild -license accept` · `sudo xcodebuild -runFirstLaunch` 를 차례로 실행한다 |
-| 앱 빌드가 모델을 못 찾음 | `scripts/fetch-model.sh` 를 안 돌렸다 | 그 스크립트를 실행한다. 134MB 를 받는다 |
 | Windows 에서 sh 스크립트가 안 돎 | PowerShell·CMD 로 실행했다 | **Git Bash** 를 연다. 경로는 `D:\work` 가 아니라 `/d/work` 형식을 쓴다 |
 | Windows 에서 `invalid profile name` 류 오류 | CRLF 로 체크아웃됐다 | `.gitattributes` 가 LF 로 고정한다. 기존 checkout 이면 다시 clone 하거나 해당 파일을 LF 로 저장한다 |
 | 앱이 `Connection refused` | 실기기가 `localhost` 를 자기 자신으로 본다 | `.env` 의 `API_BASE_URL` 을 개발 머신의 LAN 주소로 바꾼다 |

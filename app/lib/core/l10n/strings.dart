@@ -19,7 +19,9 @@ class Strings {
   static const voiceSuspended = '앱을 열어두면 불러서 쓸 수 있어요';
   static const voiceUnavailable = '마이크를 쓸 수 없어요';
   static const voiceRetry = '다시 말해주세요';
-  static const wakeWordHint = '"헤이 냉장고, 오늘 뭐 먹지?"';
+  static const wakeWordHint = '"자비스, 오늘 뭐 먹지?"';
+  // 호출에 바로 답하는 짧은 응답. 불러도 반응이 없으면 안 되는 것으로 보인다.
+  static const voiceAck = '네?';
 
   // 서버 연결
   static const serverChecking = '서버에 연결하는 중';
@@ -46,6 +48,12 @@ class Strings {
   static const bandUnknownHint = '기한을 알려주세요';
   static String bandCount(int n) => '$n가지';
 
+  /// 아치 안내. 밀거나 눌러 등급을 고른다.
+  static const arcHint = '밀어서 재료 상태 보기';
+
+  /// 오늘 날짜 줄. 형식은 화면에서 만들고 여기에는 두지 않는다.
+  static const todayGreeting = '오늘 뭐 먹지?';
+
   // 냉장고 컨디션
   static const conditionRelaxed = '여유';
   static const conditionAttention = '챙길 것';
@@ -61,6 +69,10 @@ class Strings {
   static String menuMinutes(int n) => '약 $n분';
   static String menuServings(int n) => '$n인분';
   static const menuOpen = '보기';
+  static String menuOthers(int n) => '다른 메뉴 $n개';
+  static const menuNone = '메뉴를 고르는 중';
+  static const fridgeOpen = '냉장고에서 확인하기';
+  static const dateTell = '기한 말하기';
   static const menuCooked = '해먹었어요';
   static const cookedDone = '반영했어요';
   static const cookedAlready = '이미 반영된 메뉴예요';
@@ -82,6 +94,27 @@ class Strings {
   static String daysLeft(int n) => n < 0 ? '${-n}일 지남' : 'D-$n';
   static String openedDaysAgo(int n) => '개봉 $n일';
   static String itemCount(int n) => '재료 $n종';
+
+  /// 단위 표기.
+  ///
+  /// 서버는 `ea`·`mo` 처럼 정규화된 기호를 준다. 화면에 그대로 내면 "2mo" 가 보인다.
+  /// 모르는 기호는 그대로 돌려준다 — 감추면 값이 사라진 것처럼 보인다.
+  static const units = <String, String>{
+    'ea': '개',
+    'mo': '모',
+    'pack': '팩',
+    'bunch': '단',
+    'sheet': '장',
+    'clove': '쪽',
+    'g': 'g',
+    'kg': 'kg',
+    'mg': 'mg',
+    'ml': 'ml',
+    'l': 'L',
+    'cup': '컵',
+    'tbsp': '큰술',
+    'tsp': '작은술',
+  };
 
   // 기한 종류. 서로 다른 정보이므로 문구도 구분한다.
   static const dateUseBy = '소비기한';
@@ -108,7 +141,7 @@ class Strings {
 
   // 공통
   static const empty = '아직 등록한 재료가 없어요';
-  static const emptyHint = '"헤이 냉장고"라고 부르고 말해보세요';
+  static const emptyHint = '"자비스"라고 부르고 말해보세요';
   static const undo = '되돌리기';
   static const mute = '음소거';
   static const unmute = '음소거 해제';

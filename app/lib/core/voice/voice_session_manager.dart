@@ -25,11 +25,13 @@ class VoiceSessionManager {
     required SpeechTranscriber transcriber,
     required SpeechSpeaker speaker,
     required String retryMessage,
+    String? ackMessage,
     Logger? logger,
   })  : _detector = detector,
         _transcriber = transcriber,
         _speaker = speaker,
         _retryMessage = retryMessage,
+        _ackMessage = ackMessage,
         _logger = logger ?? Logger(printer: SimplePrinter());
 
   /// 명령 세션의 앱 타임아웃. 인식 서비스의 무음 종료와 별개로 건다.
@@ -42,11 +44,16 @@ class VoiceSessionManager {
   final SpeechTranscriber _transcriber;
   final SpeechSpeaker _speaker;
   final String _retryMessage;
+
+  /// 호출에 바로 답할 문구. 없으면 답하지 않는다.
+  final String? _ackMessage;
+
   final Logger _logger;
 
   final _states = StreamController<VoiceState>.broadcast();
   VoiceState _current = const Suspended();
   Future<void>? _session;
+  StreamSubscription<void>? _wakeSub;
   bool _muted = false;
   bool _foreground = false;
 
@@ -59,6 +66,20 @@ class VoiceSessionManager {
   void _emit(VoiceState next) {
     _current = next;
     if (!_states.isClosed) _states.add(next);
+  }
+
+  /// 호출어 감지를 세션 시작으로 잇는다. 앱 기동 시 한 번만 부른다.
+  ///
+  /// IMPORTANT: 이 배선이 없으면 감지기는 정상으로 돌고 로그에 감지까지 남기면서도
+  /// **아무 일도 일어나지 않는다.** 실기기에서 실제로 그랬다. 감지 이벤트를 구독하는
+  /// 곳은 여기 하나뿐이어야 한다.
+  void bindWakeWord(
+    Future<VoiceTurnResult> Function(String utterance) handle,
+  ) {
+    _wakeSub ??= _detector.detections.listen((_) {
+      _logger.i('Wake word detected; starting session');
+      unawaited(startSession(handle));
+    });
   }
 
   /// 앱이 전경으로 왔다. 감지를 시작한다.
@@ -112,6 +133,14 @@ class VoiceSessionManager {
     try {
       // 감지기가 마이크를 놓아야 전사기가 시작할 수 있다.
       await _detector.stop();
+
+      // 호출에 바로 답한다. 불러도 아무 반응이 없으면 동작하지 않는 것으로 보인다.
+      // 낭독이 끝난 뒤에 듣기 시작해야 자기 목소리를 명령으로 되받지 않는다.
+      final ack = _ackMessage;
+      if (ack != null && ack.isNotEmpty) {
+        _emit(Speaking(ack));
+        await _speaker.speak(ack);
+      }
 
       _emit(const Listening());
       final utterance = await _transcribe(commandTimeout);
@@ -231,6 +260,8 @@ class VoiceSessionManager {
 
   /// 자원을 해제한다.
   Future<void> dispose() async {
+    await _wakeSub?.cancel();
+    _wakeSub = null;
     await _detector.dispose();
     await _speaker.dispose();
     await _states.close();

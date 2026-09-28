@@ -60,6 +60,3 @@ server/.ruff_cache/
 serviceAccount*.json
 
 # 온디바이스 ASR 모델. 인코더가 126MB 라 GitHub 파일 제한(100MB)을 넘는다.
-# scripts/fetch-model.sh 로 받는다. 앱에는 여전히 번들한다.
-app/assets/asr/*.onnx
-app/assets/asr/*.model

@@ -12,16 +12,15 @@ dependencies:
 
   # 음성 계층.
   #
-  # 호출어 감지는 sherpa-onnx 의 온디바이스 한국어 스트리밍 ASR 로 한다. Porcupine 은
-  # 무료 티어가 종료돼 쓸 수 없다 — 근거는 docs/design/0001 의 「웨이크워드」에 있다.
+  # 호출어 감지·전사·낭독을 모두 기기 내장 서비스로 한다. Porcupine 은 무료 티어가
+  # 종료됐고, sherpa-onnx 는 실기기에서 모델 로드 중 프로세스가 죽었다 — 근거는
+  # docs/design/0001 의 「웨이크워드」에 있다.
   #
-  # 전사와 낭독은 기기 내장 서비스를 감싼 것이라 기기별 동작 차이가 그대로 올라온다.
-  sherpa_onnx: ^1.13.8
+  # 기기 내장 서비스를 감싼 것이라 기기별 동작 차이가 그대로 올라온다.
   speech_to_text: ^7.5.0
   flutter_tts: ^4.2.5
   permission_handler: ^12.0.0
   path_provider: ^2.1.5
-  record: ^6.1.1
 
   # 네트워크
   dio: ^5.9.0
@@ -52,6 +51,3 @@ flutter:
   uses-material-design: true
   assets:
     - .env
-    # 온디바이스 한국어 스트리밍 ASR 모델. 약 134MB 로 앱에 번들한다 —
-    # 시연에서 네트워크 없이 떠야 하므로 내려받기에 기대지 않는다.
-    - assets/asr/

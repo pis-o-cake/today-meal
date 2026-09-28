@@ -20,11 +20,7 @@ if [ -f "$root/app/pubspec.yaml" ]; then
     echo "  Windows     : Flutter 설치 경로의 bin 을 PATH 에 넣는다" >&2
     exit 1
   fi
-  # 모델이 없으면 앱이 빌드되지 않는다. 검증 전에 알려 준다.
-  if [ ! -s "$root/app/assets/asr/encoder-epoch-99-avg-1.int8.onnx" ]; then
-    echo "verify: ASR model is missing. run scripts/fetch-model.sh" >&2
-    exit 1
-  fi
+
   ( cd "$root/app" && flutter analyze && flutter test )
 fi
 
