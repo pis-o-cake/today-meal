@@ -39,6 +39,19 @@ class BandPalette {
   /// 캐릭터 표정.
   final MascotMood mood;
 
+  /// 두 배색 사이의 중간값.
+  ///
+  /// 등급을 끄는 동안 화면이 **손가락을 따라** 넘어가게 하려면 중간 상태가 필요하다.
+  /// 표정([mood])은 섞을 수 없으므로 절반을 넘긴 쪽을 쓴다.
+  static BandPalette lerp(BandPalette a, BandPalette b, double t) => BandPalette(
+        accent: Color.lerp(a.accent, b.accent, t)!,
+        accentSoft: Color.lerp(a.accentSoft, b.accentSoft, t)!,
+        bgMid: Color.lerp(a.bgMid, b.bgMid, t)!,
+        bgEdge: Color.lerp(a.bgEdge, b.bgEdge, t)!,
+        mascotBody: Color.lerp(a.mascotBody, b.mascotBody, t)!,
+        mood: t < 0.5 ? a.mood : b.mood,
+      );
+
   /// 화면 배경. 위쪽에서 흰빛이 퍼지는 라디얼 그라데이션이다.
   ///
   /// `radial-gradient(125% 80% at 50% 20%, #FFF, bgMid 42%, bgEdge 100%)` 을 옮긴 것이다.

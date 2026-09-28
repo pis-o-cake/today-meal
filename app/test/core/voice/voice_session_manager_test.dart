@@ -169,6 +169,45 @@ void main() {
     expect(handled, ['계란 두 개 썼어']);
   });
 
+  test('호출하면 듣기 → 확인 → 반영 순서로만 간다', () async {
+    // 호출 응답("네?")을 Speaking 으로 내보냈더니 화면이 그것을 **반영 결과**로 그려서,
+    // 부르자마자 반영 화면이 떴다.
+    final manager = build();
+    await manager.onForeground();
+
+    final seen = <VoiceState>[];
+    manager.states.listen(seen.add);
+
+    await manager.startSession((_) async => const TurnAnswered('반영했어요.'));
+
+    final order = seen.map((s) => s.runtimeType.toString()).toList();
+    final firstSpeaking = order.indexOf('Speaking');
+    final firstListening = order.indexOf('Listening');
+    final firstProcessing = order.indexOf('Processing');
+
+    expect(firstListening, greaterThanOrEqualTo(0));
+    expect(firstListening, lessThan(firstProcessing),
+        reason: '듣기가 확인보다 먼저다');
+    expect(firstProcessing, lessThan(firstSpeaking),
+        reason: '반영은 확인 뒤에만 나온다');
+  });
+
+  test('호출 즉시 듣기 상태로 바꾼다', () async {
+    // 마이크를 넘기는 데 1초 넘게 걸린다. 그동안 화면이 그대로면 호출이 안 된 것으로
+    // 보인다.
+    final manager = build();
+    await manager.onForeground();
+
+    final seen = <VoiceState>[];
+    manager.states.listen(seen.add);
+
+    final session = manager.startSession((_) async => const TurnAnswered('네'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(seen.first, isA<Listening>(), reason: '마이크를 넘기기 전에 화면부터 바꾼다');
+    await session;
+  });
+
   testWidgets('낭독이 응답하지 않아도 대기로 돌아온다', (tester) async {
     // flutter_tts 의 완료 콜백이 오지 않으면 영원히 기다린다. 실기기에서 반영 화면에
     // 갇힌 원인이다. 대기로 못 돌아오는 것이 이 제품에서 가장 나쁜 고장이다.

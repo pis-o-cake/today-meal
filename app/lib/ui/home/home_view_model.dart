@@ -45,8 +45,14 @@ class HomeViewModel extends ChangeNotifier {
   Freshness get selected => _selected ?? _mostUrgent();
 
   /// 고른 등급의 재료.
-  List<IngredientBatch> get selectedBatches =>
-      _batches.where((b) => b.freshness == selected).toList(growable: false);
+  List<IngredientBatch> get selectedBatches => batchesOf(selected);
+
+  /// 한 등급의 재료.
+  ///
+  /// 아치를 끄는 동안 화면은 아직 고르지 않은 등급을 미리 보여준다. 그때도 캐릭터와
+  /// 칩이 **같은 등급**을 가리켜야 한다.
+  List<IngredientBatch> batchesOf(Freshness grade) =>
+      _batches.where((b) => b.freshness == grade).toList(growable: false);
 
   /// 고른 등급에서 권할 메뉴.
   ///
@@ -55,17 +61,18 @@ class HomeViewModel extends ChangeNotifier {
   /// 실기기에서 "챙길 것 0가지" 옆에 메뉴가 떠 있었다.
   ///
   /// 기한이 지난 등급과 기한을 모르는 등급에서는 권하지 않는다 — 먼저 할 일이 다르다.
-  MenuSuggestion? get topMenu => _menusForSelected.firstOrNull;
+  MenuSuggestion? get topMenu => menusFor(selected).firstOrNull;
 
   /// 첫 메뉴 말고 남은 개수.
   int get otherMenuCount {
-    final count = _menusForSelected.length;
+    final count = menusFor(selected).length;
     return count <= 1 ? 0 : count - 1;
   }
 
-  List<MenuSuggestion> get _menusForSelected {
-    if (!selected.isCookable || selected == Freshness.unknown) return const [];
-    final names = selectedBatches.map((b) => b.name).toSet();
+  /// 한 등급에서 권할 메뉴.
+  List<MenuSuggestion> menusFor(Freshness grade) {
+    if (!grade.isCookable || grade == Freshness.unknown) return const [];
+    final names = batchesOf(grade).map((b) => b.name).toSet();
     if (names.isEmpty) return const [];
     return [
       for (final menu in _menus)

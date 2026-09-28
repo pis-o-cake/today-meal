@@ -61,7 +61,10 @@ class SpeechEngine {
   /// WARNING: Android `SpeechRecognizer` 는 취소 직후 곧바로 시작하면
   /// `error_client` 로 거부한다. 실기기에서 호출어 감지 15ms 뒤에 전사가 실패한
   /// 원인이다. 이 틈이 없으면 호출해도 명령을 받지 못한다.
-  static const settle = Duration(milliseconds: 400);
+  ///
+  /// 호출 반응 속도에 그대로 더해지므로 필요한 만큼만 둔다. 250ms 로 줄여 실기기에서
+  /// 확인했다.
+  static const settle = Duration(milliseconds: 250);
 
   /// 진행 중인 청취를 버리고 마이크를 놓는다.
   Future<void> release() async {

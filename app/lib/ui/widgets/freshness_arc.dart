@@ -28,6 +28,7 @@ class FreshnessArc extends StatefulWidget {
     required this.selected,
     required this.onSelect,
     required this.hint,
+    this.slide,
     super.key,
   });
 
@@ -39,6 +40,15 @@ class FreshnessArc extends StatefulWidget {
 
   /// 궤도 아래 안내 문구.
   final String hint;
+
+  /// 궤도 위의 현재 위치(칸 단위, 소수 포함).
+  ///
+  /// 화면이 **끄는 동안 함께** 넘어가게 하려는 것이다. [onSelect] 만으로는 손을 뗀
+  /// 뒤에야 바뀌어 아치와 본문이 따로 논다.
+  ///
+  /// IMPORTANT: 콜백이 아니라 [ValueNotifier] 다. 애니메이션 틱마다 부모를
+  /// `setState` 하면 빌드 도중 재빌드가 나고, 화면 전체가 매 프레임 다시 그려진다.
+  final ValueNotifier<double>? slide;
 
   /// 트랙의 세로 크기. 얼굴이 위로 튀어나오므로 여유를 둔다.
   static const height = 128.0;
@@ -76,9 +86,7 @@ class _FreshnessArcState extends State<FreshnessArc>
     );
     // 살짝 지나쳤다 돌아온다. 딱 멈추면 기계적이다.
     _curve = CurvedAnimation(parent: _spring, curve: Curves.easeOutBack)
-      ..addListener(() => setState(() {
-            _at = _from + (_to - _from) * _curve.value;
-          }));
+      ..addListener(() => _moveTo(_from + (_to - _from) * _curve.value));
   }
 
   @override
@@ -95,6 +103,12 @@ class _FreshnessArcState extends State<FreshnessArc>
   void dispose() {
     _spring.dispose();
     super.dispose();
+  }
+
+  /// 위치를 옮기고 바깥에 알린다.
+  void _moveTo(double next) {
+    setState(() => _at = next);
+    widget.slide?.value = next;
   }
 
   int _indexOf(Freshness grade) {
@@ -130,12 +144,12 @@ class _FreshnessArcState extends State<FreshnessArc>
               _dragging = true;
               _spring.stop();
             },
-            onHorizontalDragUpdate: (details) => setState(() {
+            onHorizontalDragUpdate: (details) {
               // 얼굴이 고정이므로 오른쪽으로 밀면 오른쪽 얼굴이 골라진다. 손가락이
               // 가리키는 쪽이 그대로 선택이다.
-              _at = (_at + details.delta.dx / geometry.pixelsPerStep)
-                  .clamp(0.0, _last);
-            }),
+              _moveTo((_at + details.delta.dx / geometry.pixelsPerStep)
+                  .clamp(0.0, _last));
+            },
             onHorizontalDragEnd: (details) {
               // 던지듯 밀면 한 칸 더 간다.
               final fling = details.velocity.pixelsPerSecond.dx / 1600;

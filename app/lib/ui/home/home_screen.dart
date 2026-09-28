@@ -23,7 +23,7 @@ import '../widgets/mascot.dart';
 import 'home_view_model.dart';
 
 /// 오늘 화면 본문. 하단 탭과 오버레이는 셸이 얹는다.
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({
     required this.onOpenFridge,
     required this.onOpenMenu,
@@ -44,44 +44,62 @@ class HomeScreen extends StatelessWidget {
   final Widget voiceBar;
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  /// 아치 궤도 위의 위치(칸 단위, 소수 포함).
+  ///
+  /// 끄는 동안 화면 전체가 **손가락을 따라** 넘어가게 하는 값이다. 고른 등급만 보면
+  /// 손을 뗀 뒤에야 바뀌어 아치와 본문이 따로 논다.
+  final _slide = ValueNotifier<double>(0);
+  bool _primed = false;
+
+  @override
+  void dispose() {
+    _slide.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final home = context.watch<HomeViewModel>();
-    final palette = Bands.of(home.selected);
+    // 첫 배치에서 고른 등급 자리로 맞춘다. 0 으로 두면 처음에 지남부터 보인다.
+    if (!_primed) {
+      _primed = true;
+      _slide.value = Bands.ordered.indexOf(home.selected).toDouble();
+    }
+    return ValueListenableBuilder<double>(
+      valueListenable: _slide,
+      builder: (context, at, _) => _body(context, home, at),
+    );
+  }
+
+  Widget _body(BuildContext context, HomeViewModel home, double at) {
     final wide = !context.formFactor.isCompact;
 
-    // 등급을 바꾸면 배경색이 툭 바뀌지 않고 흘러 넘어간다. 궤도가 미끄러지는 동안
-    // 배경이 먼저 도착하면 두 동작이 따로 논다.
-    return TweenAnimationBuilder<Color?>(
-      tween: ColorTween(end: palette.bgMid),
-      duration: const Duration(milliseconds: 460),
-      curve: Curves.easeOut,
-      builder: (context, bgMid, child) => TweenAnimationBuilder<Color?>(
-        tween: ColorTween(end: palette.bgEdge),
-        duration: const Duration(milliseconds: 460),
-        curve: Curves.easeOut,
-        builder: (context, bgEdge, child) => DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: const Alignment(0, -0.6),
-              radius: 1.25,
-              colors: [
-                Colors.white,
-                bgMid ?? palette.bgMid,
-                bgEdge ?? palette.bgEdge,
-              ],
-              stops: const [0, 0.42, 1],
-            ),
-          ),
-          child: child,
-        ),
-        child: child,
-      ),
+    // 끄는 중이면 이웃 두 등급을 섞고, 아니면 고른 등급 그대로다.
+    final low = at.floor().clamp(0, Bands.ordered.length - 1);
+    final high = at.ceil().clamp(0, Bands.ordered.length - 1);
+    final blend = at - low;
+    final palette = BandPalette.lerp(
+      Bands.of(Bands.ordered[low]),
+      Bands.of(Bands.ordered[high]),
+      blend,
+    );
+    // 본문은 절반을 넘긴 쪽을 보여준다. 글자는 섞을 수 없다.
+    final shown = Bands.ordered[blend < 0.5 ? low : high];
+
+    // 배경은 보간한 값을 바로 쓴다. 따로 애니메이션을 걸면 아치가 미끄러지는 동안
+    // 배경만 늦게 도착해 두 동작이 따로 논다.
+    return DecoratedBox(
+      decoration: BoxDecoration(gradient: palette.background),
       child: SafeArea(
         child: Column(
           children: [
             const _Greeting(),
             const SizedBox(height: 10),
-            voiceBar,
+            widget.voiceBar,
             // IMPORTANT: 읽지 못한 상태를 "여유 0가지" 로 그리지 않는다. 그렇게 두면
             // 서버가 끊긴 것을 냉장고가 빈 것으로 읽는다.
             Expanded(
@@ -94,9 +112,9 @@ class HomeScreen extends StatelessWidget {
                   ),
                 _ => _Focus(
                     palette: palette,
-                    grade: home.selected,
-                    count: home.counts[home.selected] ?? 0,
-                    batches: home.selectedBatches,
+                    grade: shown,
+                    count: home.counts[shown] ?? 0,
+                    batches: home.batchesOf(shown),
                     maxMascot: wide ? 212 : 164,
                   ),
               },
@@ -104,11 +122,13 @@ class HomeScreen extends StatelessWidget {
             if (home.error == null)
               _Action(
                 palette: palette,
-                grade: home.selected,
-                menu: home.topMenu,
-                otherCount: home.otherMenuCount,
-                onOpenFridge: onOpenFridge,
-                onOpenMenu: onOpenMenu,
+                grade: shown,
+                menu: home.menusFor(shown).firstOrNull,
+                otherCount: home.menusFor(shown).length <= 1
+                    ? 0
+                    : home.menusFor(shown).length - 1,
+                onOpenFridge: widget.onOpenFridge,
+                onOpenMenu: widget.onOpenMenu,
               ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -116,6 +136,7 @@ class HomeScreen extends StatelessWidget {
                 counts: home.counts,
                 selected: home.selected,
                 onSelect: home.select,
+                slide: _slide,
                 hint: Strings.arcHint,
               ),
             ),

@@ -161,18 +161,26 @@ class VoiceSessionManager {
     Future<VoiceTurnResult> Function(String utterance) handle,
   ) async {
     try {
+      // IMPORTANT: 화면을 먼저 바꾼다. 마이크를 넘기는 데 드는 시간(감지기 정지 +
+      // 인식기 정리 + 응답 낭독)이 1초를 넘어, 그동안 아무 반응이 없으면 호출이
+      // 안 된 것으로 보인다.
+      _emit(const Listening());
+
       // 감지기가 마이크를 놓아야 전사기가 시작할 수 있다.
       await _detector.stop();
 
-      // 호출에 바로 답한다. 불러도 아무 반응이 없으면 동작하지 않는 것으로 보인다.
-      // 낭독이 끝난 뒤에 듣기 시작해야 자기 목소리를 명령으로 되받지 않는다.
+      // 호출에 바로 답한다. 낭독이 끝난 뒤에 듣기 시작해야 자기 목소리를 명령으로
+      // 되받지 않는다.
+      //
+      // WARNING: 이 응답을 [Speaking] 으로 내보내지 않는다. 화면은 [Speaking] 을
+      // **반영 결과**로 그리므로, 호출하자마자 반영 화면이 떴다.
+      //
+      // 인식기 준비를 낭독과 **동시에** 돌린다. 줄 세우면 그 시간이 호출 반응 속도에
+      // 그대로 더해진다.
       final ack = _ackMessage;
-      if (ack != null && ack.isNotEmpty) {
-        _emit(Speaking(ack));
-        await _speaker.speak(ack);
-      }
-
-      _emit(const Listening());
+      final warmUp = _transcriber.isAvailable();
+      if (ack != null && ack.isNotEmpty) await _speak(ack);
+      await warmUp;
       final utterance = await _transcribe(commandTimeout);
       if (utterance == null || utterance.trim().isEmpty) {
         _logger.w('Command transcription produced no result');
