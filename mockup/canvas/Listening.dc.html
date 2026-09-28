@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>듣는 중</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; overflow: hidden; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: #FFFFFF; letter-spacing: -0.02em; background: #0A0C11">
+
+  <div aria-hidden="true" style="position: absolute; left: 0; top: 0; width: {{w}}px; height: {{h}}px; pointer-events: none">
+    <dc-import name="Main" platform="{{platform}}" hint-size="{{screenHint}}"></dc-import>
+  </div>
+
+  <a href="{{links.home}}" aria-label="탭하면 닫혀요" style="position: absolute; left: 0; top: 0; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding: 0 28px {{textBottom}}px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; color: #FFFFFF; text-decoration: none; background: radial-gradient(70% 50% at 50% 40%, rgba(34,34,37,0.9), rgba(22,22,24,0.97)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px)">
+    <div style="width: 100%; text-align: center">
+      <div style="font-size: 27px; font-weight: 800; letter-spacing: -0.035em">듣고 있어요</div>
+      <div style="margin-top: 11px; min-height: 46px; font-size: 14.5px; line-height: 1.6; font-weight: 500; color: rgba(255,255,255,0.66)">“<span style="color: #C4B2FF; font-weight: 700">두부</span> 두 모랑 <span style="color: #C4B2FF; font-weight: 700">계란</span> 열 개 넣었어. 두부는 10월 3일까지야”</div>
+    </div>
+  </a>
+
+  <div style="position: absolute; left: 0; top: {{netTop}}px; width: {{w}}px; height: {{netH}}px">
+    <dc-import name="Neuron" width="{{w}}" height="{{netH}}" accent="#A68BFA" backdrop="false" hint-size="{{netHint}}"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var platform = this.props.platform || 'ios';
+    var android = platform === 'android';
+    var g = android ? { w: 412, h: 915, bottom: 24, netH: 560 } : { w: 390, h: 844, bottom: 34, netH: 520 };
+    var L = function (n) { return (android ? 'Android-' : '') + n + '.dc.html'; };
+    var centerY = Math.round(g.h * 0.40);
+    return {
+      platform: platform,
+      w: g.w, h: g.h, textBottom: g.bottom + 64,
+      screenHint: g.w + 'px,' + g.h + 'px',
+      netH: g.netH, netTop: centerY - Math.round(g.netH / 2), netHint: g.w + 'px,' + g.netH + 'px',
+      links: { home: L('Main') }
+    };
+  }
+}
+</script>
+</body>
+</html>

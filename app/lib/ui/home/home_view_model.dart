@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/design/band.dart';
 import '../../domain/model/inventory.dart';
 import '../../domain/model/menu.dart';
 import '../../domain/repository/repositories.dart';
@@ -24,24 +25,69 @@ class HomeViewModel extends ChangeNotifier {
   List<IngredientBatch> _batches = const [];
   List<MenuSuggestion> _menus = const [];
 
+  Freshness? _selected;
+
   bool get loading => _loading;
   Object? get error => _error;
   FridgeCondition get condition => _condition;
   List<MenuSuggestion> get menus => _menus;
 
+  /// 등급별 재료 종 수. **빈 등급도 0 으로 넣는다.**
+  ///
+  /// 아치는 등급 5칸을 항상 같은 자리에 두므로 빈 칸을 빼면 위치가 흔들린다. 목록으로
+  /// 쌓는 [bands] 와 규칙이 다른 이유다.
+  Map<Freshness, int> get counts => {
+        for (final grade in Bands.ordered)
+          grade: _batches.where((b) => b.freshness == grade).length,
+      };
+
+  /// 지금 고른 등급. 고르지 않았으면 가장 급한 등급이 잡힌다.
+  Freshness get selected => _selected ?? _mostUrgent();
+
+  /// 고른 등급의 재료.
+  List<IngredientBatch> get selectedBatches =>
+      _batches.where((b) => b.freshness == selected).toList(growable: false);
+
+  /// 고른 등급에서 권할 메뉴. 기한이 지난 등급에서는 권하지 않는다.
+  MenuSuggestion? get topMenu {
+    if (!selected.isCookable || selected == Freshness.unknown) return null;
+    return _menus.isEmpty ? null : _menus.first;
+  }
+
+  /// 첫 메뉴 말고 남은 개수.
+  ///
+  /// 권할 메뉴가 없는 등급에서는 0 이다 — 첫 메뉴를 감춰놓고 "다른 메뉴"만 세면
+  /// 무엇의 다른 메뉴인지 알 수 없다.
+  int get otherMenuCount => topMenu == null ? 0 : _menus.length - 1;
+
+  /// 등급을 고른다. 화면 배색이 함께 바뀐다.
+  void select(Freshness grade) {
+    if (_selected == grade) return;
+    _selected = grade;
+    notifyListeners();
+  }
+
+  /// 재료가 있는 등급 중 가장 급한 것. 하나도 없으면 여유로 둔다.
+  Freshness _mostUrgent() {
+    const priority = [
+      Freshness.urgent,
+      Freshness.expired,
+      Freshness.soon,
+      Freshness.unknown,
+      Freshness.fresh,
+    ];
+    for (final grade in priority) {
+      if (_batches.any((b) => b.freshness == grade)) return grade;
+    }
+    return Freshness.fresh;
+  }
+
   /// 신선도 밴드. 화면이 세로로 쌓는 순서 그대로다.
   ///
   /// 빈 밴드는 내보내지 않는다 — 비어 있는 칸을 보여주면 무엇이 문제인지 흐려진다.
   List<FreshnessBand> get bands {
-    const order = [
-      Freshness.expired,
-      Freshness.urgent,
-      Freshness.soon,
-      Freshness.fresh,
-      Freshness.unknown,
-    ];
     return [
-      for (final grade in order)
+      for (final grade in Bands.ordered)
         if (_batches.any((b) => b.freshness == grade))
           FreshnessBand(
             grade: grade,

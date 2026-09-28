@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/design/band.dart';
 import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/voice/voice_state.dart';
@@ -58,12 +59,12 @@ class _StateLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final (label, color) = switch (state) {
-      Listening() => (Strings.voiceListening, Tokens.lime),
-      Processing() => (Strings.voiceProcessing, Tokens.warm),
-      Clarifying() => (Strings.voiceClarifying, Tokens.warm),
-      Speaking() => (Strings.voiceSpeaking, Tokens.lime),
-      Unavailable() => (Strings.voiceUnavailable, Tokens.alert),
-      _ => (Strings.voiceWaiting, Tokens.creamDim),
+      Listening() => (Strings.voiceListening, Bands.fresh.accent),
+      Processing() => (Strings.voiceProcessing, Bands.soon.accent),
+      Clarifying() => (Strings.voiceClarifying, Bands.soon.accent),
+      Speaking() => (Strings.voiceSpeaking, Bands.fresh.accent),
+      Unavailable() => (Strings.voiceUnavailable, Bands.urgent.accent),
+      _ => (Strings.voiceWaiting, Tokens.inkFaint),
     };
     return Row(
       children: [
@@ -104,7 +105,7 @@ class _Result extends StatelessWidget {
       // 되묻는 중이면 **아직 반영되지 않았다.** 결과 칩을 보여주지 않는다.
       return Text(
         state.question,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Tokens.warm),
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Bands.soon.accent),
       );
     }
     final changes = vm.lastOutcome?.changes ?? const [];

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/design/breakpoints.dart';
-import '../core/design/tokens.dart';
 import '../core/l10n/strings.dart';
+import '../domain/model/menu.dart';
 import 'conversation/conversation_overlay.dart';
 import 'conversation/conversation_view_model.dart';
 import 'fridge/fridge_screen.dart';
@@ -14,6 +14,9 @@ import 'history/history_screen.dart';
 import 'history/history_view_model.dart';
 import 'home/home_screen.dart';
 import 'home/home_view_model.dart';
+import 'home/voice_status_bar.dart';
+import 'menu/menu_detail_screen.dart';
+import 'widgets/glass_nav.dart';
 
 /// 탭 셸.
 ///
@@ -77,89 +80,62 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final useRail = context.formFactor.isTabletWidth;
-    final pages = [const HomeScreen(), const FridgeScreen(), const HistoryScreen()];
+    final pages = [
+      HomeScreen(
+        onOpenFridge: () => _select(1),
+        onOpenMenu: _openMenu,
+        voiceBar: const VoiceStatusBar(),
+      ),
+      const FridgeScreen(),
+      const HistoryScreen(),
+    ];
+    const items = [
+      NavItem(label: Strings.tabToday, icon: Icons.ramen_dining_rounded),
+      NavItem(label: Strings.tabFridge, icon: Icons.kitchen_rounded),
+      NavItem(label: Strings.tabHistory, icon: Icons.schedule_rounded),
+    ];
 
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Row(
-              children: [
-                if (useRail)
-                  NavigationRail(
-                    selectedIndex: _index,
-                    onDestinationSelected: _select,
-                    labelType: NavigationRailLabelType.all,
-                    destinations: const [
-                      NavigationRailDestination(
-                        icon: Icon(Icons.today_outlined),
-                        selectedIcon: Icon(Icons.today),
-                        label: Text(Strings.tabToday),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.kitchen_outlined),
-                        selectedIcon: Icon(Icons.kitchen),
-                        label: Text(Strings.tabFridge),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.history_outlined),
-                        selectedIcon: Icon(Icons.history),
-                        label: Text(Strings.tabHistory),
-                      ),
-                    ],
+      // 화면마다 배경 그라데이션을 그리므로 셸은 SafeArea 를 쓰지 않는다.
+      body: Stack(
+        children: [
+          Row(
+            children: [
+              if (useRail)
+                SafeArea(
+                  child: GlassNavRail(
+                    items: items,
+                    current: _index,
+                    onSelect: _select,
                   ),
-                Expanded(child: pages[_index]),
-              ],
-            ),
-            // 호출어는 어느 탭에서나 받는다. 오버레이로 덮는다.
-            const Positioned.fill(child: ConversationOverlay()),
-          ],
-        ),
+                ),
+              Expanded(child: pages[_index]),
+            ],
+          ),
+          // 호출어는 어느 탭에서나 받는다. 오버레이로 덮는다.
+          const Positioned.fill(child: ConversationOverlay()),
+        ],
       ),
       bottomNavigationBar: useRail
           ? null
-          : NavigationBar(
-              selectedIndex: _index,
-              onDestinationSelected: _select,
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.today_outlined),
-                  selectedIcon: Icon(Icons.today),
-                  label: Strings.tabToday,
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.kitchen_outlined),
-                  selectedIcon: Icon(Icons.kitchen),
-                  label: Strings.tabFridge,
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.history_outlined),
-                  selectedIcon: Icon(Icons.history),
-                  label: Strings.tabHistory,
-                ),
-              ],
+          : SafeArea(
+              top: false,
+              child: GlassNavBar(
+                items: items,
+                current: _index,
+                onSelect: _select,
+              ),
             ),
-      floatingActionButton: _MicButton(onPressed: _onMic),
     );
   }
 
-  void _onMic() {
-    // 웨이크워드가 전경 한정이라 버튼 경로를 상시 유지한다.
-    unawaited(context.read<ConversationViewModel>().onMicButton());
-  }
-}
-
-class _MicButton extends StatelessWidget {
-  const _MicButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton.large(
-      onPressed: onPressed,
-      tooltip: Strings.micInUse,
-      child: const Icon(Icons.mic, size: Tokens.gapCard * 2),
+  /// 메뉴 상세를 연다. 탭을 바꾸지 않고 위에 쌓는다 — 돌아올 곳을 잃지 않는다.
+  void _openMenu(MenuSuggestion suggestion) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MenuDetailScreen(recipeId: suggestion.recipeId),
+      ),
     );
   }
+
 }

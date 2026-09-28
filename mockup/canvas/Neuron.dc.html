@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>재료 그래프</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div aria-hidden="true" onPointerMove="{{onMove}}" onPointerDown="{{onDown}}" onPointerUp="{{onUp}}" onPointerLeave="{{onLeave}}" style="position: relative; width: {{w}}px; height: {{h}}px; overflow: hidden; background: {{bg}}; touch-action: none; cursor: {{cursor}}; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; user-select: none">
+  <svg width="{{w}}" height="{{h}}" viewBox="0 0 {{w}} {{h}}" style="position: absolute; left: 0; top: 0">
+    <defs>
+      <radialGradient id="gr-halo" cx="{{cx}}" cy="{{cy}}" r="{{haloR}}" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="{{accent}}" stop-opacity="{{haloA}}"></stop>
+        <stop offset="1" stop-color="{{accent}}" stop-opacity="0"></stop>
+      </radialGradient>
+      <filter id="gr-glow" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="4"></feGaussianBlur>
+      </filter>
+    </defs>
+    <circle cx="{{cx}}" cy="{{cy}}" r="{{haloR}}" fill="url(#gr-halo)"></circle>
+
+    <path d="{{linkDim}}" fill="none" stroke="#9A9AA8" stroke-width="0.9" stroke-opacity="{{linkDimA}}"></path>
+    <path d="{{linkHot}}" fill="none" stroke="{{accent}}" stroke-width="1.3" stroke-opacity="0.7"></path>
+
+    <path d="{{ripples}}" fill="none" stroke="{{accent}}" stroke-width="1" stroke-opacity="{{rippleA}}"></path>
+    <path d="{{hotGlow}}" fill="{{accent}}" filter="url(#gr-glow)" opacity="0.85"></path>
+
+    <path d="{{nodeDim}}" fill="#8C8C98" opacity="{{nodeDimA}}"></path>
+    <path d="{{nodeWarm}}" fill="#D6D6E0"></path>
+    <path d="{{nodeHot}}" fill="{{accent}}"></path>
+    <path d="{{nodeHotCore}}" fill="#FFFFFF" opacity="0.9"></path>
+  </svg>
+
+  <sc-for list="{{labels}}" as="lb" hint-placeholder-count="0">
+    <span style="{{lb.style}}">{{lb.text}}</span>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"width":{"editor":"int","default":390,"min":160,"max":1200},"height":{"editor":"int","default":520,"min":160,"max":1200},"accent":{"editor":"color","default":"#A68BFA","options":["#A68BFA","#7F6DF2","#5CC8FF"]},"backdrop":{"editor":"boolean","default":true},"$preview":{"width":390,"height":520}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    var self = this;
+    self._e = 0.6;
+    var reduce = false;
+    try { reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (err) { reduce = false; }
+    if (reduce) { return; }
+    var start = null, last = 0;
+    var tick = function (now) {
+      self._raf = requestAnimationFrame(tick);
+      if (start === null) { start = now; }
+      if (now - last < 33) { return; }
+      last = now;
+      var t = (now - start) / 1000;
+      // 말소리를 흉내 낸 에너지. 앱에서는 마이크 음량을 넣는다.
+      var raw = 0.5 + 0.26 * Math.sin(t * 1.9) + 0.18 * Math.sin(t * 4.7 + 1.3) + 0.12 * Math.sin(t * 9.1 + 0.4);
+      var gate = Math.sin(t * 0.8) > -0.55 ? 1 : 0.25;
+      var target = Math.max(0, Math.min(1, raw * gate));
+      self._e += (target - self._e) * 0.14;
+      self._t = t;
+      if (self._sim) { self._step(self._sim, self._e, t); }
+      self.setState({ t: t });
+    };
+    self._raf = requestAnimationFrame(tick);
+  }
+  componentWillUnmount() {
+    if (this._raf) { cancelAnimationFrame(this._raf); }
+  }
+  _build(w, h) {
+    var ING = ['두부', '계란', '대파', '김치', '돼지고기', '애호박', '감자', '양파', '마늘', '간장', '참기름', '밥', '된장', '고추장', '새우', '라면', '소고기', '무', '우유'];
+    var MENU = [
+      ['두부계란전', ['두부', '계란', '대파']],
+      ['계란볶음밥', ['밥', '계란', '대파', '간장']],
+      ['두부김치', ['두부', '김치', '돼지고기', '참기름']],
+      ['된장찌개', ['된장', '두부', '양파', '애호박', '대파', '마늘']],
+      ['계란국', ['계란', '대파', '간장']],
+      ['감자볶음', ['감자', '양파']],
+      ['돼지고기김치볶음', ['돼지고기', '김치', '양파', '고추장']],
+      ['애호박새우볶음', ['애호박', '새우', '마늘']],
+      ['라면계란탕', ['라면', '계란', '대파']],
+      ['소고기무국', ['소고기', '무', '대파', '간장', '마늘', '참기름']]
+    ];
+    var seed = 20261002;
+    var rnd = function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+    var nodes = [], index = {}, links = [];
+    var add = function (name, kind) {
+      var a = rnd() * 6.283, r = 40 + rnd() * 110;
+      index[name] = nodes.length;
+      nodes.push({ name: name, kind: kind, x: w / 2 + Math.cos(a) * r, y: h / 2 + Math.sin(a) * r, vx: 0, vy: 0, deg: 0, ph: rnd() * 6.283, sp: 0.8 + rnd() * 1.2, nb: [] });
+    };
+    ING.forEach(function (n) { add(n, 'ing'); });
+    MENU.forEach(function (m) {
+      add(m[0], 'menu');
+      m[1].forEach(function (ing) { links.push([index[m[0]], index[ing]]); });
+    });
+    links.forEach(function (l) {
+      nodes[l[0]].deg++; nodes[l[1]].deg++;
+      nodes[l[0]].nb.push(l[1]); nodes[l[1]].nb.push(l[0]);
+    });
+    var sim = { w: w, h: h, nodes: nodes, links: links, drag: null, hover: null, pointer: null, utter: [index['두부'], index['계란']] };
+    for (var k = 0; k < 360; k++) { this._step(sim, 0.6, 0, true); }
+    return sim;
+  }
+  _step(sim, E, t, quiet) {
+    var N = sim.nodes, n = N.length, cx = sim.w / 2, cy = sim.h / 2;
+    var L = 46 * (0.86 + 0.32 * E);
+    var fx = [], fy = [], i, j;
+    for (i = 0; i < n; i++) { fx.push(0); fy.push(0); }
+    for (i = 0; i < n; i++) {
+      for (j = i + 1; j < n; j++) {
+        var dx = N[i].x - N[j].x, dy = N[i].y - N[j].y, d2 = dx * dx + dy * dy + 0.01;
+        if (d2 < 48000) {
+          var d = Math.sqrt(d2), f = Math.min(8, 950 / d2);
+          fx[i] += dx / d * f; fy[i] += dy / d * f; fx[j] -= dx / d * f; fy[j] -= dy / d * f;
+        }
+      }
+    }
+    sim.links.forEach(function (l) {
+      var a = N[l[0]], b = N[l[1]], dx2 = b.x - a.x, dy2 = b.y - a.y, dd = Math.sqrt(dx2 * dx2 + dy2 * dy2) + 0.01;
+      var f2 = 0.05 * (dd - L);
+      fx[l[0]] += dx2 / dd * f2; fy[l[0]] += dy2 / dd * f2; fx[l[1]] -= dx2 / dd * f2; fy[l[1]] -= dy2 / dd * f2;
+    });
+    for (i = 0; i < n; i++) {
+      var p = N[i];
+      fx[i] += (cx - p.x) * 0.014; fy[i] += (cy - p.y) * 0.016;
+      if (!quiet) { fx[i] += Math.sin(t * 0.6 + p.ph) * 0.14; fy[i] += Math.cos(t * 0.5 + p.ph * 1.3) * 0.14; }
+      if (sim.drag === i && sim.pointer) { p.x = sim.pointer.x; p.y = sim.pointer.y; p.vx = 0; p.vy = 0; continue; }
+      p.vx = (p.vx + fx[i]) * 0.82; p.vy = (p.vy + fy[i]) * 0.82;
+      var sp = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+      if (sp > 6) { p.vx *= 6 / sp; p.vy *= 6 / sp; }
+      p.x = Math.max(18, Math.min(sim.w - 18, p.x + p.vx));
+      p.y = Math.max(18, Math.min(sim.h - 18, p.y + p.vy));
+    }
+  }
+  renderVals() {
+    var self = this;
+    var w = Number(this.props.width || 390);
+    var h = Number(this.props.height || 520);
+    var accent = this.props.accent || '#A68BFA';
+    var backdrop = String(this.props.backdrop === undefined ? true : this.props.backdrop) !== 'false';
+    if (!this._sim || this._sim.w !== w || this._sim.h !== h) { this._sim = this._build(w, h); }
+    var sim = this._sim;
+    var t = this._t || 1.3;
+    var E = (this._e === undefined) ? 0.7 : this._e;
+    var r1 = function (v) { return Math.round(v * 10) / 10; };
+    var circ = function (x, y, r) { r = r1(r); return 'M' + r1(x - r) + ' ' + r1(y) + ' a' + r + ' ' + r + ' 0 1 0 ' + r1(2 * r) + ' 0 a' + r + ' ' + r + ' 0 1 0 ' + r1(-2 * r) + ' 0 z '; };
+
+    var focus = sim.hover !== null ? [sim.hover] : (sim.drag !== null ? [sim.drag] : sim.utter);
+    var hoverMode = sim.hover !== null || sim.drag !== null;
+    var hot = {}, warm = {};
+    focus.forEach(function (i) { hot[i] = true; });
+    focus.forEach(function (i) { sim.nodes[i].nb.forEach(function (j) { if (!hot[j]) { warm[j] = true; } }); });
+
+    var linkDim = '', linkHot = '';
+    sim.links.forEach(function (l) {
+      var a = sim.nodes[l[0]], b = sim.nodes[l[1]];
+      var seg = 'M' + r1(a.x) + ' ' + r1(a.y) + ' L' + r1(b.x) + ' ' + r1(b.y) + ' ';
+      if (hot[l[0]] || hot[l[1]]) { linkHot += seg; } else { linkDim += seg; }
+    });
+
+    var nodeDim = '', nodeWarm = '', nodeHot = '', nodeHotCore = '', hotGlow = '', ripples = '';
+    var labels = [];
+    var rp = (t / 1.8) % 1;
+    sim.nodes.forEach(function (p, i) {
+      var r0 = 2.6 + 1.4 * Math.sqrt(p.deg + (p.kind === 'menu' ? 1 : 0));
+      var r = r0 * (1 + 0.14 * Math.sin(t * p.sp + p.ph)) * (0.88 + 0.24 * E);
+      var cls = hot[i] ? 'hot' : (warm[i] ? 'warm' : 'dim');
+      if (cls === 'hot') {
+        r = r0 * (1.3 + 0.5 * E + 0.12 * Math.sin(t * 4 + p.ph));
+        nodeHot += circ(p.x, p.y, r);
+        nodeHotCore += circ(p.x, p.y, r * 0.38);
+        hotGlow += circ(p.x, p.y, r * 2.2);
+        ripples += circ(p.x, p.y, r + 4 + rp * 30);
+      } else if (cls === 'warm') {
+        nodeWarm += circ(p.x, p.y, r);
+      } else {
+        nodeDim += circ(p.x, p.y, r);
+      }
+      var show = cls !== 'dim' || p.kind === 'menu' || p.deg >= 3;
+      if (show) {
+        var size = cls === 'hot' ? 13 : 11;
+        var color = cls === 'hot' ? '#FFFFFF' : (cls === 'warm' ? 'rgba(236,236,244,0.88)' : (hoverMode ? 'rgba(210,210,222,0.22)' : 'rgba(210,210,222,0.55)'));
+        labels.push({
+          text: p.name,
+          style: 'position: absolute; left: ' + r1(p.x) + 'px; top: ' + r1(p.y + r + 3) + 'px; transform: translateX(-50%); white-space: nowrap; pointer-events: none;'
+            + ' font-size: ' + size + 'px; font-weight: ' + (cls === 'hot' ? 700 : 500) + '; letter-spacing: -0.02em; color: ' + color + ';'
+        });
+      }
+    });
+
+    var local = function (e) {
+      var rc = e.currentTarget.getBoundingClientRect();
+      return { x: (e.clientX - rc.left) * (w / rc.width), y: (e.clientY - rc.top) * (h / rc.height) };
+    };
+    var nearest = function (pt, lim) {
+      var best = null, bd = lim * lim;
+      sim.nodes.forEach(function (p, i) { var dx = p.x - pt.x, dy = p.y - pt.y, d = dx * dx + dy * dy; if (d < bd) { bd = d; best = i; } });
+      return best;
+    };
+    var refresh = function () { if (!self._raf) { self.forceUpdate(); } };
+    var onMove = function (e) {
+      var pt = local(e);
+      sim.pointer = pt;
+      if (sim.drag === null) { sim.hover = nearest(pt, 22); }
+      refresh();
+    };
+    var onDown = function (e) {
+      var pt = local(e);
+      sim.pointer = pt;
+      var hit = nearest(pt, 26);
+      if (hit !== null) {
+        sim.drag = hit; sim.hover = null;
+        try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { }
+      }
+      refresh();
+    };
+    var onUp = function () { sim.drag = null; refresh(); };
+    var onLeave = function () { if (sim.drag === null) { sim.hover = null; sim.pointer = null; } refresh(); };
+
+    return {
+      w: w, h: h, cx: r1(w / 2), cy: r1(h / 2), accent: accent,
+      bg: backdrop ? '#1E1E1E' : 'transparent',
+      cursor: sim.drag !== null ? 'grabbing' : (sim.hover !== null ? 'grab' : 'default'),
+      haloR: r1(Math.min(w, h) * (0.5 + 0.12 * E)), haloA: r1((0.06 + 0.1 * E) * 100) / 100,
+      linkDim: linkDim || 'M0 0', linkHot: linkHot || 'M0 0', linkDimA: hoverMode ? 0.08 : 0.2,
+      ripples: ripples || 'M0 0', rippleA: r1(0.5 * (1 - rp) * 100) / 100,
+      hotGlow: hotGlow || 'M0 0',
+      nodeDim: nodeDim || 'M0 0', nodeDimA: hoverMode ? 0.3 : 0.85,
+      nodeWarm: nodeWarm || 'M0 0', nodeHot: nodeHot || 'M0 0', nodeHotCore: nodeHotCore || 'M0 0',
+      labels: labels,
+      onMove: onMove, onDown: onDown, onUp: onUp, onLeave: onLeave
+    };
+  }
+}
+</script>
+</body>
+</html>

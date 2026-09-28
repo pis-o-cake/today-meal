@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>냉장고</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: #15181D; letter-spacing: -0.02em; background: radial-gradient(125% 70% at 50% 0%, #FFFFFF 0%, #F6F7F9 45%, #E8EBF0 100%)">
+
+  <header style="display: flex; flex-direction: column; gap: 12px; padding: 12px 20px 0">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.2; font-weight: 700; letter-spacing: -0.04em">냉장고</h1>
+      <div style="display: flex; align-items: center; gap: 6px; height: 36px; box-sizing: border-box; padding: 0 12px; border-radius: 999px; background: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 4px 12px rgba(20,25,35,0.06); font-size: 13px; font-weight: 700">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: #3F4FD1; box-shadow: 0 0 0 3px rgba(63,79,209,0.18)"></span>
+        호출 대기 중
+      </div>
+    </div>
+    <label style="display: flex; align-items: center; gap: 10px; height: 48px; box-sizing: border-box; padding: 0 16px; border-radius: 16px; background: rgba(255,255,255,0.84); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 4px 12px rgba(20,25,35,0.05); color: #5F6670">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">재료 검색</span>
+      <input type="search" placeholder="재료 검색" style="flex-grow: 1; min-width: 0; height: 44px; border: 0; background: transparent; font-family: inherit; font-size: 16px; font-weight: 500; color: #15181D; outline: none">
+    </label>
+    <div role="group" aria-label="보관 위치" style="display: flex; gap: 8px">
+      <button type="button" aria-pressed="true" style="height: 44px; padding: 0 18px; border-radius: 22px; border: 0; background: #15181D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">전체</button>
+      <button type="button" aria-pressed="false" style="height: 44px; padding: 0 18px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.95); background: rgba(255,255,255,0.8); color: #3E454E; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">냉장</button>
+      <button type="button" aria-pressed="false" style="height: 44px; padding: 0 18px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.95); background: rgba(255,255,255,0.8); color: #3E454E; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">냉동</button>
+      <button type="button" aria-pressed="false" style="height: 44px; padding: 0 18px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.95); background: rgba(255,255,255,0.8); color: #3E454E; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">실온</button>
+    </div>
+    <div style="font-size: 13px; font-weight: 600; color: #5F6670">재료 8종 · 급한 것부터</div>
+  </header>
+
+  <div style="flex-grow: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 16px; padding: 12px 20px 0">
+    <sc-for list="{{sections}}" as="s" hint-placeholder-count="5">
+      <section aria-label="{{s.word}}" style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r="20" fill="{{s.body}}"></circle>
+            <path d="{{s.fill}}" fill="#333A52"></path>
+            <path d="{{s.stroke}}" fill="none" stroke="#333A52" stroke-width="2.6" stroke-linecap="round"></path>
+            <path d="{{s.brow}}" fill="none" stroke="#333A52" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+          <span style="font-size: 16px; font-weight: 700; color: {{s.acc}}">{{s.word}}</span>
+          <span style="font-size: 13px; font-weight: 600; color: #5F6670">{{s.count}} · {{s.hint}}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; border-radius: 20px; background: rgba(255,255,255,0.86); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 6px 18px rgba(20,25,35,0.06)">
+          <sc-for list="{{s.rows}}" as="r" hint-placeholder-count="1">
+            <div style="{{r.rowStyle}}">
+              <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                <span style="font-size: 17px; font-weight: 700">{{r.name}}</span>
+                <span style="font-size: 13px; font-weight: 500; color: #5F6670">{{r.meta}}</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px">
+                <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.03em">{{r.qty}}</span>
+                <sc-if value="{{r.hasTag}}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 12px; font-weight: 700; padding: 2px 6px; border-radius: 6px; background: #ECEEF2; color: #4E5661">{{r.tag}}</span>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+  </div>
+
+  <nav aria-label="주요 화면" style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 24px 16px {{navBottom}}px; background: linear-gradient(to bottom, rgba(232,235,240,0) 0%, rgba(232,235,240,0.92) 40%)">
+    <div style="flex-grow: 1; display: flex; gap: 4px; height: 64px; box-sizing: border-box; padding: 6px; border-radius: 32px; background: rgba(255,255,255,0.84); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 10px 28px rgba(20,25,35,0.1)">
+      <a href="{{links.home}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 26px; color: #5F6670; text-decoration: none; font-size: 12px; font-weight: 600">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11h18a9 9 0 0 1-18 0z"></path><path d="M9.5 3.5c0 1.5 1.5 1.5 1.5 3M13.5 3.5c0 1.5 1.5 1.5 1.5 3"></path></svg>
+        오늘
+      </a>
+      <a href="{{links.fridge}}" aria-current="page" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 26px; background: #FFFFFF; color: #15181D; text-decoration: none; font-size: 12px; font-weight: 700; box-shadow: 0 4px 12px rgba(20,25,35,0.08)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2.5"></rect><path d="M5 10h14M8.5 6v1.5M8.5 13v3"></path></svg>
+        냉장고
+      </a>
+      <a href="{{links.history}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 26px; color: #5F6670; text-decoration: none; font-size: 12px; font-weight: 600">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        기록
+      </a>
+    </div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24 } : { w: 390, h: 844, top: 59, bottom: 34 };
+    var L = function (n) { return (android ? 'Android-' : '') + n + '.dc.html'; };
+    var NONE = 'M0 0';
+    var sp = function (cx, cy, h) { return 'M' + (cx - 2.5) + ' ' + (cy - h / 2 + 2.5) + ' a2.5 2.5 0 0 1 5 0 v' + (h - 5) + ' a2.5 2.5 0 0 1 -5 0 z'; };
+    var dt = function (cx, cy, r) { return 'M' + (cx - r) + ' ' + cy + ' a' + r + ' ' + r + ' 0 1 0 ' + (2 * r) + ' 0 a' + r + ' ' + r + ' 0 1 0 ' + (-2 * r) + ' 0 z'; };
+    var face = {
+      expired: { fill: NONE, stroke: 'M15.5 25 h6 M26.5 25 h6 M22 32 h4', brow: NONE },
+      urgent:  { fill: sp(19, 25, 9) + ' ' + sp(29, 25, 9) + ' ' + dt(24, 32, 2.2), stroke: NONE, brow: 'M14 18.5 l6 -2 M34 18.5 l-6 -2' },
+      soon:    { fill: sp(19, 24, 9) + ' ' + sp(29, 24, 9) + ' M21.5 31 h5 a1.2 1.2 0 0 1 0 2.4 h-5 a1.2 1.2 0 0 1 0 -2.4 z', stroke: NONE, brow: NONE },
+      fresh:   { fill: NONE, stroke: 'M15 26 q3.5 -4.5 7 0 M26 26 q3.5 -4.5 7 0 M20.5 30.5 q3.5 4 7 0', brow: NONE },
+      unknown: { fill: dt(19, 25, 2.4) + ' ' + dt(29, 25, 2.4), stroke: 'M21 32 q3 -1.6 6 0', brow: NONE }
+    };
+    var raw = [
+      { key: 'expired', word: '지남', hint: '오늘 요리 후보에서 뺐어요', acc: '#5E6773', body: '#C2C9D3', rows: [
+        { name: '삼겹살', meta: '소비기한 9/30 · 2일 지남 · 냉장', qty: '300g', tag: '확인 필요' } ] },
+      { key: 'urgent', word: '급함', hint: '오늘 안에 쓰세요', acc: '#C23A1C', body: '#FFB3A0', rows: [
+        { name: '두부', meta: '소비기한 10/3 · D-1 · 냉장', qty: '2모' } ] },
+      { key: 'soon', word: '챙길 것', hint: '이번 주에 쓰세요', acc: '#8F5A08', body: '#FFD79B', rows: [
+        { name: '우유', meta: '유통기한 10/6 · 개봉 2일 · 냉장', qty: '1팩' },
+        { name: '애호박', meta: '점검 알림 10/5 · 냉장', qty: '1개' },
+        { name: '대파', meta: '잔량 확인 필요 · 냉장', qty: '조금', tag: '추정' } ] },
+      { key: 'fresh', word: '여유', hint: '급하지 않아요', acc: '#17703C', body: '#AEE8BE', rows: [
+        { name: '다진마늘', meta: '소비기한 10/24 · 냉동', qty: '1통' },
+        { name: '감자', meta: '점검 알림 10/12 · 실온', qty: '3개' } ] },
+      { key: 'unknown', word: '미확인', hint: '기한을 알려주세요', acc: '#56607A', body: '#CCD2DE', rows: [
+        { name: '계란', meta: '기한 미확인 · 냉장', qty: '4개' } ] }
+    ];
+    var sections = raw.map(function (s) {
+      var fc = face[s.key];
+      return {
+        word: s.word, hint: s.hint, acc: s.acc, body: s.body, count: s.rows.length + '가지',
+        fill: fc.fill, stroke: fc.stroke, brow: fc.brow,
+        rows: s.rows.map(function (r, i) {
+          return {
+            name: r.name, meta: r.meta, qty: r.qty, tag: r.tag || '', hasTag: !!r.tag,
+            rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 62px; box-sizing: border-box; padding: 10px 16px;'
+              + (i > 0 ? ' border-top: 1px solid rgba(21,24,29,0.07);' : '')
+          };
+        })
+      };
+    });
+    return {
+      w: g.w, h: g.h, top: g.top, navBottom: g.bottom + 8,
+      sections: sections,
+      links: { home: L('Main'), fridge: L('Fridge'), history: L('History'), listen: L('Listening') }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/design/responsive.dart';
+import '../../core/design/band.dart';
 import '../../core/design/tokens.dart';
 import '../../core/di.dart';
 import '../../core/l10n/strings.dart';
@@ -250,9 +251,9 @@ class _StatusDot extends StatelessWidget {
   Widget build(BuildContext context) {
     // 색만으로 구분하지 않는다. 아이콘 모양도 함께 바꾼다.
     final (icon, color) = switch (status) {
-      IngredientStatus.have => (Icons.check_circle_outline, Tokens.lime),
-      IngredientStatus.needsCheck => (Icons.help_outline, Tokens.warm),
-      IngredientStatus.missing => (Icons.remove_circle_outline, Tokens.alert),
+      IngredientStatus.have => (Icons.check_circle_outline, Bands.fresh.accent),
+      IngredientStatus.needsCheck => (Icons.help_outline, Bands.soon.accent),
+      IngredientStatus.missing => (Icons.remove_circle_outline, Bands.urgent.accent),
     };
     return Icon(icon, size: 18, color: color);
   }

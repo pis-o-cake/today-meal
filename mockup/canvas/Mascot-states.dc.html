@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>캐릭터 상태</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="width: 1240px; height: 320px; box-sizing: border-box; padding: 36px 48px; display: flex; align-items: flex-start; justify-content: space-between; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: #15181D; letter-spacing: -0.02em; background: #FAFAFB">
+  <sc-for list="{{moods}}" as="m" hint-placeholder-count="7">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; width: 148px">
+      <dc-import name="Mascot" mood="{{m.mood}}" size="140" hint-size="140px,140px"></dc-import>
+      <span style="font-size: 16px; font-weight: 700">{{m.word}}</span>
+      <span style="font-size: 13px; font-weight: 500; color: #5F6670; text-align: center">{{m.where}}</span>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1240,"height":320}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      moods: [
+        { mood: 'expired', word: '지남', where: '밴드' },
+        { mood: 'urgent', word: '급함', where: '밴드' },
+        { mood: 'soon', word: '챙길 것', where: '밴드' },
+        { mood: 'fresh', word: '여유 · 반영', where: '밴드 · 결과' },
+        { mood: 'unknown', word: '미확인', where: '밴드' },
+        { mood: 'listening', word: '듣는 중', where: '대화 · 권한' },
+        { mood: 'asking', word: '확인 질문', where: '대화' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/design/labels.dart';
 import '../../core/design/responsive.dart';
+import '../../core/design/band.dart';
 import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../domain/model/inventory.dart';
@@ -127,7 +128,7 @@ class _BatchRow extends StatelessWidget {
                   Text(
                     Strings.quantityUnknown,
                     style: theme.textTheme.labelLarge
-                        ?.copyWith(color: Tokens.warm),
+                        ?.copyWith(color: Bands.soon.accent),
                   ),
               ],
             ),

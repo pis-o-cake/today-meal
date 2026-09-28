@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>반영 결과</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: #15181D; letter-spacing: -0.02em; background: radial-gradient(125% 80% at 50% 24%, #FFFFFF 0%, #F3FBF6 40%, #D3EFDD 100%)">
+
+  <div style="display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; padding: 8px 16px 0">
+    <div></div>
+    <ol aria-label="진행 단계" style="justify-self: center; list-style: none; margin: 0; display: flex; gap: 4px; padding: 4px; border-radius: 22px; background: rgba(255,255,255,0.74); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 6px 18px rgba(20,25,35,0.07)">
+      <li style="display: flex; align-items: center; gap: 4px; height: 34px; padding: 0 12px; border-radius: 17px; color: #1B7F43; font-size: 13px; font-weight: 700">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        듣기
+      </li>
+      <li style="display: flex; align-items: center; gap: 4px; height: 34px; padding: 0 12px; border-radius: 17px; color: #1B7F43; font-size: 13px; font-weight: 700">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        확인
+      </li>
+      <li aria-current="step" style="display: flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 17px; background: #15181D; color: #FFFFFF; font-size: 13px; font-weight: 700">반영</li>
+    </ol>
+    <a href="{{links.home}}" aria-label="닫기" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3E454E; background: rgba(255,255,255,0.74); border: 1px solid rgba(255,255,255,0.95); box-sizing: border-box; text-decoration: none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+  </div>
+
+  <main style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 24px; text-align: center">
+    <sc-if value="{{c1}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="Mascot" mood="done" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    </sc-if>
+    <sc-if value="{{c2}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Mascot2" mood="done" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    </sc-if>
+    <sc-if value="{{c3}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Mascot3" mood="done" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    </sc-if>
+    <div style="font-size: 42px; line-height: 1.1; font-weight: 800; letter-spacing: -0.05em; color: #1B7F43; margin-top: 4px">반영했어요</div>
+    <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; max-width: 320px; text-align: left">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B7F43" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"></path></svg>
+      <span style="font-size: 15px; line-height: 1.5; font-weight: 500; color: #3E454E">“두부 2모, 계란 10개 등록했어요. 두부 소비기한은 10월 3일이에요.”</span>
+    </div>
+  </main>
+
+  <section aria-label="바뀐 재고" style="margin: 16px 20px 0; border-radius: 24px; background: rgba(255,255,255,0.84); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 10px 28px rgba(20,25,35,0.08); display: flex; flex-direction: column">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 16px 18px">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 20px; font-weight: 700">두부</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <span style="font-size: 13px; font-weight: 700; padding: 4px 8px; border-radius: 8px; background: #FFE4DB; color: #B0341A">소비기한 10/3 · D-1</span>
+          <span style="font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 8px; background: #EEF0F3; color: #4E5661">냉장</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end">
+        <span style="font-size: 12px; font-weight: 600; color: #5F6670">새로</span>
+        <span style="font-size: 28px; font-weight: 700; letter-spacing: -0.04em">2모</span>
+      </div>
+    </div>
+    <div style="height: 1px; margin: 0 18px; background: rgba(21,24,29,0.07)"></div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 16px 18px">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 20px; font-weight: 700">계란</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <span style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; padding: 4px 8px; border-radius: 8px; background: #ECEEF2; color: #4E5661">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.8 9.5a2.3 2.3 0 1 1 3.3 2.1c-.7.4-1.1.9-1.1 1.7M12 16.8v.1"></path></svg>
+            기한 미확인
+          </span>
+          <span style="font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 8px; background: #EEF0F3; color: #4E5661">냉장</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end">
+        <span style="font-size: 12px; font-weight: 600; color: #5F6670">새로</span>
+        <span style="font-size: 28px; font-weight: 700; letter-spacing: -0.04em">10개</span>
+      </div>
+    </div>
+  </section>
+
+  <div style="display: flex; gap: 10px; padding: 16px 20px 0">
+    <button type="button" style="flex-grow: 1; flex-basis: 0; display: flex; align-items: center; justify-content: center; gap: 8px; height: 56px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.95); background: rgba(255,255,255,0.8); box-shadow: 0 6px 18px rgba(20,25,35,0.07); font-family: inherit; font-size: 16px; font-weight: 700; color: #15181D; cursor: pointer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h10a5 5 0 0 1 0 10H8"></path><path d="M8 5L4 9l4 4"></path></svg>
+      되돌리기
+    </button>
+    <a href="{{links.home}}" style="flex-grow: 1.4; flex-basis: 0; display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: #15181D; color: #FFFFFF; text-decoration: none; font-size: 16px; font-weight: 700; box-shadow: 0 10px 22px rgba(20,25,35,0.22)">확인</a>
+  </div>
+  <div style="text-align: center; font-size: 13px; font-weight: 500; color: #5F6670; padding: 12px 20px 8px">4초 뒤 호출 대기로 돌아가요</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"character":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var android = (this.props.platform || 'ios') === 'android';
+    var c2 = String(this.props.character || '1') === '2';
+    var c3 = String(this.props.character || '1') === '3';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24, mascot: 176 } : { w: 390, h: 844, top: 59, bottom: 34, mascot: 140 };
+    var L = function (n) { return (android ? 'Android-' : '') + n + '.dc.html'; };
+    return {
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom,
+      c1: !c2 && !c3, c2: c2, c3: c3,
+      mascotSize: g.mascot, mascotHint: g.mascot + 'px,' + g.mascot + 'px',
+      links: { home: L('Main') }
+    };
+  }
+}
+</script>
+</body>
+</html>

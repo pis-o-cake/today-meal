@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/design/labels.dart';
 import '../../core/design/responsive.dart';
+import '../../core/design/band.dart';
 import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../domain/model/change_record.dart';
@@ -116,7 +117,7 @@ class _Row extends StatelessWidget {
                       : Strings.historyExplicit,
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: record.isEstimated
-                        ? Tokens.warm
+                        ? Bands.soon.accent
                         : theme.colorScheme.onSurfaceVariant,
                   ),
                 ),

@@ -41,7 +41,7 @@ class TodayMealApp extends StatelessWidget {
       child: MaterialApp(
         title: Strings.appName,
         debugShowCheckedModeBanner: false,
-        theme: buildTheme(brightness: Brightness.light),
+        theme: buildTheme(),
         darkTheme: buildTheme(),
         themeMode: ThemeMode.dark,
         home: const AppShell(),

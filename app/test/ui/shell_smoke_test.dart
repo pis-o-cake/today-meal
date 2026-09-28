@@ -30,7 +30,7 @@ void main() {
     expect(grades, isNot(contains(Freshness.fresh)));
   });
 
-  testWidgets('홈 화면이 밴드와 메뉴를 그린다', (tester) async {
+  testWidgets('홈 화면이 가장 급한 등급을 펼치고 그 메뉴를 권한다', (tester) async {
     final home = HomeViewModel(inventory: _FakeInventory(), menu: _FakeMenu());
     await home.load();
 
@@ -39,16 +39,89 @@ void main() {
         theme: buildTheme(),
         home: ChangeNotifierProvider.value(
           value: home,
-          child: const Scaffold(body: HomeScreen()),
+          child: Scaffold(
+            body: HomeScreen(
+              onOpenFridge: () {},
+              onOpenMenu: (_) {},
+            ),
+          ),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('두부'), findsWidgets);
+    // 고르지 않으면 가장 급한 등급이 잡힌다.
+    expect(home.selected, Freshness.urgent);
+    expect(find.text('급함'), findsOneWidget);
+    expect(find.text('오늘 안에 쓰세요'), findsNothing,
+        reason: '등급 힌트는 개수와 한 줄로 합쳐 나온다');
+    expect(find.textContaining('오늘 안에 쓰세요'), findsOneWidget);
+
+    // 고른 등급의 재료만 칩으로 나온다. 다른 등급은 아치의 배지로만 센다.
+    // 단위는 한국어 표기로 나와야 한다 — 'mo' 가 그대로 보이면 안 된다.
+    expect(find.text('두부 · 2모 · D-1'), findsOneWidget);
+    expect(find.textContaining('대파'), findsNothing);
+
+    // 주 행동은 그 등급으로 만들 메뉴다.
     expect(find.text('두부조림'), findsOneWidget);
-    // 필수 재료가 없는 메뉴는 '지금 가능' 이 아니다.
-    expect(find.text('재료 준비 후'), findsOneWidget);
+  });
+
+  testWidgets('등급을 고르면 화면이 그 등급으로 바뀐다', (tester) async {
+    final home = HomeViewModel(inventory: _FakeInventory(), menu: _FakeMenu());
+    await home.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildTheme(),
+        home: ChangeNotifierProvider.value(
+          value: home,
+          child: Scaffold(
+            body: HomeScreen(onOpenFridge: () {}, onOpenMenu: (_) {}),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    home.select(Freshness.soon);
+    await tester.pumpAndSettle();
+
+    expect(find.text('챙길 것'), findsOneWidget);
+    expect(find.text('대파 · 1단 · D-2'), findsOneWidget);
+    expect(find.text('두부 · 2모 · D-1'), findsNothing);
+  });
+
+  testWidgets('재고를 읽지 못하면 빈 냉장고로 그리지 않는다', (tester) async {
+    // 서버가 끊긴 것을 "여유 0가지" 로 그리면 사용자는 냉장고가 빈 것으로 읽는다.
+    final home = HomeViewModel(inventory: _BrokenInventory(), menu: _FakeMenu());
+    await home.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildTheme(),
+        home: ChangeNotifierProvider.value(
+          value: home,
+          child: Scaffold(
+            body: HomeScreen(onOpenFridge: () {}, onOpenMenu: (_) {}),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('서버에 연결할 수 없어요'), findsOneWidget);
+    expect(find.text('여유'), findsNothing);
+    expect(find.text('다시 시도'), findsOneWidget);
+  });
+
+  test('아치는 빈 등급도 0 으로 세어 자리를 지킨다', () async {
+    // 목록([bands])은 빈 등급을 빼지만 아치는 위치가 고정이라 빼지 못한다.
+    final vm = HomeViewModel(inventory: _FakeInventory(), menu: _FakeMenu());
+    await vm.load();
+
+    expect(vm.counts.length, 5);
+    expect(vm.counts[Freshness.fresh], 0);
+    expect(vm.counts[Freshness.urgent], 1);
   });
 
   test('잔량 미확인이 신선도와 섞이지 않는다', () async {
@@ -139,6 +212,21 @@ class _FakeInventory implements InventoryRepository {
         unknownQuantityCount: 1,
         totalCount: 3,
       );
+}
+
+/// 서버가 끊긴 상황.
+class _BrokenInventory implements InventoryRepository {
+  @override
+  Future<List<IngredientBatch>> listBatches() async =>
+      throw Exception('connection refused');
+
+  @override
+  Future<List<PriorityBatch>> listPriorityBatches() async =>
+      throw Exception('connection refused');
+
+  @override
+  Future<FridgeCondition> condition() async =>
+      throw Exception('connection refused');
 }
 
 class _FakeMenu implements MenuRepository {

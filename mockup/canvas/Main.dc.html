@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>오늘</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: #15181D; letter-spacing: -0.02em; background: radial-gradient(125% 80% at 50% 20%, #FFFFFF 0%, {{band.bg1}} 42%, {{band.bg2}} 100%)">
+
+  <header style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 24px 0">
+    <div style="font-size: 14px; font-weight: 600; color: #5F6670">10월 2일 금요일</div>
+    <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800; letter-spacing: -0.045em">오늘 뭐 먹지?</h1>
+    <div style="display: flex; align-items: center; height: 44px; margin-top: 10px; border-radius: 999px; background: rgba(255,255,255,0.74); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 6px 18px rgba(20,25,35,0.07)">
+      <a href="{{links.listen}}" style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px 0 16px; color: #15181D; text-decoration: none">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: {{band.acc}}; box-shadow: 0 0 0 4px {{band.accSoft}}"></span>
+        <span style="font-size: 14px; font-weight: 700">호출 대기 중</span>
+        <span style="font-size: 13px; font-weight: 500; color: #5F6670">“헤이 냉장고”</span>
+      </a>
+      <span style="width: 1px; height: 18px; background: rgba(21,24,29,0.1)"></span>
+      <button type="button" aria-label="음소거" style="width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; display: flex; align-items: center; justify-content: center; color: #5F6670; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path><path d="M16 9.5l5 5M21 9.5l-5 5"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 24px">
+    <sc-if value="{{c1}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="Mascot" mood="{{band.mood}}" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    </sc-if>
+    <sc-if value="{{c2}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Mascot2" mood="{{band.mood}}" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    </sc-if>
+    <sc-if value="{{c3}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Mascot3" mood="{{band.mood}}" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    </sc-if>
+    <div style="font-size: 46px; line-height: 1.1; font-weight: 800; letter-spacing: -0.05em; color: {{band.acc}}; margin-top: 6px">{{band.word}}</div>
+    <div style="font-size: 15px; font-weight: 500; color: #5F6670; margin-top: 6px">{{band.count}}가지 · {{band.hint}}</div>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 14px">
+      <sc-for list="{{band.items}}" as="it" hint-placeholder-count="1">
+        <span style="font-size: 14px; font-weight: 600; padding: 8px 13px; border-radius: 999px; color: #3E454E; background: rgba(255,255,255,0.72); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 2px 8px rgba(20,25,35,0.05)">{{it}}</span>
+      </sc-for>
+    </div>
+  </main>
+
+  <div style="display: flex; flex-direction: column; align-items: center; padding: 12px 20px 0">
+    <a href="{{band.href}}" style="display: flex; align-items: center; gap: 10px; min-height: 56px; box-sizing: border-box; padding: 0 20px 0 22px; border-radius: 999px; background: #FFFFFF; color: #15181D; text-decoration: none; box-shadow: 0 12px 28px rgba(20,25,35,0.13), 0 2px 5px rgba(20,25,35,0.06)">
+      <span style="font-size: 17px; font-weight: 700">{{band.cta}}</span>
+      <span style="font-size: 14px; font-weight: 500; color: #5F6670">{{band.ctaMeta}}</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{band.acc}}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </a>
+    <sc-if value="{{band.more}}" hint-placeholder-val="{{ true }}">
+      <a href="{{links.menu}}" style="display: flex; align-items: center; min-height: 40px; padding: 0 12px; font-size: 14px; font-weight: 600; color: #5F6670; text-decoration: none">다른 메뉴 2개</a>
+    </sc-if>
+    <sc-if value="{{band.noMore}}" hint-placeholder-val="{{ false }}">
+      <div style="height: 40px"></div>
+    </sc-if>
+  </div>
+
+  <section aria-label="재료 상태 고르기" style="padding: 8px 16px 0">
+    <div style="position: relative; width: {{arcW}}px; height: 128px">
+      <svg width="{{arcW}}" height="128" viewBox="0 0 {{arcW}} 128" aria-hidden="true" style="position: absolute; left: 0; top: 0; overflow: visible">
+        <defs>
+          <linearGradient id="arc-rainbow" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="{{arcW}}" y2="0">
+            <stop offset="0" stop-color="#E2E6ED"></stop>
+            <stop offset="0.27" stop-color="#FFD3C6"></stop>
+            <stop offset="0.5" stop-color="#FFE7C0"></stop>
+            <stop offset="0.73" stop-color="#CDEFD7"></stop>
+            <stop offset="1" stop-color="#DDE2EE"></stop>
+          </linearGradient>
+          <filter id="arc-shadow" x="-10%" y="-40%" width="120%" height="200%">
+            <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#141923" flood-opacity="0.1"></feDropShadow>
+          </filter>
+        </defs>
+        <path d="{{arcPath}}" fill="none" stroke="url(#arc-rainbow)" stroke-width="64" stroke-linecap="round" filter="url(#arc-shadow)"></path>
+        <path d="{{arcPath}}" fill="none" stroke="#FFFFFF" stroke-opacity="0.34" stroke-width="64" stroke-linecap="round"></path>
+        <path d="{{arcSheen}}" fill="none" stroke="#FFFFFF" stroke-opacity="0.95" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+      <div style="position: absolute; left: 0; right: 0; top: 86px; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 13px; font-weight: 500; color: #5F6670">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"></path></svg>
+        밀어서 재료 상태 보기
+      </div>
+      <sc-for list="{{tokens}}" as="t" hint-placeholder-count="5">
+        <button type="button" aria-label="{{t.aria}}" aria-pressed="{{t.pressed}}" onClick="{{t.pick}}" style="{{t.style}}">
+          <svg width="40" height="40" viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r="19" fill="{{t.body}}"></circle>
+            <ellipse cx="17" cy="15" rx="5" ry="3" fill="#FFFFFF" opacity="0.7" transform="rotate(-30 17 15)"></ellipse>
+            <path d="{{t.fill}}" fill="#333A52"></path>
+            <path d="{{t.stroke}}" fill="none" stroke="#333A52" stroke-width="2.4" stroke-linecap="round"></path>
+            <path d="{{t.brow}}" fill="none" stroke="#333A52" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+          <span style="position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; box-sizing: border-box; padding: 0 5px; border-radius: 10px; background: #15181D; color: #FFFFFF; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center">{{t.count}}</span>
+        </button>
+      </sc-for>
+    </div>
+  </section>
+
+  <nav aria-label="주요 화면" style="padding: 12px 16px 8px">
+    <div style="display: flex; gap: 4px; height: 64px; box-sizing: border-box; padding: 6px; border-radius: 32px; background: rgba(255,255,255,0.74); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 10px 28px rgba(20,25,35,0.08)">
+      <a href="{{links.home}}" aria-current="page" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 26px; background: #FFFFFF; color: #15181D; text-decoration: none; font-size: 12px; font-weight: 700; box-shadow: 0 4px 12px rgba(20,25,35,0.08)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11h18a9 9 0 0 1-18 0z"></path><path d="M9.5 3.5c0 1.5 1.5 1.5 1.5 3M13.5 3.5c0 1.5 1.5 1.5 1.5 3"></path></svg>
+        오늘
+      </a>
+      <a href="{{links.fridge}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 26px; color: #5F6670; text-decoration: none; font-size: 12px; font-weight: 600">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2.5"></rect><path d="M5 10h14M8.5 6v1.5M8.5 13v3"></path></svg>
+        냉장고
+      </a>
+      <a href="{{links.history}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 26px; color: #5F6670; text-decoration: none; font-size: 12px; font-weight: 600">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        기록
+      </a>
+    </div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"character":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var android = (this.props.platform || 'ios') === 'android';
+    var c2 = String(this.props.character || '1') === '2';
+    var c3 = String(this.props.character || '1') === '3';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24, mascot: 212 } : { w: 390, h: 844, top: 59, bottom: 34, mascot: 164 };
+    var L = function (n) { return (android ? 'Android-' : '') + n + '.dc.html'; };
+    var links = { home: L('Main'), fridge: L('Fridge'), history: L('History'), listen: L('Listening'), menu: L('Menu') };
+
+    var NONE = 'M0 0';
+    var sp = function (cx, cy, h) { return 'M' + (cx - 2.5) + ' ' + (cy - h / 2 + 2.5) + ' a2.5 2.5 0 0 1 5 0 v' + (h - 5) + ' a2.5 2.5 0 0 1 -5 0 z'; };
+    var dt = function (cx, cy, r) { return 'M' + (cx - r) + ' ' + cy + ' a' + r + ' ' + r + ' 0 1 0 ' + (2 * r) + ' 0 a' + r + ' ' + r + ' 0 1 0 ' + (-2 * r) + ' 0 z'; };
+    var face = {
+      expired: { fill: NONE, stroke: 'M15.5 25 h6 M26.5 25 h6 M22 32 h4', brow: NONE },
+      urgent:  { fill: sp(19, 25, 9) + ' ' + sp(29, 25, 9) + ' ' + dt(24, 32, 2.2), stroke: NONE, brow: 'M14 18.5 l6 -2 M34 18.5 l-6 -2' },
+      soon:    { fill: sp(19, 24, 9) + ' ' + sp(29, 24, 9) + ' M21.5 31 h5 a1.2 1.2 0 0 1 0 2.4 h-5 a1.2 1.2 0 0 1 0 -2.4 z', stroke: NONE, brow: NONE },
+      fresh:   { fill: NONE, stroke: 'M15 26 q3.5 -4.5 7 0 M26 26 q3.5 -4.5 7 0 M20.5 30.5 q3.5 4 7 0', brow: NONE },
+      unknown: { fill: dt(19, 25, 2.4) + ' ' + dt(29, 25, 2.4), stroke: 'M21 32 q3 -1.6 6 0', brow: NONE }
+    };
+
+    var bands = [
+      { key: 'expired', mood: 'expired', word: '지남', hint: '오늘 요리 후보에서 뺐어요', count: 1,
+        items: ['삼겹살 · 소비기한 2일 지남'], acc: '#6E7784', accSoft: 'rgba(110,119,132,0.18)',
+        bg1: '#F7F8FA', bg2: '#E6E9EE', body: '#C2C9D3',
+        cta: '냉장고에서 확인하기', ctaMeta: '', href: links.fridge, more: false },
+      { key: 'urgent', mood: 'urgent', word: '급함', hint: '오늘 안에 쓰세요', count: 1,
+        items: ['두부 2모 · 소비기한 D-1'], acc: '#D8431F', accSoft: 'rgba(216,67,31,0.18)',
+        bg1: '#FFF8F5', bg2: '#FFE0D4', body: '#FFB3A0',
+        cta: '두부계란전', ctaMeta: '2인분 · 약 15분', href: links.menu, more: true },
+      { key: 'soon', mood: 'soon', word: '챙길 것', hint: '이번 주에 쓰세요', count: 3,
+        items: ['우유 · 개봉 2일', '애호박 · 점검 D-3', '대파 · 잔량 조금'], acc: '#A8690A', accSoft: 'rgba(168,105,10,0.18)',
+        bg1: '#FFFBF3', bg2: '#FFEDCF', body: '#FFD79B',
+        cta: '계란국', ctaMeta: '2인분 · 약 10분', href: links.menu, more: true },
+      { key: 'fresh', mood: 'fresh', word: '여유', hint: '급하지 않아요', count: 2,
+        items: ['다진마늘 · D-22', '감자 · 점검 D-10'], acc: '#1B7F43', accSoft: 'rgba(27,127,67,0.18)',
+        bg1: '#F6FCF8', bg2: '#DAF2E2', body: '#AEE8BE',
+        cta: '감자볶음', ctaMeta: '2인분 · 약 15분', href: links.menu, more: true },
+      { key: 'unknown', mood: 'unknown', word: '미확인', hint: '기한을 알려주세요', count: 1,
+        items: ['계란 4개 · 기한 미확인'], acc: '#5F6A80', accSoft: 'rgba(95,106,128,0.18)',
+        bg1: '#F8F9FB', bg2: '#E7EAF0', body: '#CCD2DE',
+        cta: '기한 말하기', ctaMeta: '“계란 기한은 10월 20일”', href: links.listen, more: false }
+    ];
+
+    // 무지개 아치: 타원의 윗부분을 따라 트랙을 그리고 얼굴 5개를 같은 곡선 위에 둔다.
+    var arcW = g.w - 32;
+    var cx = arcW / 2, rx = cx - 40, ry = 64, cy = 100;
+    var r1 = function (v) { return Math.round(v * 10) / 10; };
+    var pt = function (deg, ex, ey) {
+      var a = deg * Math.PI / 180;
+      return { x: r1(cx + ex * Math.cos(a)), y: r1(cy - ey * Math.sin(a)) };
+    };
+    var arc = function (a0, a1, ex, ey) {
+      var p0 = pt(a0, ex, ey), p1 = pt(a1, ex, ey);
+      return 'M' + p0.x + ' ' + p0.y + ' A' + ex + ' ' + ey + ' 0 0 1 ' + p1.x + ' ' + p1.y;
+    };
+    var angles = [158, 124, 90, 56, 22];
+
+    var st = this.state || {};
+    var sel = (st.sel === undefined || st.sel === null) ? 1 : st.sel;
+    var self = this;
+    var tokens = bands.map(function (b, i) {
+      var on = i === sel;
+      var fc = face[b.key];
+      var p = pt(angles[i], rx, ry);
+      var rot = r1((90 - angles[i]) * 0.35);
+      return {
+        body: b.body, fill: fc.fill, stroke: fc.stroke, brow: fc.brow, count: b.count,
+        aria: b.word + ' ' + b.count + '가지', pressed: on ? 'true' : 'false',
+        pick: function () { self.setState({ sel: i }); },
+        style: 'position: absolute; left: ' + r1(p.x - 26) + 'px; top: ' + r1(p.y - 26) + 'px; width: 52px; height: 52px; padding: 0; border: 0; border-radius: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;'
+          + ' transform: rotate(' + rot + 'deg);'
+          + ' background: ' + (on ? '#FFFFFF' : 'transparent') + ';'
+          + ' box-shadow: ' + (on ? '0 8px 18px rgba(20,25,35,0.14), 0 1px 2px rgba(20,25,35,0.06)' : 'none') + ';'
+          + ' opacity: ' + (on ? '1' : '0.66') + '; filter: ' + (on ? 'none' : 'grayscale(0.5)') + ';'
+      };
+    });
+    var band = bands[sel];
+    band.noMore = !band.more;
+    return {
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom,
+      c1: !c2 && !c3, c2: c2, c3: c3,
+      mascotSize: g.mascot, mascotHint: g.mascot + 'px,' + g.mascot + 'px',
+      arcW: arcW, arcPath: arc(168, 12, rx, ry), arcSheen: arc(146, 34, rx + 22, ry + 22),
+      band: band, tokens: tokens, links: links
+    };
+  }
+}
+</script>
+</body>
+</html>

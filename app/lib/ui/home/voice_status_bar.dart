@@ -1,0 +1,122 @@
+/// 호출 대기 표시줄.
+///
+/// 음성이 살아 있는지를 화면에 계속 남긴다 — 불렀는데 듣지 않는 상태를 모르면 사용자는
+/// 앱이 고장난 것으로 본다. 색만으로 구분하지 않고 점과 문구를 함께 쓴다.
+library;
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../core/design/tokens.dart';
+import '../../core/l10n/strings.dart';
+import '../../core/voice/voice_state.dart';
+import '../../ui/widgets/glass.dart';
+import '../conversation/conversation_view_model.dart';
+
+/// 호출 대기 표시와 음소거.
+///
+/// 음성이 살아 있는지를 화면에 계속 남긴다 — 불렀는데 듣지 않는 상태를 모르면 사용자는
+/// 앱이 고장난 것으로 본다.
+class VoiceStatusBar extends StatelessWidget {
+  const VoiceStatusBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final voice = context.watch<ConversationViewModel>();
+    final text = Theme.of(context).textTheme;
+    final state = voice.state;
+    final muted = state is Muted;
+
+    return GlassPill(
+      padding: EdgeInsets.zero,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: voice.onMicButton,
+            customBorder: const StadiumBorder(),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16, right: 12),
+              child: SizedBox(
+                height: 44,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _Dot(state: state),
+                    const SizedBox(width: 8),
+                    Text(_label(state), style: text.labelLarge),
+                    if (state is Waiting) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        Strings.wakeWordHint,
+                        style: text.labelMedium
+                            ?.copyWith(color: Tokens.inkFaint, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Container(width: 1, height: 18, color: Tokens.hairline),
+          // 웨이크워드가 전경 한정이라 손으로 부르는 길을 항상 남긴다. 화면 위에 뜬
+          // 버튼으로 두면 아치를 가려서, 상태를 말하는 이 줄 안에 함께 둔다.
+          IconButton(
+            onPressed: voice.onMicButton,
+            iconSize: 18,
+            color: Tokens.ink,
+            tooltip: Strings.micInUse,
+            icon: const Icon(Icons.mic_rounded),
+          ),
+          IconButton(
+            onPressed: voice.toggleMute,
+            iconSize: 18,
+            color: Tokens.inkFaint,
+            tooltip: muted ? Strings.unmute : Strings.mute,
+            icon: Icon(muted ? Icons.volume_off_rounded : Icons.volume_up_rounded),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _label(VoiceState state) => switch (state) {
+        Waiting() => Strings.voiceWaiting,
+        Listening() => Strings.voiceListening,
+        Processing() => Strings.voiceProcessing,
+        Clarifying() => Strings.voiceClarifying,
+        Speaking() => Strings.voiceSpeaking,
+        Muted() => Strings.voiceMuted,
+        Suspended() => Strings.voiceSuspended,
+        Unavailable() => Strings.voiceUnavailable,
+      };
+}
+
+/// 대기 점. 색만으로 구분하지 않고 옆 문구와 함께 쓴다.
+class _Dot extends StatelessWidget {
+  const _Dot({required this.state});
+
+  final VoiceState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (state) {
+      Waiting() => const Color(0xFF1B7F43),
+      Listening() || Processing() => const Color(0xFF6F7FF0),
+      Clarifying() || Speaking() => const Color(0xFFA8690A),
+      Muted() || Suspended() => Tokens.inkFaint,
+      Unavailable() => const Color(0xFFD8431F),
+    };
+    return Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(color: color.withValues(alpha: 0.22), blurRadius: 0, spreadRadius: 4),
+        ],
+      ),
+    );
+  }
+}

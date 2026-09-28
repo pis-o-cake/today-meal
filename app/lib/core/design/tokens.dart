@@ -1,64 +1,121 @@
 import 'package:flutter/material.dart';
 
-/// 색·간격·글자 크기의 정본.
+/// 색·간격·그림자·글자의 정본.
 ///
-/// 화면마다 값을 다시 정하지 않는다. **주방에서 서 있는 거리에서 읽는** 경우가 있어
-/// 본문을 일반 앱보다 키우고, 태블릿 거치 상태에서도 같은 값을 쓴다.
+/// 목업(`mockup/canvas/`)의 디자인 언어를 그대로 옮긴 것이다. 화면마다 값을 다시 정하지
+/// 않는다 — 한 곳에서 바꾸면 전부 따라와야 한다.
+///
+/// 배색은 **밝은 글라스**다. 흰 반투명 판을 라디얼 그라데이션 위에 얹고, 상태색은
+/// 재료 신선도([Bands])가 정한다. 화면 자체가 상태를 말하는 구조라서 화면 배경색이
+/// 고정이 아니다.
 abstract final class Tokens {
-  static const charcoal = Color(0xFF12100E);
-  static const charcoalRaised = Color(0xFF1E1B18);
-  static const cream = Color(0xFFF5F0E6);
-  static const creamDim = Color(0xFFA8A29A);
-  static const lime = Color(0xFFC8E64C);
-  static const warm = Color(0xFFE8A33D);
-  static const alert = Color(0xFFE0603C);
+  // 글자. 세 단계로만 쓴다.
+  static const ink = Color(0xFF15181D);
+  static const inkMuted = Color(0xFF3E454E);
+  static const inkFaint = Color(0xFF5F6670);
 
-  /// 핸드폰 좌우 여백.
+  /// 글라스 판. 배경 그라데이션이 비쳐야 하므로 불투명하게 쓰지 않는다.
+  static const glass = Color(0xBDFFFFFF);
+
+  /// 조금 더 불투명한 글라스. 본문이 올라가는 카드에 쓴다.
+  static const glassSolid = Color(0xD6FFFFFF);
+
+  /// 글라스 테두리. 판의 윗면을 세우는 역할이라 거의 흰색이다.
+  static const glassEdge = Color(0xF2FFFFFF);
+
+  /// 구분선.
+  static const hairline = Color(0x12151D1D);
+
+  /// 듣는 중 오버레이. 화면 전체를 덮는 어두운 층이다.
+  static const overlay = Color(0xFF0A0C11);
+
+  /// 오버레이 위의 강조. 인식된 재료 이름에 쓴다.
+  static const overlayAccent = Color(0xFFC4B2FF);
+
+  /// 오버레이 위의 그래프 선.
+  static const overlayGraph = Color(0xFFA68BFA);
+
+  // 여백.
   static const gutterCompact = 20.0;
-
-  /// 태블릿 좌우 여백.
   static const gutterWide = 32.0;
-
   static const gapCard = 16.0;
   static const gapTight = 8.0;
-  static const cardRadius = 20.0;
+
+  // 둥글기. 알약은 999 대신 StadiumBorder 를 쓴다.
+  static const radiusCard = 24.0;
+  static const radiusTile = 20.0;
+  static const radiusChip = 8.0;
+  static const radiusNav = 32.0;
+
+  /// 떠 있는 판의 그림자. 진하게 두면 밝은 배경에서 탁해진다.
+  static const shadowRaised = <BoxShadow>[
+    BoxShadow(color: Color(0x12141923), blurRadius: 18, offset: Offset(0, 6)),
+  ];
+
+  /// 카드 그림자.
+  static const shadowCard = <BoxShadow>[
+    BoxShadow(color: Color(0x14141923), blurRadius: 28, offset: Offset(0, 10)),
+  ];
+
+  /// 주 행동 버튼의 그림자. 화면에서 가장 앞에 있어야 한다.
+  static const shadowAction = <BoxShadow>[
+    BoxShadow(color: Color(0x21141923), blurRadius: 28, offset: Offset(0, 12)),
+    BoxShadow(color: Color(0x0F141923), blurRadius: 5, offset: Offset(0, 2)),
+  ];
+
+  /// 캐릭터 표정의 선·눈·입 색.
+  static const faceInk = Color(0xFF333A52);
+
+  /// 볼터치.
+  static const blush = Color(0xFFFF7A8A);
 }
 
 /// 앱 테마.
 ///
-/// 대기 화면이 낮은 밝기여야 해 어두운 배색을 기본으로 둔다.
-ThemeData buildTheme({Brightness brightness = Brightness.dark}) {
-  final isDark = brightness == Brightness.dark;
+/// 화면 배경은 [Bands] 가 정하는 그라데이션이라 `scaffoldBackgroundColor` 는 흰색으로
+/// 두고 각 화면이 그 위에 그린다.
+///
+/// TODO: 목업은 Pretendard 를 쓴다. 폰트 파일을 받으면 `fontFamily` 를 지정한다. 지금은
+/// 기기 기본 한글 폰트로 떨어진다.
+ThemeData buildTheme() {
   final scheme = ColorScheme.fromSeed(
-    seedColor: Tokens.lime,
-    brightness: brightness,
+    seedColor: const Color(0xFF4FC178),
+    brightness: Brightness.light,
   ).copyWith(
-    primary: isDark ? Tokens.lime : const Color(0xFF6B7F14),
-    onPrimary: Tokens.charcoal,
-    secondary: Tokens.warm,
-    surface: isDark ? Tokens.charcoalRaised : Tokens.cream,
-    onSurface: isDark ? Tokens.cream : Tokens.charcoal,
-    onSurfaceVariant: isDark ? Tokens.creamDim : const Color(0xFF5A554E),
-    error: Tokens.alert,
+    surface: Colors.white,
+    onSurface: Tokens.ink,
+    onSurfaceVariant: Tokens.inkFaint,
+    error: const Color(0xFFD8431F),
   );
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    scaffoldBackgroundColor: isDark ? Tokens.charcoal : Tokens.cream,
-    // 멀리서 읽히도록 키운 타이포.
+    scaffoldBackgroundColor: Colors.white,
+    // 자간을 좁혀야 목업의 촘촘한 인상이 난다.
     textTheme: const TextTheme(
-      displaySmall: TextStyle(fontSize: 36, height: 1.2, fontWeight: FontWeight.bold),
-      headlineMedium: TextStyle(fontSize: 28, height: 1.25, fontWeight: FontWeight.w600),
-      titleLarge: TextStyle(fontSize: 22, height: 1.3, fontWeight: FontWeight.w600),
-      bodyLarge: TextStyle(fontSize: 18, height: 1.4),
-      bodyMedium: TextStyle(fontSize: 16, height: 1.45),
-      labelLarge: TextStyle(fontSize: 15, height: 1.4, fontWeight: FontWeight.w500),
-    ),
-    cardTheme: CardThemeData(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(Tokens.cardRadius),
-      ),
+      displayLarge: TextStyle(
+        fontSize: 46, height: 1.1, fontWeight: FontWeight.w800, letterSpacing: -2.3),
+      displayMedium: TextStyle(
+        fontSize: 42, height: 1.1, fontWeight: FontWeight.w800, letterSpacing: -2.1),
+      displaySmall: TextStyle(
+        fontSize: 32, height: 1.15, fontWeight: FontWeight.w800, letterSpacing: -1.6),
+      headlineMedium: TextStyle(
+        fontSize: 28, height: 1.2, fontWeight: FontWeight.w800, letterSpacing: -1.26),
+      headlineSmall: TextStyle(
+        fontSize: 23, height: 1.4, fontWeight: FontWeight.w700, letterSpacing: -0.8),
+      titleLarge: TextStyle(
+        fontSize: 20, height: 1.3, fontWeight: FontWeight.w700, letterSpacing: -0.4),
+      titleMedium: TextStyle(
+        fontSize: 17, height: 1.35, fontWeight: FontWeight.w700, letterSpacing: -0.34),
+      bodyLarge: TextStyle(fontSize: 15, height: 1.5, letterSpacing: -0.3),
+      bodyMedium: TextStyle(fontSize: 14, height: 1.5, letterSpacing: -0.28),
+      labelLarge: TextStyle(
+        fontSize: 14, height: 1.4, fontWeight: FontWeight.w700, letterSpacing: -0.28),
+      labelMedium: TextStyle(
+        fontSize: 13, height: 1.4, fontWeight: FontWeight.w600, letterSpacing: -0.26),
+      labelSmall: TextStyle(
+        fontSize: 12, height: 1.35, fontWeight: FontWeight.w700, letterSpacing: -0.24),
     ),
   );
 }
