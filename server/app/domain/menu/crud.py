@@ -84,3 +84,20 @@ async def latest_suggestions(
         .limit(limit)
     )
     return list(result.scalars())
+
+
+async def get_suggestion(
+    session: AsyncSession, household_id: int, suggestion_id: int
+) -> MenuSuggestion:
+    """추천 하나를 읽는다.
+
+    Raises:
+        NotFoundError: 없거나 다른 가구의 추천일 때.
+    """
+    result = await session.execute(
+        select(MenuSuggestion).where(MenuSuggestion.suggestion_id == suggestion_id)
+    )
+    suggestion = result.scalar_one_or_none()
+    if suggestion is None or suggestion.household_id != household_id:
+        raise NotFoundError(f"menu suggestion not found: {suggestion_id}")
+    return suggestion

@@ -70,3 +70,29 @@ class MenuDetailRead(BaseModel):
     estimated_minutes: int | None = None
     ingredients: list[IngredientCheckRead] = Field(default_factory=list)
     steps: list[RecipeStep] = Field(default_factory=list)
+
+
+class CookedResult(BaseModel):
+    """조리 확인 결과.
+
+    `already_applied` 가 참이면 이번 호출이 아무것도 바꾸지 않았다는 뜻이다 — 같은 추천에
+    확인이 두 번 와도 재고가 두 번 줄지 않는다.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    suggestion_id: int
+    already_applied: bool = Field(description="이미 반영된 추천이라 이번엔 바꾸지 않았는지")
+    skipped_ingredients: list[str] = Field(
+        default_factory=list,
+        description="차감하지 못한 재료. 분량을 모르거나 단위를 맞출 수 없는 것",
+    )
+    undo_token: str | None = Field(
+        default=None,
+        description="되돌리기 대상 명령. 실수로 눌렀을 때 복구할 수 있어야 한다",
+    )
+    clarification_question: str | None = Field(
+        default=None,
+        description="되물을 한 가지. 있으면 아무것도 반영하지 않았다",
+    )
+    spoken: str | None = None

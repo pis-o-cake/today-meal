@@ -15,5 +15,6 @@
   "command.nothing_to_undo": "되돌릴 변경이 없어요.",
   "intent.query": "냉장고를 확인해볼게요.",
   "intent.recommend": "메뉴를 찾아볼게요.",
-  "intent.plan_future": "살 목록으로 기억해둘게요. 지금 재고는 그대로예요."
+  "intent.plan_future": "살 목록으로 기억해둘게요. 지금 재고는 그대로예요.",
+  "menu.cooked": "맛있게 드셨길 바라요. 쓴 재료를 빼뒀어요."
 }

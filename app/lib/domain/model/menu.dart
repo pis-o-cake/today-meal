@@ -105,3 +105,35 @@ enum IngredientStatus {
         _ => IngredientStatus.needsCheck,
       };
 }
+
+
+/// 조리 확인 결과.
+///
+/// [alreadyApplied] 가 참이면 이번 호출이 **아무것도 바꾸지 않았다.** 버튼을 두 번 눌러도
+/// 재고가 두 번 줄지 않는다.
+class CookedResult {
+  const CookedResult({
+    required this.suggestionId,
+    required this.alreadyApplied,
+    this.skippedIngredients = const [],
+    this.clarificationQuestion,
+    this.undoToken,
+    this.spoken,
+  });
+
+  final int suggestionId;
+  final bool alreadyApplied;
+
+  /// 차감하지 못한 재료. 분량을 모르거나 단위를 맞출 수 없는 것 — 숫자를 지어내지 않는다.
+  final List<String> skippedIngredients;
+
+  /// 되물을 한 가지. 있으면 아무것도 반영하지 않았다.
+  final String? clarificationQuestion;
+
+  /// 되돌리기 대상. 실수로 눌렀을 때 복구할 수 있다.
+  final String? undoToken;
+
+  final String? spoken;
+
+  bool get didApply => !alreadyApplied && clarificationQuestion == null;
+}

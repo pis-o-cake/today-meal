@@ -106,6 +106,14 @@ class ApiClient {
     return response.data ?? const [];
   }
 
+  /// 조리 확인. 같은 추천에 두 번 보내도 재고가 두 번 줄지 않는다.
+  Future<Map<String, dynamic>> markCooked(int suggestionId) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      'api/menu/suggestions/$suggestionId/cooked',
+    );
+    return response.data ?? const {};
+  }
+
   /// 메뉴 상세.
   Future<Map<String, dynamic>> recipeDetail(int recipeId, {int? servings}) async {
     final response = await _dio.get<Map<String, dynamic>>(

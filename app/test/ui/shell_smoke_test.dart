@@ -164,6 +164,10 @@ class _FakeMenu implements MenuRepository {
   @override
   Future<MenuDetail> detail(int recipeId, {int? servings}) async =>
       const MenuDetail(recipeId: 10, name: '두부조림', servings: 2, baseServings: 2);
+
+  @override
+  Future<CookedResult> markCooked(int suggestionId) async =>
+      CookedResult(suggestionId: suggestionId, alreadyApplied: false);
 }
 
 class _FailingMenu implements MenuRepository {
@@ -176,6 +180,10 @@ class _FailingMenu implements MenuRepository {
 
   @override
   Future<MenuDetail> detail(int recipeId, {int? servings}) async =>
+      throw StateError('upstream 502');
+
+  @override
+  Future<CookedResult> markCooked(int suggestionId) async =>
       throw StateError('upstream 502');
 }
 

@@ -200,6 +200,7 @@ class _MenuCard extends StatelessWidget {
           MaterialPageRoute<void>(
             builder: (_) => MenuDetailScreen(
               recipeId: menu.recipeId,
+              suggestionId: menu.suggestionId,
               servings: menu.servings,
             ),
           ),

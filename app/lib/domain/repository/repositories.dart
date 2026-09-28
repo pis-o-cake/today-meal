@@ -45,6 +45,9 @@ abstract interface class MenuRepository {
 
   /// 메뉴 상세. 인분에 맞춰 환산된 값이 온다.
   Future<MenuDetail> detail(int recipeId, {int? servings});
+
+  /// 조리 확인. 같은 추천에 두 번 보내도 재고가 두 번 줄지 않는다.
+  Future<CookedResult> markCooked(int suggestionId);
 }
 
 /// 서버가 판정한 명령 결과.

@@ -114,7 +114,10 @@ class FakeLlmGateway:
         '재료 준비 후' 를 제대로 가르는지 시험하려면 둘 다 필요하다.
         """
         self.menu_requests.append(request)
-        primary = _first_name(request.priority) or _first_name(request.available) or "재료"
+        primary, unit = _first_item(request.priority) or _first_item(request.available) or (
+            "재료",
+            "개",
+        )
         recipes = [
             ProposedRecipe(
                 name=f"{primary} 볶음",
@@ -122,7 +125,7 @@ class FakeLlmGateway:
                 estimated_minutes=15,
                 reason=f"먼저 쓸 {primary}를 씁니다.",
                 ingredients=[
-                    ProposedRecipeIngredient(raw_name=primary, amount=1, unit_text="개"),
+                    ProposedRecipeIngredient(raw_name=primary, amount=1, unit_text=unit),
                 ],
                 steps=["재료를 손질한다", "팬에 볶는다", "그릇에 담는다"],
             ),
@@ -132,7 +135,7 @@ class FakeLlmGateway:
                 estimated_minutes=20,
                 reason="없는 재료가 하나 필요합니다.",
                 ingredients=[
-                    ProposedRecipeIngredient(raw_name=primary, amount=1, unit_text="개"),
+                    ProposedRecipeIngredient(raw_name=primary, amount=1, unit_text=unit),
                     ProposedRecipeIngredient(
                         raw_name=_MISSING_INGREDIENT, amount=20, unit_text="g"
                     ),
@@ -246,10 +249,22 @@ class FakeLlmGateway:
 _MISSING_INGREDIENT = "트러플오일"
 
 
-def _first_name(entries: list[str]) -> str | None:
-    """`이름 수량단위` 형태의 문자열에서 이름만 뽑는다."""
+def _first_item(entries: list[str]) -> tuple[str, str] | None:
+    """`이름 수량단위` 형태의 문자열에서 이름과 단위를 뽑는다.
+
+    단위를 함께 가져오는 이유는 레시피와 재고의 단위가 어긋나면 차감이 거부되기 때문이다.
+    실제 모델도 재고 문맥을 보고 같은 단위를 쓰는 편이라 가짜도 그렇게 맞춘다.
+    """
     for entry in entries:
-        name = entry.split()[0].strip() if entry.split() else ""
+        parts = entry.split()
+        if not parts:
+            continue
+        name = parts[0].strip()
+        unit = "개"
+        if len(parts) > 1:
+            found = re.match(r"[\d.]+([A-Za-z가-힣]+)", parts[1])
+            if found:
+                unit = found.group(1)
         if name:
-            return name
+            return name, unit
     return None

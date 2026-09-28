@@ -569,3 +569,95 @@ def test_condition_is_relaxed_with_no_near_dates(client, household):
     assert body['urgent_count'] == 0
     # 기한을 말하지 않았으니 잔량은 확실하지만 기한은 모른다. 둘을 섞지 않는다.
     assert body['unknown_quantity_count'] == 0
+
+
+def _suggest(client, household_id: int) -> dict:
+    response = client.post(
+        '/api/menu/suggestions?servings=2',
+        headers={'X-Household-Id': str(household_id)},
+    )
+    assert response.status_code == 200, response.text
+    menus = response.json()
+    assert menus, '후보가 있어야 조리 확인을 시험할 수 있다'
+    return menus[0]
+
+
+def test_cooked_deducts_recipe_ingredients(client, household):
+    """해먹었어요가 레시피 재료를 재고에서 뺀다."""
+    say(client, household, '두부 두 모 넣었어')
+    menu = _suggest(client, household)
+
+    response = client.post(
+        f"/api/menu/suggestions/{menu['suggestion_id']}/cooked",
+        headers={'X-Household-Id': str(household)},
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body['already_applied'] is False
+    # 가짜 게이트웨이의 후보는 두부 1개를 쓴다.
+    assert quantity_of(household, '두부') == Decimal('1.000')
+
+
+def test_cooked_twice_does_not_deduct_twice(client, household):
+    """버튼을 두 번 눌러도 재고가 두 번 줄지 않는다."""
+    say(client, household, '두부 두 모 넣었어')
+    menu = _suggest(client, household)
+    url = f"/api/menu/suggestions/{menu['suggestion_id']}/cooked"
+    headers = {'X-Household-Id': str(household)}
+
+    first = client.post(url, headers=headers).json()
+    second = client.post(url, headers=headers).json()
+
+    assert first['already_applied'] is False
+    assert second['already_applied'] is True
+    assert quantity_of(household, '두부') == Decimal('1.000')
+
+
+def test_cooked_marks_deduction_as_estimated(client, household):
+    """레시피에서 온 차감은 사용자가 말한 숫자가 아니다. 추정값으로 남는다."""
+    say(client, household, '두부 두 모 넣었어')
+    menu = _suggest(client, household)
+    client.post(
+        f"/api/menu/suggestions/{menu['suggestion_id']}/cooked",
+        headers={'X-Household-Id': str(household)},
+    )
+
+    rows = client.get(
+        '/api/command/history', headers={'X-Household-Id': str(household)}
+    ).json()
+    consumed = [r for r in rows if r['action'] == 'consume']
+    assert consumed, '차감 이력이 있어야 한다'
+    assert all(r['is_estimated'] for r in consumed)
+
+
+def test_cooked_skips_ingredients_without_amount(client, household):
+    """분량을 모르는 재료는 숫자를 지어내지 않고 건너뛴다."""
+    say(client, household, '두부 두 모 넣었어')
+    menu = _suggest(client, household)
+    engine = create_engine(get_settings().alembic_url)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                'update recipe_ingredient set is_amount_unknown = true, quantity = null '
+                'where recipe_id = :r'
+            ),
+            {'r': menu['recipe_id']},
+        )
+
+    body = client.post(
+        f"/api/menu/suggestions/{menu['suggestion_id']}/cooked",
+        headers={'X-Household-Id': str(household)},
+    ).json()
+    assert body['skipped_ingredients'], '건너뛴 재료를 알려줘야 한다'
+    # 아무것도 차감하지 않았다.
+    assert quantity_of(household, '두부') == Decimal('2.000')
+
+
+def test_suggestion_of_other_household_is_rejected(client, household):
+    say(client, household, '두부 두 모 넣었어')
+    menu = _suggest(client, household)
+    response = client.post(
+        f"/api/menu/suggestions/{menu['suggestion_id']}/cooked",
+        headers={'X-Household-Id': str(household + 99999)},
+    )
+    assert response.status_code == 404

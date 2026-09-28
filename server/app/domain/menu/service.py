@@ -18,17 +18,27 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import UTC, date, datetime
 from decimal import Decimal
+from uuid import UUID
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import units as unit_utils
-from app.core.enums import MenuAvailability, RecipeSource
+from app.core.enums import (
+    CommandIntent,
+    CommandStatus,
+    MenuAvailability,
+    QuantityCertainty,
+    RecipeSource,
+    StorageLocation,
+)
 from app.core.llm.gateway import LlmGateway, MenuRequest
 from app.core.llm.prompts import menu_ko
 from app.core.llm.schemas import ProposedRecipe
+from app.domain.command.models import Command
+from app.domain.command.validation import ValidatedItem
 from app.domain.household.models import Household
 from app.domain.ingredient import service as ingredient_service
 from app.domain.inventory import service as inventory_service
@@ -351,3 +361,108 @@ __all__ = [
     "scale",
     "suggest",
 ]
+
+
+async def mark_cooked(
+    session: AsyncSession,
+    *,
+    household_id: int,
+    suggestion_id: int,
+    command_id: UUID,
+    today: date,
+) -> tuple[MenuSuggestion, list[str], str | None]:
+    """추천 메뉴를 실제로 만들었다고 확인하고 사용량을 반영한다.
+
+    IMPORTANT: `consumption_applied` 가 **중복 차감을 막는다.** 같은 추천에 확인이 두 번
+    오면 두 번째는 아무것도 바꾸지 않는다. 사용자가 버튼을 두 번 누르거나 네트워크가
+    재시도해도 재고가 두 번 줄지 않아야 한다.
+
+    레시피 필요량을 그대로 빼지 않고 **재고와 맞출 수 있는 것만** 뺀다. 단위 변환 근거가
+    없거나 분량을 모르는 재료는 건너뛰고 건너뛴 이름을 돌려준다 — 숫자를 지어내지 않는다.
+
+    Args:
+        session: 열려 있는 세션.
+        household_id: 가구.
+        suggestion_id: 확인할 추천.
+        command_id: 이 변경을 묶을 명령 ID.
+        today: 가구 시간대의 오늘.
+
+    Returns:
+        `(갱신된 추천, 차감하지 못한 재료 이름, 되물을 질문)`. 질문이 있으면 **아무것도
+        반영하지 않았고** 확인 표시도 남기지 않았다는 뜻이다.
+
+    Raises:
+        NotFoundError: 그 추천이 없거나 다른 가구의 것일 때.
+    """
+    suggestion = await crud.get_suggestion(session, household_id, suggestion_id)
+    if suggestion.consumption_applied:
+        logger.info("Suggestion {} already applied; skipping", suggestion_id)
+        return suggestion, [], None
+
+    ingredients = await crud.recipe_ingredients(session, suggestion.recipe_id)
+    recipe = await crud.get_recipe(session, household_id, suggestion.recipe_id)
+    staples, _ = await crud.preferences(session, household_id)
+    staple_names = set(staples)
+
+    items: list[ValidatedItem] = []
+    skipped: list[str] = []
+    for item in ingredients:
+        # 기본 양념은 재고 묶음으로 관리하지 않는다. 차감 대상이 아니다.
+        if item.raw_name in staple_names:
+            continue
+        if item.is_amount_unknown or item.quantity is None or item.unit is None:
+            skipped.append(item.raw_name)
+            continue
+        amount = scale(item.quantity, recipe.base_servings, suggestion.servings)
+        if amount is None or amount <= 0:
+            skipped.append(item.raw_name)
+            continue
+        items.append(
+            ValidatedItem(
+                raw_name=item.raw_name,
+                amount=amount,
+                unit=item.unit,
+                qualitative_amount=None,
+                # 레시피에서 온 값이라 사용자가 말한 숫자가 아니다.
+                certainty=QuantityCertainty.ESTIMATED,
+                storage=StorageLocation.UNKNOWN,
+                is_remaining=False,
+            )
+        )
+
+    if items:
+        # IMPORTANT: 조리 확인도 재고를 바꾸는 명령이다. 명령 행을 남겨야 이력에 뜨고
+        # 되돌릴 수 있다. 실수로 눌렀을 때 복구할 길이 없으면 안 된다.
+        session.add(
+            Command(
+                command_id=command_id,
+                household_id=household_id,
+                utterance=f"{recipe.name} 해먹었어요",
+                intent=CommandIntent.CONSUME.value,
+                status=CommandStatus.APPLIED.value,
+            )
+        )
+        await session.flush()
+
+        outcome = await inventory_service.apply_usage(
+            session,
+            household_id=household_id,
+            command_id=command_id,
+            items=items,
+        )
+        if not outcome.ok:
+            # 되물을 일이 있으면 아무것도 반영하지 않는다. 확인 표시도 남기지 않는다.
+            # 건너뛴 재료와 다른 사실이므로 칸을 나눠 돌려준다.
+            logger.info("Cooked confirmation needs clarification: {}", outcome.question)
+            return suggestion, skipped, outcome.question
+
+    suggestion.cooked_at = datetime.now(UTC)
+    suggestion.consumption_applied = True
+    await session.commit()
+    logger.info(
+        "Suggestion {} marked cooked: {} deducted, {} skipped",
+        suggestion_id,
+        len(items),
+        len(skipped),
+    )
+    return suggestion, skipped, None

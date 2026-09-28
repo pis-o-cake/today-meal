@@ -14,9 +14,18 @@ import '../../domain/repository/repositories.dart';
 ///
 /// 분량을 모르는 재료는 환산하지 않고 그대로 둔다. 숫자를 지어내지 않는다.
 class MenuDetailScreen extends StatefulWidget {
-  const MenuDetailScreen({required this.recipeId, this.servings, super.key});
+  const MenuDetailScreen({
+    required this.recipeId,
+    this.suggestionId,
+    this.servings,
+    super.key,
+  });
 
   final int recipeId;
+
+  /// 조리 확인 대상. 추천에서 들어온 경우에만 있다.
+  final int? suggestionId;
+
   final int? servings;
 
   @override
@@ -26,6 +35,8 @@ class MenuDetailScreen extends StatefulWidget {
 class _MenuDetailScreenState extends State<MenuDetailScreen> {
   MenuDetail? _detail;
   Object? _error;
+  CookedResult? _cooked;
+  bool _cooking = false;
   late int _servings = widget.servings ?? 2;
 
   @override
@@ -46,6 +57,29 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _error = error);
+    }
+  }
+
+  Future<void> _markCooked() async {
+    final suggestionId = widget.suggestionId;
+    if (suggestionId == null || _cooking) return;
+    setState(() => _cooking = true);
+    try {
+      final result = await di<MenuRepository>().markCooked(suggestionId);
+      if (!mounted) return;
+      setState(() => _cooked = result);
+      final message = result.clarificationQuestion ??
+          (result.alreadyApplied ? Strings.cookedAlready : result.spoken);
+      if (message != null && mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+      }
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('$error')));
+    } finally {
+      if (mounted) setState(() => _cooking = false);
     }
   }
 
@@ -76,12 +110,27 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                             const SizedBox(height: Tokens.gapCard),
                             _Steps(detail: detail),
                             const SizedBox(height: Tokens.gapCard),
-                            FilledButton(
-                              // TODO: S-08 후속 — "해먹었어요" 로 사용량을 반영한다.
-                              //  중복 차감은 서버의 consumption_applied 가 막는다.
-                              onPressed: null,
-                              child: const Text(Strings.menuCooked),
-                            ),
+                            // 추천에서 들어온 경우에만 조리 확인을 띄운다. 레시피를
+                            // 직접 열어본 경우에는 확인할 추천이 없다.
+                            if (widget.suggestionId != null)
+                              FilledButton(
+                                onPressed: _cooking || _cooked?.didApply == true
+                                    ? null
+                                    : _markCooked,
+                                child: Text(
+                                  _cooked?.didApply == true
+                                      ? Strings.cookedDone
+                                      : Strings.menuCooked,
+                                ),
+                              ),
+                            if (_cooked?.skippedIngredients.isNotEmpty ?? false) ...[
+                              const SizedBox(height: Tokens.gapTight),
+                              Text(
+                                '${Strings.cookedSkipped}: '
+                                '${_cooked!.skippedIngredients.join(", ")}',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
                           ],
                         ),
                       ),

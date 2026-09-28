@@ -62,6 +62,9 @@ class Strings {
   static String menuServings(int n) => '\$n인분';
   static const menuOpen = '보기';
   static const menuCooked = '해먹었어요';
+  static const cookedDone = '반영했어요';
+  static const cookedAlready = '이미 반영된 메뉴예요';
+  static const cookedSkipped = '양을 몰라 빼지 못한 재료';
   static const menuFindOnCoupang = '쿠팡에서 찾기';
   static const menuSubstitute = '대체 재료로 만들기';
   static const menuIngredients = '재료';

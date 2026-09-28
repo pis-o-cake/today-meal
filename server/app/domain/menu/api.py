@@ -1,6 +1,7 @@
 """메뉴 추천 API. `/api/menu` 에 마운트된다."""
 
 from typing import Annotated
+from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,9 +11,11 @@ from app.core.database import get_session
 from app.core.identity import CallerDep
 from app.core.llm.gateway import LlmGateway
 from app.core.llm.provider import get_gateway
+from app.core.locale import translate
 from app.domain.household import service as household_service
 from app.domain.menu import crud, service
 from app.domain.menu.schemas import (
+    CookedResult,
     IngredientCheckRead,
     MenuDetailRead,
     MenuSuggestionRead,
@@ -145,4 +148,49 @@ async def recipe_detail(
         estimated_minutes=recipe.estimated_minutes,
         ingredients=rows,
         steps=steps,
+    )
+
+
+@router.post(
+    "/suggestions/{suggestion_id}/cooked",
+    response_model=CookedResult,
+    summary="해먹었어요 — 사용량 반영",
+)
+async def mark_cooked(
+    suggestion_id: int,
+    caller: CallerDep,
+    session: SessionDep,
+) -> CookedResult:
+    """추천 메뉴를 실제로 만들었다고 확인하고 재고에서 뺀다.
+
+    IMPORTANT: 같은 추천에 확인이 두 번 와도 **재고가 두 번 줄지 않는다.** 버튼을 두 번
+    누르거나 네트워크가 재시도해도 안전하다.
+
+    레시피 필요량을 그대로 빼지 않고 **재고와 맞출 수 있는 것만** 뺀다. 분량을 모르거나
+    단위 변환 근거가 없는 재료는 건너뛰고 그 이름을 돌려준다 — 숫자를 지어내지 않는다.
+
+    차감량은 레시피에서 온 값이라 사용자가 말한 숫자가 아니다. 이력에 **추정값**으로
+    남는다.
+    """
+    household = await household_service.get_household(session, caller.household_id)
+    today = date_utils.today_in(household.timezone)
+    before = await crud.get_suggestion(session, caller.household_id, suggestion_id)
+    already = before.consumption_applied
+    command_id = uuid4()
+
+    suggestion, skipped, question = await service.mark_cooked(
+        session,
+        household_id=caller.household_id,
+        suggestion_id=suggestion_id,
+        command_id=command_id,
+        today=today,
+    )
+    applied = not already and question is None
+    return CookedResult(
+        suggestion_id=suggestion.suggestion_id,
+        already_applied=already,
+        skipped_ingredients=skipped,
+        clarification_question=question,
+        undo_token=str(command_id) if applied else None,
+        spoken=translate("menu.cooked", "ko") if applied else None,
     )
