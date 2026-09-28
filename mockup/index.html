@@ -2,494 +2,360 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>오늘 뭐 먹지? — 화면 목업</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,maximum-scale=1">
+<meta name="theme-color" content="#FFF3EF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>오늘 뭐 먹지?</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <style>
   :root{
-    --charcoal:#12100E; --raised:#1E1B18; --raised2:#282420;
-    --cream:#F5F0E6; --dim:#A8A29A;
-    --lime:#C8E64C; --warm:#E8A33D; --alert:#E0603C;
-    --gutter:24px; --card:20px; --tight:12px; --radius:20px;
-    --accent:var(--lime); --glow:rgba(200,230,76,.20);
+    --acc:#FF5E3A; --bg1:#FFF3EF; --bg2:#FFD9CC; --ray:.30;
+    --ink:#15181D; --ink2:#7C838C; --ink3:#A7AEB6;
+    --sb:env(safe-area-inset-bottom,0px); --st:env(safe-area-inset-top,0px);
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",-apple-system,system-ui,sans-serif;
-    background:#0a0908;color:var(--cream);padding:28px 20px 60px;
-    -webkit-font-smoothing:antialiased;
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;width:100%;overflow:hidden;overscroll-behavior:none}
+  body{font-family:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+       background:#0d0f12;color:var(--ink);-webkit-font-smoothing:antialiased;
+       font-feature-settings:"ss01";letter-spacing:-.015em}
+  .phone{position:relative;width:100%;max-width:430px;height:100dvh;margin:0 auto;overflow:hidden;
+         display:flex;flex-direction:column;background:#fff}
+  @media(min-width:520px){
+    body{display:flex;align-items:center;justify-content:center;background:#0d0f12}
+    .phone{height:min(900px,95dvh);border-radius:46px;box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 0 2px #23262b}
   }
-  .wrap{max-width:1360px;margin:0 auto}
-  .pagehead{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
-  .pagehead h1{font-size:26px;font-weight:700;letter-spacing:-.02em}
-  .pagehead p{color:var(--dim);font-size:14px;margin-top:6px}
-  .toolbar{display:flex;flex-wrap:wrap;gap:8px}
-  .toolbar .group{display:flex;gap:6px;background:#16140f;border:1px solid #2b2722;border-radius:12px;padding:6px}
-  .toolbar button{
-    background:transparent;border:0;color:var(--dim);font:inherit;font-size:13px;font-weight:600;
-    padding:8px 13px;border-radius:8px;cursor:pointer;transition:.15s;white-space:nowrap
-  }
-  .toolbar button:hover{color:var(--cream)}
-  .toolbar button[aria-pressed="true"]{background:var(--accent);color:#12100E}
-  .toolbar .lab{color:#6c665e;font-size:11px;align-self:center;padding:0 6px 0 2px;letter-spacing:.04em}
+  .bg{position:absolute;inset:0;pointer-events:none;
+      background:radial-gradient(125% 78% at 50% 16%,#fff 0%,var(--bg1) 40%,var(--bg2) 100%)}
+  .rays{position:absolute;left:50%;top:-8%;width:200%;aspect-ratio:1;transform:translateX(-50%);
+        pointer-events:none;opacity:var(--ray);
+        background:conic-gradient(from 0deg,transparent 0 2.6deg,rgba(255,255,255,.95) 3.4deg 4.6deg,transparent 5.4deg 10deg);
+        -webkit-mask-image:radial-gradient(circle,transparent 6%,#000 22%,transparent 58%);
+        mask-image:radial-gradient(circle,transparent 6%,#000 22%,transparent 58%);
+        animation:spin 110s linear infinite}
+  @keyframes spin{to{transform:translateX(-50%) rotate(360deg)}}
 
-  /* 태블릿 프레임 */
-  .device{
-    width:1280px;height:800px;position:relative;margin:0 auto;
-    border-radius:34px;background:#000;padding:14px;
-    box-shadow:0 40px 90px rgba(0,0,0,.6), 0 0 0 2px #2a2724;
-    transform-origin:top center;
-  }
-  .glass{
-    width:100%;height:100%;border-radius:22px;overflow:hidden;position:relative;
-    background:var(--charcoal);
-    transition:background .6s ease;
-  }
-  .glass::before{ /* 컨디션 글로우 */
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(120% 90% at 50% 0%, var(--glow), transparent 62%);
-    transition:background .6s ease;
-  }
-  .screen{display:none;position:absolute;inset:0;padding:28px 32px}
-  .screen.on{display:flex;flex-direction:column}
+  .head{position:relative;flex:none;padding:calc(var(--st) + 22px) 24px 0;text-align:center}
+  .hi{font-size:14px;color:var(--ink2);font-weight:500}
+  .q{font-size:27px;font-weight:700;margin-top:5px;letter-spacing:-.035em}
+  .iconbtn{position:absolute;right:20px;top:calc(var(--st) + 18px);width:44px;height:44px;border-radius:50%;
+    background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);color:var(--ink);
+    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);
+    box-shadow:0 6px 18px rgba(20,25,35,.09);z-index:7}
 
-  /* 공통 */
-  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-  .topbar .t{font-size:15px;color:var(--dim);letter-spacing:.02em}
-  .chiprow{display:flex;gap:8px;align-items:center}
-  .statuschip{
-    display:inline-flex;align-items:center;gap:8px;background:#221f1b;border:1px solid #332f2a;
-    padding:8px 14px;border-radius:999px;font-size:14px;color:var(--cream)
-  }
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent);animation:pulse 2.4s infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(200,230,76,.5)}70%{box-shadow:0 0 0 10px rgba(200,230,76,0)}100%{box-shadow:0 0 0 0 rgba(200,230,76,0)}}
-  .card{background:var(--raised);border:1px solid #2b2722;border-radius:var(--radius);padding:var(--card)}
-  h2.sec{font-size:15px;color:var(--dim);font-weight:600;letter-spacing:.06em;margin-bottom:12px}
-  .muted{color:var(--dim)}
+  .pane{display:none;flex:1;min-height:0}
+  .pane.on{display:flex;flex-direction:column}
 
-  /* 대시보드 */
-  .dash{display:grid;grid-template-columns:400px 1fr;gap:20px;flex:1;min-height:0}
-  .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
-  .hero .cond{font-size:40px;font-weight:800;letter-spacing:-.03em;color:var(--accent)}
-  .hero .sub{font-size:19px;color:var(--cream);opacity:.85;line-height:1.45}
-  .hero svg{filter:drop-shadow(0 18px 34px rgba(0,0,0,.5))}
-  .right{display:flex;flex-direction:column;gap:18px;min-height:0}
-  .prio{display:flex;gap:10px;overflow:hidden}
-  .pchip{
-    flex:1;background:var(--raised);border:1px solid #2b2722;border-radius:16px;
-    padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center
-  }
-  .pchip .nm{font-size:16px;font-weight:600}
-  .pchip .dd{font-size:13px;font-weight:700}
-  .pchip .qt{font-size:12px;color:var(--dim)}
-  .menus{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;flex:1;min-height:0}
-  .menu{display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
-  .menu .thumb{height:104px;border-radius:14px;background:linear-gradient(140deg,#3a332a,#241f1a);display:flex;align-items:center;justify-content:center;font-size:40px}
-  .menu .nm{font-size:22px;font-weight:700;letter-spacing:-.02em}
-  .menu .why{font-size:15px;color:var(--cream);opacity:.8;line-height:1.4}
-  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
-  .tag{font-size:12px;padding:5px 9px;border-radius:999px;border:1px solid #3a352f;color:var(--dim)}
-  .tag.hot{border-color:var(--alert);color:var(--alert)}
-  .tag.ok{border-color:var(--lime);color:var(--lime)}
-  .tag.need{border-color:var(--warm);color:var(--warm)}
-  .ribbon{position:absolute;top:0;right:0;background:var(--accent);color:#12100E;font-size:11px;font-weight:800;padding:4px 10px;border-bottom-left-radius:10px}
+  .stage{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;
+         align-items:center;justify-content:center;touch-action:none;padding:0 20px}
+  .charbox{position:relative;width:min(70vw,258px);aspect-ratio:1;flex:none;animation:float 5.5s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-13px)}}
+  .char{position:absolute;inset:0;will-change:opacity,transform}
+  .char svg{width:100%;height:100%;display:block}
 
-  /* 하단 음성 바 */
-  .voicebar{margin-top:18px;display:flex;align-items:center;gap:16px;background:#1a1714;border:1px solid #2b2722;border-radius:18px;padding:14px 20px}
-  .voicebar .say{font-size:18px;color:var(--cream)}
-  .voicebar .hint{margin-left:auto;font-size:14px;color:var(--dim)}
+  .label{position:relative;height:74px;width:100%;margin-top:6px}
+  .lab{position:absolute;inset:0;text-align:center;will-change:opacity,transform}
+  .lab .big{font-size:40px;font-weight:800;letter-spacing:-.045em;color:var(--acc);line-height:1.05}
+  .lab .sm{font-size:14.5px;color:var(--ink2);margin-top:7px;font-weight:500}
 
-  /* 대화 화면 */
-  .talk{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center}
-  .talk .state{font-size:44px;font-weight:800;letter-spacing:-.03em}
-  .talk .utter{font-size:26px;color:var(--cream);opacity:.9;max-width:860px;line-height:1.5}
-  .talk .result{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:4px}
-  .rescard{background:var(--raised);border:1px solid #2b2722;border-radius:16px;padding:14px 18px;min-width:180px;text-align:left}
-  .rescard .k{font-size:13px;color:var(--dim)}
-  .rescard .v{font-size:22px;font-weight:700;margin-top:4px}
-  .rescard .d{font-size:13px;color:var(--warm);margin-top:4px}
-  .btnrow{display:flex;gap:10px;margin-top:8px}
-  .btn{background:#2a2621;border:1px solid #3a352f;color:var(--cream);font:inherit;font-size:16px;padding:12px 22px;border-radius:999px}
-  .btn.primary{background:var(--accent);color:#12100E;border-color:transparent;font-weight:700}
-  .ring{position:relative;display:flex;align-items:center;justify-content:center}
-  .ring::after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;border:2px solid var(--accent);opacity:0;}
-  .ring.listening::after{animation:ripple 1.8s ease-out infinite}
-  @keyframes ripple{0%{transform:scale(.7);opacity:.55}100%{transform:scale(1.25);opacity:0}}
+  .items{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:28px;margin-top:2px}
+  .it{font-size:12.5px;font-weight:600;padding:6px 11px;border-radius:999px;color:#5A616A;
+      background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.95);
+      box-shadow:0 2px 8px rgba(20,25,35,.05)}
 
-  /* 냉장고 */
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;overflow:auto;padding-right:4px}
-  .icard{display:flex;gap:12px;align-items:center;position:relative}
-  .icard .meta{min-width:0}
-  .icard .nm{font-size:20px;font-weight:700;letter-spacing:-.01em}
-  .icard .qt{font-size:16px;color:var(--cream);opacity:.85;margin-top:2px}
-  .icard .ex{font-size:13px;margin-top:4px}
-  .icard.unknown{border-style:dashed;border-color:#4a453e}
-  .badge{position:absolute;top:10px;right:12px;font-size:11px;padding:4px 8px;border-radius:999px;background:#332f29;color:var(--dim)}
+  .cta{flex:none;display:flex;justify-content:center;padding:16px 20px 4px}
+  .cbtn{display:inline-flex;align-items:center;gap:10px;background:#fff;color:var(--ink);border:0;
+        font:inherit;font-size:16px;font-weight:700;letter-spacing:-.02em;padding:15px 22px;border-radius:999px;
+        box-shadow:0 10px 26px rgba(20,25,35,.13),0 2px 5px rgba(20,25,35,.06)}
+  .cbtn .em{font-size:19px}
+  .cbtn .ar{color:var(--acc);font-weight:800}
 
-  /* 메뉴 상세 */
-  .detail{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
-  .ing{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #2b2722;font-size:18px}
-  .ing:last-child{border-bottom:0}
-  .ing .mark{width:22px;text-align:center;font-weight:800}
-  .ing .amt{margin-left:auto;color:var(--dim);font-size:16px}
-  .steps{counter-reset:s;overflow:auto}
-  .step{counter-increment:s;display:flex;gap:14px;padding:12px 0;font-size:18px;line-height:1.5}
-  .step::before{content:counter(s);flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#12100E;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center}
+  .hint{text-align:center;font-size:12px;color:var(--ink3);font-weight:500;margin:14px 0 9px;
+        display:flex;align-items:center;justify-content:center;gap:6px}
+  .swipe{flex:none;touch-action:none;padding-bottom:2px}
+  .scale{position:relative;height:70px;margin:0 18px;border-radius:26px;display:flex;align-items:center;
+         background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.92);
+         backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+         box-shadow:0 10px 28px rgba(20,25,35,.09),inset 0 1px 0 rgba(255,255,255,.7)}
+  .pill{position:absolute;top:6px;left:0;width:58px;height:58px;border-radius:20px;background:#fff;
+        box-shadow:0 6px 16px rgba(20,25,35,.14);will-change:transform}
+  .ticks{position:relative;display:flex;width:100%;height:100%;align-items:center;z-index:2;padding:0 4px}
+  .tick{flex:1;display:flex;align-items:center;justify-content:center;height:100%;will-change:transform,filter,opacity}
+  .tick svg{width:38px;height:38px}
+  .divider{width:1px;height:30px;background:rgba(21,24,29,.10);flex:none;margin:0 3px}
 
-  /* 변경 기록 */
-  .tl{overflow:auto;padding-right:6px}
-  .row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #2b2722}
-  .row .kind{font-size:12px;font-weight:800;padding:5px 10px;border-radius:8px;min-width:52px;text-align:center}
-  .k-in{background:rgba(200,230,76,.15);color:var(--lime)}
-  .k-use{background:rgba(232,163,61,.15);color:var(--warm)}
-  .k-fix{background:rgba(224,96,60,.15);color:var(--alert)}
-  .k-adj{background:rgba(168,162,154,.15);color:var(--dim)}
-  .k-un{background:#2c2822;color:var(--dim)}
-  .row .txt{font-size:18px}
-  .row .qty{margin-left:auto;font-size:20px;font-weight:700}
-  .row .src{font-size:12px;color:var(--dim);border:1px solid #3a352f;padding:3px 8px;border-radius:6px}
-  .row .tm{font-size:14px;color:var(--dim);width:64px}
+  .tabs{flex:none;display:flex;justify-content:space-around;align-items:center;margin-top:12px;
+        padding:11px 14px calc(var(--sb) + 12px);border-top:1px solid rgba(21,24,29,.07);
+        background:rgba(255,255,255,.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+  .tab{background:0;border:0;font:inherit;color:var(--ink3);font-size:11px;font-weight:600;
+       display:flex;flex-direction:column;align-items:center;gap:5px;padding:2px 18px;letter-spacing:-.01em}
+  .tab svg{width:23px;height:23px}
+  .tab[aria-pressed="true"]{color:var(--acc)}
 
-  .legend{max-width:1280px;margin:26px auto 0;display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-  .lg{background:#16140f;border:1px solid #2b2722;border-radius:14px;padding:14px;display:flex;gap:12px;align-items:center}
-  .lg .nm{font-size:15px;font-weight:700}
-  .lg .ds{font-size:12px;color:var(--dim);margin-top:3px;line-height:1.4}
-  .note{max-width:1280px;margin:20px auto 0;color:#7d766d;font-size:13px;line-height:1.7}
-  .note b{color:var(--cream)}
+  .list{flex:1;overflow:auto;padding:12px 18px 16px}
+  .ic2{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.75);
+       border:1px solid rgba(255,255,255,.95);border-radius:20px;padding:12px 14px;margin-bottom:9px;
+       position:relative;box-shadow:0 4px 14px rgba(20,25,35,.05)}
+  .ic2 svg{width:42px;height:42px;flex:none}
+  .ic2.dash{border:1px dashed rgba(21,24,29,.18);background:rgba(255,255,255,.45)}
+  .ic2 .nm{font-size:17px;font-weight:700}
+  .ic2 .sub{font-size:12.5px;margin-top:2px;font-weight:600}
+  .ic2 .qt{margin-left:auto;font-size:16px;font-weight:700;color:#4A5058}
+  .bdg{position:absolute;top:8px;right:10px;font-size:10px;font-weight:700;padding:3px 7px;
+       border-radius:999px;background:rgba(21,24,29,.06);color:var(--ink2)}
+  .row2{display:flex;align-items:center;gap:10px;padding:13px 4px;border-bottom:1px solid rgba(21,24,29,.07)}
+  .kd{font-size:10px;font-weight:800;padding:4px 8px;border-radius:8px;min-width:42px;text-align:center}
+  .k-in{background:#E6F6EA;color:#2E9E52}.k-use{background:#FFF0DC;color:#D2860F}
+  .k-fix{background:#FFEAE4;color:#E04F2C}.k-adj{background:#EEF0F3;color:#6E757D}
+  .k-un{background:#F1F2F4;color:#8A9098}
+  .row2 .tx{font-size:15px;font-weight:500}.row2 .qy{margin-left:auto;font-size:16px;font-weight:700}
+  .row2 .tm{font-size:12px;color:var(--ink3);width:42px;flex:none;font-weight:600}
+
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:9;background:#fff;
+         border-radius:28px 28px 0 0;padding:22px 22px calc(var(--sb) + 20px);
+         box-shadow:0 -18px 50px rgba(20,25,35,.18);
+         transform:translateY(118%);transition:transform .38s cubic-bezier(.22,1,.36,1)}
+  .sheet.up{transform:translateY(0)}
+  .sheet .grip{width:38px;height:4px;border-radius:99px;background:rgba(21,24,29,.14);margin:0 auto 16px}
+  .sheet .st2{font-size:22px;font-weight:800;letter-spacing:-.03em}
+  .sheet .ut{font-size:14.5px;color:var(--ink2);margin-top:8px;line-height:1.55;font-weight:500}
+  .sheet .bs{display:flex;gap:9px;margin-top:18px}
+  .sheet button{flex:1;font:inherit;font-size:15px;font-weight:700;padding:15px;border-radius:16px;
+                border:1px solid rgba(21,24,29,.10);background:#F4F5F7;color:var(--ink)}
+  .sheet button.pri{background:var(--acc);color:#fff;border-color:transparent}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="pagehead">
-    <div>
-      <h1>오늘 뭐 먹지? — 태블릿 화면 목업</h1>
-      <p>1280×800 가로 고정 · 차콜/크림/라임 토큰(Theme.kt) 적용 · 신선도 얼굴 5단계</p>
+<div class="phone">
+  <div class="bg"></div><div class="rays"></div>
+
+  <div class="head">
+    <div class="hi">안녕하세요, 철님 👋</div>
+    <div class="q" id="qtitle">오늘 뭐 먹지?</div>
+  </div>
+  <button class="iconbtn" id="mic" aria-label="음성">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <rect x="9" y="2.8" width="6" height="11.4" rx="3"/><path d="M5.4 11.6a6.6 6.6 0 0 0 13.2 0"/><path d="M12 18.2v3"/></svg>
+  </button>
+
+  <section class="pane on" id="p-home">
+    <div class="stage" id="stage">
+      <div class="charbox" id="charbox"></div>
+      <div class="label" id="labelbox"></div>
+      <div class="items" id="items"></div>
     </div>
-    <div class="toolbar">
-      <div class="group">
-        <span class="lab">화면</span>
-        <button data-screen="dash" aria-pressed="true">대기 대시보드</button>
-        <button data-screen="talk">대화</button>
-        <button data-screen="fridge">냉장고</button>
-        <button data-screen="menu">메뉴 상세</button>
-        <button data-screen="hist">변경 기록</button>
-      </div>
-      <div class="group">
-        <span class="lab">냉장고 컨디션</span>
-        <button data-cond="fresh">여유</button>
-        <button data-cond="soon">챙길 것</button>
-        <button data-cond="urgent" aria-pressed="true">급함</button>
-      </div>
-      <div class="group">
-        <span class="lab">음성 상태</span>
-        <button data-voice="waiting" aria-pressed="true">대기</button>
-        <button data-voice="listening">듣는 중</button>
-        <button data-voice="processing">확인 중</button>
-        <button data-voice="speaking">반영</button>
-      </div>
+
+    <div class="cta">
+      <button class="cbtn" id="cbtn"><span class="em" id="cEm">🥘</span><span id="cTx">두부조림 보기</span><span class="ar">→</span></button>
     </div>
+
+    <div class="swipe" id="swipe">
+      <div class="hint">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6 15 12 9 18"/></svg>
+        밀어서 오늘 쓸 재료 고르기
+      </div>
+      <div class="scale" id="scale"><div class="pill" id="pill"></div><div class="ticks" id="ticks"></div></div>
+    </div>
+  </section>
+
+  <section class="pane" id="p-fridge"><div class="list" id="fridgeList"></div></section>
+  <section class="pane" id="p-hist"><div class="list">
+    <div class="row2"><span class="tm">19:02</span><span class="kd k-in">입고</span><span class="tx">계란 10개</span><span class="qy">10개</span></div>
+    <div class="row2"><span class="tm">19:05</span><span class="kd k-use">사용</span><span class="tx">계란 2개 사용</span><span class="qy">8개</span></div>
+    <div class="row2"><span class="tm">19:06</span><span class="kd k-fix">정정</span><span class="tx">사용을 3개로 교체</span><span class="qy">7개</span></div>
+    <div class="row2"><span class="tm">19:07</span><span class="kd k-un">취소</span><span class="tx">정정 취소 · 복원</span><span class="qy">8개</span></div>
+    <div class="row2"><span class="tm">19:09</span><span class="kd k-adj">보정</span><span class="tx">“네 개 남았어”</span><span class="qy">4개</span></div>
+  </div></section>
+
+  <div class="sheet" id="sheet">
+    <div class="grip"></div>
+    <div class="st2" id="shSt">듣고 있어요</div>
+    <div class="ut" id="shUt">“두부 두 모랑 계란 열 개 넣었어. 두부는 소비기한 10월 3일”</div>
+    <div class="bs"><button class="pri" id="shOk">네, 맞아요</button><button id="shNo">취소</button></div>
   </div>
 
-  <div class="device" id="device">
-   <div class="glass">
-
-    <!-- 1. 대기 대시보드 -->
-    <section class="screen on" id="s-dash">
-      <div class="topbar">
-        <div class="t">오후 7:12 · 우리집 냉장고</div>
-        <div class="chiprow">
-          <span class="statuschip"><span class="dot"></span> “헤이 냉장고” 라고 불러주세요</span>
-        </div>
-      </div>
-
-      <div class="dash">
-        <div class="hero card">
-          <div data-face="hero" data-size="200"></div>
-          <div class="cond" id="condTitle">오늘 써야 해요</div>
-          <div class="sub" id="condSub">두부가 <b>내일까지</b>예요.<br>먼저 쓸 재료 3개를 골라뒀어요.</div>
-        </div>
-
-        <div class="right">
-          <div>
-            <h2 class="sec">먼저 쓸 재료</h2>
-            <div class="prio" id="prioRow"></div>
-          </div>
-          <div style="display:flex;flex-direction:column;min-height:0;flex:1">
-            <h2 class="sec">오늘은 이 재료로 — 이런 메뉴 어떠세요?</h2>
-            <div class="menus">
-              <div class="card menu">
-                <div class="ribbon">지금 가능</div>
-                <div class="thumb">🥘</div>
-                <div class="nm">두부조림</div>
-                <div class="why">두부가 내일까지예요. 대파도 같이 씁니다.</div>
-                <div class="tags"><span class="tag hot">두부 D-1</span><span class="tag">대파 D-2</span><span class="tag ok">재료 다 있음</span></div>
-              </div>
-              <div class="card menu">
-                <div class="ribbon">지금 가능</div>
-                <div class="thumb">🍳</div>
-                <div class="nm">대파계란말이</div>
-                <div class="why">대파를 모레까지 쓰는 게 좋아요.</div>
-                <div class="tags"><span class="tag">대파 D-2</span><span class="tag">계란 8개</span><span class="tag ok">재료 다 있음</span></div>
-              </div>
-              <div class="card menu">
-                <div class="thumb">🍲</div>
-                <div class="nm">애호박된장찌개</div>
-                <div class="why">애호박·두부를 함께 소진할 수 있어요.</div>
-                <div class="tags"><span class="tag">애호박 D-3</span><span class="tag need">양파 부족</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="voicebar">
-        <span class="statuschip"><span class="dot"></span> <span id="vbState">대기 중</span></span>
-        <span class="say" id="vbSay">“오늘 뭐 먹지?” · “두부 두 모 넣었어” · “계란 두 개 썼어”</span>
-        <span class="hint">마지막 변경: 계란 4개로 보정 · 되돌리기</span>
-      </div>
-    </section>
-
-    <!-- 2. 대화 -->
-    <section class="screen" id="s-talk">
-      <div class="topbar">
-        <div class="t">대화</div>
-        <div class="chiprow"><span class="statuschip">🎙 마이크 사용 중 · 음소거</span></div>
-      </div>
-      <div class="talk">
-        <div class="ring" id="talkRing"><div data-face="talk" data-size="220"></div></div>
-        <div class="state" id="talkState">듣고 있어요</div>
-        <div class="utter" id="talkUtter">“두부 두 모랑 계란 열 개 넣었어. 두부는 소비기한 10월 3일. 둘 다 냉장실”</div>
-        <div class="result" id="talkResult">
-          <div class="rescard"><div class="k">두부</div><div class="v">2모</div><div class="d">소비기한 10/3 · 냉장</div></div>
-          <div class="rescard"><div class="k">계란</div><div class="v">10개</div><div class="d">기한 미확인 · 냉장</div></div>
-        </div>
-        <div class="btnrow"><button class="btn primary">네, 맞아요</button><button class="btn">방금 거 취소</button></div>
-      </div>
-    </section>
-
-    <!-- 3. 냉장고 -->
-    <section class="screen" id="s-fridge">
-      <div class="topbar">
-        <div class="t">냉장고 · 재료 8종</div>
-        <div class="chiprow"><span class="statuschip">🔍 재료 검색</span><span class="statuschip">냉장 · 냉동 · 실온</span></div>
-      </div>
-      <div class="grid" id="fridgeGrid"></div>
-    </section>
-
-    <!-- 4. 메뉴 상세 -->
-    <section class="screen" id="s-menu">
-      <div class="topbar">
-        <div class="t">메뉴 상세 · 두부조림 <span class="muted">· 2인분</span></div>
-        <div class="chiprow"><span class="statuschip ">두부가 내일까지예요</span><span class="statuschip">조리 20분</span></div>
-      </div>
-      <div class="detail">
-        <div class="card" style="display:flex;flex-direction:column">
-          <h2 class="sec">재료 — 있는 것 / 부족한 것 / 확인할 것</h2>
-          <div class="ing"><span class="mark" style="color:var(--lime)">✓</span> 두부<span class="amt">1모 / 보유 2모</span></div>
-          <div class="ing"><span class="mark" style="color:var(--lime)">✓</span> 대파<span class="amt">1/2대 / 보유 1대</span></div>
-          <div class="ing"><span class="mark" style="color:var(--lime)">✓</span> 간장<span class="amt">2큰술 / 기본 양념</span></div>
-          <div class="ing"><span class="mark" style="color:var(--warm)">?</span> 다진마늘<span class="amt">1작은술 / <span style="color:var(--warm)">잔량 미확인</span></span></div>
-          <div class="ing"><span class="mark" style="color:var(--alert)">✕</span> 고춧가루<span class="amt">1큰술 / <span style="color:var(--alert)">없음</span></span></div>
-          <div class="btnrow" style="margin-top:auto"><button class="btn">쿠팡에서 찾기</button><button class="btn">대체 재료로 만들기</button></div>
-        </div>
-        <div class="card" style="display:flex;flex-direction:column;min-height:0">
-          <h2 class="sec">조리 순서</h2>
-          <div class="steps">
-            <div class="step">두부를 1.5cm 두께로 썰고 키친타월로 물기를 뺍니다.</div>
-            <div class="step">팬에 기름을 두르고 두부 양면을 노릇하게 굽습니다.</div>
-            <div class="step">간장·다진마늘·고춧가루·물을 섞어 양념장을 만듭니다.</div>
-            <div class="step">양념장을 붓고 중불에서 5분 조린 뒤 대파를 올립니다.</div>
-          </div>
-          <div class="btnrow" style="margin-top:auto"><button class="btn primary">해먹었어요 — 재고 반영</button></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5. 변경 기록 -->
-    <section class="screen" id="s-hist">
-      <div class="topbar">
-        <div class="t">변경 기록 · 오늘</div>
-        <div class="chiprow"><span class="statuschip">되돌릴 수 있어요</span></div>
-      </div>
-      <div class="card tl" style="flex:1">
-        <div class="row"><span class="tm">19:02</span><span class="kind k-in">입고</span><span class="txt">계란 10개 등록</span><span class="src">명시값</span><span class="qty">10개</span></div>
-        <div class="row"><span class="tm">19:05</span><span class="kind k-use">사용</span><span class="txt">계란 2개 사용</span><span class="src">명시값</span><span class="qty">8개</span></div>
-        <div class="row"><span class="tm">19:06</span><span class="kind k-fix">정정</span><span class="txt">직전 사용을 3개로 교체 <span class="muted">(추가 차감 없음)</span></span><span class="src">명시값</span><span class="qty">7개</span></div>
-        <div class="row"><span class="tm">19:07</span><span class="kind k-un">취소</span><span class="txt">정정 취소 — 이전 상태 복원</span><span class="src">명시값</span><span class="qty">8개</span></div>
-        <div class="row"><span class="tm">19:09</span><span class="kind k-adj">보정</span><span class="txt">“네 개 남았어” — 절대값 보정</span><span class="src">명시값</span><span class="qty">4개</span></div>
-        <div class="row"><span class="tm">19:10</span><span class="kind k-in">입고</span><span class="txt">두부 2모 · 소비기한 10/3</span><span class="src">명시값</span><span class="qty">2모</span></div>
-      </div>
-    </section>
-
-   </div>
-  </div>
-
-  <div class="legend" id="legend"></div>
-  <p class="note">
-    <b>얼굴 = 기한 축만</b> 담습니다. 잔량 미확인은 카드 모서리 뱃지로 분리했습니다(숫자를 지어내지 않음).
-    <b>등급 계산은 서버</b>가 하고 앱은 <code>freshness</code> enum → 얼굴·색 매핑만 합니다(기한 판정을 앱에 복제하지 않음).
-    상단 「냉장고 컨디션」 버튼을 눌러 값 하나가 배경·강조색·큰 얼굴을 동시에 바꾸는 동작을 확인하세요.
-  </p>
+  <nav class="tabs">
+    <button class="tab" data-pane="home" aria-pressed="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3.6 12.4h16.8a8.4 8.4 0 0 1-16.8 0Z"/><path d="M5.8 20.6h12.4"/>
+        <path d="M9.4 8.6c0-1.4 1.3-1.7 1.3-3.1 0-.7-.4-1.3-1-1.7"/><path d="M14.3 8.6c0-1.4 1.3-1.7 1.3-3.1 0-.7-.4-1.3-1-1.7"/></svg>오늘</button>
+    <button class="tab" data-pane="fridge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5.6" y="2.8" width="12.8" height="18.4" rx="3.4"/><path d="M5.6 10.2h12.8"/><path d="M9 6.2v1.8"/><path d="M9 12.9v2"/></svg>냉장고</button>
+    <button class="tab" data-pane="hist">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3.4 12a8.6 8.6 0 1 0 2.7-6.3"/><path d="M3.1 4.4v4.3h4.3"/><path d="M12 7.7V12l3.1 1.9"/></svg>기록</button>
+  </nav>
 </div>
 
 <script>
-const GRADES = {
-  fresh:   {c1:'#C8E64C', c2:'#93C127', label:'여유',    desc:'D-4 이상',      mouth:'smile'},
-  soon:    {c1:'#E8A33D', c2:'#C97F1E', label:'챙길 것', desc:'D-3 ~ D-2',     mouth:'flat'},
-  urgent:  {c1:'#E0603C', c2:'#B84222', label:'급함',   desc:'D-1 ~ 오늘',   mouth:'frown'},
-  expired: {c1:'#6B6660', c2:'#3F3B37', label:'지남',    desc:'기한 경과',     mouth:'x'},
-  unknown: {c1:'#A8A29A', c2:'#6F6A63', label:'미확인',  desc:'기한 모름',     mouth:'q'}
-};
-const BLOBS = [[50,56,27],[30,43,17],[70,43,17],[38,30,14],[62,30,14],[50,25,15],[26,62,13],[74,62,13]];
-
-function face(grade, size){
-  const g = GRADES[grade] || GRADES.unknown;
-  const id = 'g'+Math.random().toString(36).slice(2,8);
-  let mouth='', eyes='';
-  if(g.mouth==='smile'){
-    eyes = `<path d="M38 50 q4 -5 8 0" stroke="#1b1a17" stroke-width="3.4" fill="none" stroke-linecap="round"/>
-            <path d="M54 50 q4 -5 8 0" stroke="#1b1a17" stroke-width="3.4" fill="none" stroke-linecap="round"/>`;
-    mouth = `<path d="M43 60 q7 8 14 0" stroke="#1b1a17" stroke-width="3.4" fill="none" stroke-linecap="round"/>`;
-  } else if(g.mouth==='flat'){
-    eyes = `<ellipse cx="42" cy="51" rx="2.6" ry="3.4" fill="#1b1a17"/><ellipse cx="58" cy="51" rx="2.6" ry="3.4" fill="#1b1a17"/>`;
-    mouth = `<line x1="44" y1="62" x2="56" y2="62" stroke="#1b1a17" stroke-width="3.4" stroke-linecap="round"/>`;
-  } else if(g.mouth==='frown'){
-    eyes = `<path d="M37 48 l9 4" stroke="#1b1a17" stroke-width="3.4" stroke-linecap="round"/>
-            <path d="M63 48 l-9 4" stroke="#1b1a17" stroke-width="3.4" stroke-linecap="round"/>
-            <ellipse cx="42" cy="55" rx="2.6" ry="3" fill="#1b1a17"/><ellipse cx="58" cy="55" rx="2.6" ry="3" fill="#1b1a17"/>`;
-    mouth = `<path d="M43 68 q7 -8 14 0" stroke="#1b1a17" stroke-width="3.4" fill="none" stroke-linecap="round"/>`;
-  } else if(g.mouth==='x'){
-    eyes = `<path d="M38 48 l7 7 M45 48 l-7 7" stroke="#1b1a17" stroke-width="3" stroke-linecap="round"/>
-            <path d="M55 48 l7 7 M62 48 l-7 7" stroke="#1b1a17" stroke-width="3" stroke-linecap="round"/>`;
-    mouth = `<line x1="45" y1="65" x2="55" y2="65" stroke="#1b1a17" stroke-width="3" stroke-linecap="round"/>`;
-  } else {
-    eyes = `<ellipse cx="42" cy="53" rx="2.4" ry="3" fill="#1b1a17"/><ellipse cx="58" cy="53" rx="2.4" ry="3" fill="#1b1a17"/>`;
-    mouth = `<text x="50" y="72" text-anchor="middle" font-size="18" font-weight="800" fill="#1b1a17">?</text>`;
-  }
-  const circles = BLOBS.map(b=>`<circle cx="${b[0]}" cy="${b[1]}" r="${b[2]}" fill="url(#${id})"/>`).join('');
-  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true">
-    <defs><radialGradient id="${id}" cx="38%" cy="28%" r="80%">
-      <stop offset="0%" stop-color="${g.c1}" stop-opacity=".98"/>
-      <stop offset="100%" stop-color="${g.c2}" stop-opacity=".92"/>
-    </radialGradient></defs>
-    <g opacity="${grade==='expired'?.55:1}">${circles}
-      <ellipse cx="38" cy="34" rx="9" ry="6" fill="#fff" opacity=".35" transform="rotate(-20 38 34)"/>
-      ${eyes}${mouth}
-    </g></svg>`;
-}
-
-/* 재고 데이터 (기준일 2026-09-28) */
-const ITEMS = [
-  {nm:'두부',     qt:'2모',    ex:'소비기한 9/29',  g:'urgent',  dd:'D-1'},
-  {nm:'대파',     qt:'1대',    ex:'품질유지 9/30',  g:'soon',    dd:'D-2'},
-  {nm:'애호박',   qt:'1개',    ex:'소비기한 10/1',  g:'soon',    dd:'D-3'},
-  {nm:'계란',     qt:'8개',    ex:'유통기한 10/12', g:'fresh',   dd:'D-14'},
-  {nm:'우유',     qt:'700ml',  ex:'개봉 9/26',      g:'soon',    dd:'개봉 2일'},
-  {nm:'김치',     qt:'1통',    ex:'기한 미확인',    g:'unknown', dd:'미확인'},
-  {nm:'다진마늘', qt:'미확인', ex:'유통기한 10/20', g:'fresh',   dd:'D-22', unknownQty:true},
-  {nm:'삼겹살',   qt:'300g',   ex:'소비기한 9/27',  g:'expired', dd:'지남'}
+const STEPS=[
+ {key:'expired',c1:'#B9BFC6',c2:'#7E858D',bg1:'#F5F6F8',bg2:'#E1E5EA',ray:.06,exp:'x',dull:1,
+  big:'지남',sm:'1가지 · 오늘 요리 후보에서 뺐어요',items:['삼겹살 9/27'],em:'🗑',cta:'상태 확인하기'},
+ {key:'urgent',c1:'#FF8A63',c2:'#F0431B',bg1:'#FFF3EF',bg2:'#FFD5C6',ray:.30,exp:'frown',
+  big:'급함',sm:'1가지 · 오늘 안에 쓰세요',items:['두부 D-1'],em:'🥘',cta:'두부조림 보기'},
+ {key:'soon',c1:'#FFC061',c2:'#F59310',bg1:'#FFF8EC',bg2:'#FFE4B8',ray:.48,exp:'flat',
+  big:'챙길 것',sm:'3가지 · 이번 주에 쓰세요',items:['대파 D-2','애호박 D-3','우유 개봉2일'],em:'🍳',cta:'대파계란말이 보기'},
+ {key:'fresh',c1:'#8BE07E',c2:'#2FB457',bg1:'#F1FCF2',bg2:'#C9EFD1',ray:.80,exp:'smile',spark:1,
+  big:'여유',sm:'2가지 · 급하지 않아요',items:['계란 D-14','다진마늘 D-22'],em:'🍚',cta:'계란찜 보기'},
+ {key:'unknown',c1:'#C3C9D1',c2:'#8D96A1',bg1:'#F6F7F9',bg2:'#E3E7EC',ray:.05,exp:'q',dull:1,
+  big:'미확인',sm:'1가지 · 기한을 알려주세요',items:['김치'],em:'❓',cta:'기한 알려주기'}
 ];
-const COND = {
-  fresh:  {accent:'#C8E64C', glow:'rgba(200,230,76,.18)',  title:'여유로워요',   sub:'급한 재료가 없어요.<br>먹고 싶은 걸로 골라도 좋아요.'},
-  soon:   {accent:'#E8A33D', glow:'rgba(232,163,61,.20)',  title:'곧 써야 해요', sub:'대파·애호박이 <b>이번 주</b>예요.<br>먼저 쓸 재료 2개를 골라뒀어요.'},
-  urgent: {accent:'#E0603C', glow:'rgba(224,96,60,.22)',   title:'오늘 써야 해요', sub:'두부가 <b>내일까지</b>예요.<br>먼저 쓸 재료 3개를 골라뒀어요.'}
-};
-const VOICE = {
-  waiting:    {st:'대기 중',        face:'fresh',  state:'“헤이 냉장고” 라고 불러주세요', utter:'', ring:false},
-  listening:  {st:'듣고 있어요',    face:'fresh',  state:'듣고 있어요', utter:'“두부 두 모랑 계란 열 개 넣었어. 두부는 소비기한 10월 3일. 둘 다 냉장실”', ring:true},
-  processing: {st:'확인하고 있어요', face:'soon',  state:'확인하고 있어요', utter:'두 가지 재료를 나눠서 기록하는 중이에요.', ring:false},
-  speaking:   {st:'반영했어요',     face:'fresh',  state:'반영했어요', utter:'“두부 두 모는 10월 3일까지, 계란 열 개는 기한 미확인으로 넣었어요.”', ring:false}
-};
+const BLOBS=[[100,112,54],[60,86,34],[140,86,34],[76,60,28],[124,60,28],[100,50,30],[52,124,26],[148,124,26]];
+let uidn=0;
 
-function renderFaces(){
-  document.querySelectorAll('[data-face]').forEach(el=>{
-    const key = el.dataset.face, size = +el.dataset.size || 64;
-    let grade = key;
-    if(key==='hero') grade = document.body.dataset.cond || 'urgent';
-    if(key==='talk') grade = VOICE[document.body.dataset.voice||'waiting'].face;
-    el.innerHTML = face(grade, size);
-  });
+function jelly(st,px){
+  const u='j'+(++uidn), INK='#2A2E35', W=6.6;
+  let eyes='',mouth='',extra='';
+  if(st.exp==='smile'){
+    eyes=`<path d="M70 104 q10 -12 20 0" stroke="${INK}" stroke-width="${W}" fill="none" stroke-linecap="round"/>
+          <path d="M110 104 q10 -12 20 0" stroke="${INK}" stroke-width="${W}" fill="none" stroke-linecap="round"/>`;
+    mouth=`<path d="M85 120 q15 19 30 0" stroke="${INK}" stroke-width="${W}" fill="none" stroke-linecap="round"/>`;
+  }else if(st.exp==='flat'){
+    eyes=`<ellipse cx="82" cy="102" rx="5.2" ry="7" fill="${INK}"/><ellipse cx="118" cy="102" rx="5.2" ry="7" fill="${INK}"/>`;
+    mouth=`<path d="M88 126 h24" stroke="${INK}" stroke-width="${W}" stroke-linecap="round"/>`;
+  }else if(st.exp==='frown'){
+    eyes=`<path d="M70 92 l19 9" stroke="${INK}" stroke-width="${W}" stroke-linecap="round"/>
+          <path d="M130 92 l-19 9" stroke="${INK}" stroke-width="${W}" stroke-linecap="round"/>
+          <ellipse cx="83" cy="110" rx="5" ry="6.4" fill="${INK}"/><ellipse cx="117" cy="110" rx="5" ry="6.4" fill="${INK}"/>`;
+    mouth=`<path d="M85 138 q15 -17 30 0" stroke="${INK}" stroke-width="${W}" fill="none" stroke-linecap="round"/>`;
+  }else if(st.exp==='x'){
+    eyes=`<path d="M74 96 l15 15 M89 96 l-15 15" stroke="${INK}" stroke-width="5.6" stroke-linecap="round"/>
+          <path d="M111 96 l15 15 M126 96 l-15 15" stroke="${INK}" stroke-width="5.6" stroke-linecap="round"/>`;
+    mouth=`<path d="M89 132 h22" stroke="${INK}" stroke-width="5.6" stroke-linecap="round"/>`;
+  }else{
+    eyes=`<ellipse cx="83" cy="106" rx="4.8" ry="6.2" fill="${INK}"/><ellipse cx="117" cy="106" rx="4.8" ry="6.2" fill="${INK}"/>`;
+    mouth=`<text x="100" y="146" text-anchor="middle" font-size="40" font-weight="800" fill="${INK}"
+            font-family="Pretendard,system-ui">?</text>`;
+  }
+  if(st.spark){
+    extra=`<g fill="#fff" opacity=".9">
+      <path d="M168 54 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z"/>
+      <path d="M32 96 l2.4 6.4 6.4 2.4 -6.4 2.4 -2.4 6.4 -2.4 -6.4 -6.4 -2.4 6.4 -2.4z"/>
+      <path d="M150 146 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z"/></g>`;
+  }
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+   <defs>
+     <radialGradient id="b${u}" cx="33%" cy="22%" r="86%">
+       <stop offset="0%" stop-color="#ffffff" stop-opacity=".95"/>
+       <stop offset="38%" stop-color="${st.c1}" stop-opacity=".88"/>
+       <stop offset="100%" stop-color="${st.c2}" stop-opacity=".97"/>
+     </radialGradient>
+     <radialGradient id="h${u}"><stop offset="0%" stop-color="#fff" stop-opacity=".9"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></radialGradient>
+     <filter id="g${u}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="13"/></filter>
+     <filter id="sh${u}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="7"/></filter>
+   </defs>
+   <g filter="url(#g${u})" opacity="${st.dull?.28:.5}"><circle cx="100" cy="100" r="66" fill="${st.c1}"/></g>
+   <ellipse cx="100" cy="178" rx="46" ry="8.5" fill="${st.c2}" opacity="${st.dull?.13:.2}" filter="url(#sh${u})"/>
+   <g opacity="${st.dull?.85:1}">
+     ${BLOBS.map(b=>`<circle cx="${b[0]}" cy="${b[1]}" r="${b[2]}" fill="url(#b${u})" stroke="rgba(255,255,255,.55)" stroke-width="1.1"/>`).join('')}
+     <ellipse cx="72" cy="58" rx="28" ry="19" fill="url(#h${u})" transform="rotate(-24 72 58)"/>
+     <circle cx="132" cy="52" r="7" fill="#fff" opacity=".75"/>
+     <circle cx="60" cy="132" r="4.5" fill="#fff" opacity=".45"/>
+     ${eyes}${mouth}${extra}
+   </g></svg>`;
 }
-function renderPrio(){
-  const cond = document.body.dataset.cond || 'urgent';
-  const order = {urgent:['urgent','soon','soon'], soon:['soon','soon','fresh'], fresh:['fresh','fresh','fresh']}[cond];
-  const taken = new Set();
-  const pick = order.map(g => {
-    const hit = ITEMS.find(i => i.g===g && !taken.has(i.nm)) || ITEMS.find(i => !taken.has(i.nm));
-    taken.add(hit.nm); return hit;
-  });
-  document.getElementById('prioRow').innerHTML = pick.map(i=>`
-    <div class="pchip">${face(i.g,56)}
-      <span class="nm">${i.nm}</span>
-      <span class="dd" style="color:${GRADES[i.g].c1}">${i.dd}</span>
-      <span class="qt">${i.qt}</span>
-    </div>`).join('');
-}
-function renderFridge(){
-  document.getElementById('fridgeGrid').innerHTML = ITEMS.map(i=>`
-    <div class="card icard ${i.g==='unknown'?'unknown':''}">
-      ${face(i.g,64)}
-      <div class="meta">
-        <div class="nm">${i.nm}</div>
-        <div class="qt">${i.qt}</div>
-        <div class="ex" style="color:${GRADES[i.g].c1}">${i.ex} · ${i.dd}</div>
-      </div>
-      ${i.unknownQty?'<span class="badge">잔량 미확인</span>':''}
-    </div>`).join('');
-}
-function renderLegend(){
-  document.getElementById('legend').innerHTML = Object.entries(GRADES).map(([k,g])=>`
-    <div class="lg">${face(k,48)}<div><div class="nm" style="color:${g.c1}">${g.label}</div>
-    <div class="ds">${g.desc}${k==='expired'?'<br>추천 후보에서 제외':''}${k==='unknown'?'<br>자동 가능 판정 안 함':''}</div></div></div>`).join('');
-}
-function applyCond(c){
-  document.body.dataset.cond = c;
-  const v = COND[c];
-  document.documentElement.style.setProperty('--accent', v.accent);
-  document.documentElement.style.setProperty('--glow', v.glow);
-  document.getElementById('condTitle').textContent = v.title;
-  document.getElementById('condSub').innerHTML = v.sub;
-  renderFaces(); renderPrio();
-}
-function applyVoice(v){
-  document.body.dataset.voice = v;
-  const d = VOICE[v];
-  document.getElementById('vbState').textContent = d.st;
-  document.getElementById('talkState').textContent = d.state;
-  document.getElementById('talkUtter').textContent = d.utter;
-  document.getElementById('talkResult').style.visibility = (v==='speaking'?'visible':'hidden');
-  document.getElementById('talkRing').classList.toggle('listening', d.ring);
-  renderFaces();
-}
-document.querySelectorAll('.toolbar button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    const grp = b.parentElement;
-    grp.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));
-    b.setAttribute('aria-pressed','true');
-    if(b.dataset.screen){
-      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
-      document.getElementById('s-'+b.dataset.screen).classList.add('on');
-    }
-    if(b.dataset.cond) applyCond(b.dataset.cond);
-    if(b.dataset.voice) applyVoice(b.dataset.voice);
-  });
+
+const charbox=document.getElementById('charbox'),labelbox=document.getElementById('labelbox'),
+      ticks=document.getElementById('ticks'),pill=document.getElementById('pill'),scaleEl=document.getElementById('scale');
+STEPS.forEach((st,k)=>{
+  const c=document.createElement('div');c.className='char';c.innerHTML=jelly(st);charbox.appendChild(c);
+  const l=document.createElement('div');l.className='lab';
+  l.innerHTML=`<div class="big">${st.big}</div><div class="sm">${st.sm}</div>`;labelbox.appendChild(l);
+  if(k===STEPS.length-1){const d=document.createElement('div');d.className='divider';ticks.appendChild(d);}
+  const t=document.createElement('div');t.className='tick';t.dataset.k=k;t.innerHTML=jelly(st);ticks.appendChild(t);
 });
-function fit(){
-  const d = document.getElementById('device');
-  const s = Math.min(1, (window.innerWidth-48)/1280);
-  d.style.transform = 'scale('+s+')';
-  d.style.marginBottom = (s<1 ? -(800*(1-s))+20 : 0)+'px';
+const charEls=[...charbox.children],labEls=[...labelbox.children],tickEls=[...ticks.querySelectorAll('.tick')];
+
+const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const th=a=>'#'+a.map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
+const mix=(a,b,t)=>th(hx(a).map((v,i)=>v+(hx(b)[i]-v)*t));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const N=STEPS.length;let progress=1,raf=null;
+
+const cOf=k=>{const r=tickEls[k].getBoundingClientRect(),s=scaleEl.getBoundingClientRect();return r.left-s.left+r.width/2;};
+const cAt=i=>{const lo=Math.floor(clamp(i,0,N-1)),hi=Math.min(N-1,lo+1),f=clamp(i,0,N-1)-lo;return cOf(lo)+(cOf(hi)-cOf(lo))*f;};
+
+function render(){
+  const i=clamp(progress,0,N-1),lo=Math.floor(i),hi=Math.min(N-1,lo+1),f=i-lo,A=STEPS[lo],B=STEPS[hi];
+  const R=document.documentElement.style;
+  R.setProperty('--acc',mix(A.c2,B.c2,f));
+  R.setProperty('--bg1',mix(A.bg1,B.bg1,f));
+  R.setProperty('--bg2',mix(A.bg2,B.bg2,f));
+  R.setProperty('--ray',(A.ray+(B.ray-A.ray)*f).toFixed(3));
+
+  charEls.forEach((el,k)=>{const d=k-i,ad=Math.abs(d);
+    el.style.opacity=ad>=1?0:Math.pow(1-ad,.85);
+    el.style.transform=`scale(${1-Math.min(1,ad)*.16}) rotate(${d*5}deg)`;
+    el.style.visibility=ad>=1?'hidden':'visible';});
+  labEls.forEach((el,k)=>{const d=k-i,ad=Math.abs(d);
+    el.style.opacity=ad>=1?0:Math.pow(1-ad,1.7);
+    el.style.transform=`translateY(${d*20}px)`;
+    el.style.visibility=ad>=1?'hidden':'visible';});
+  tickEls.forEach((el,k)=>{const ad=Math.abs(k-i),near=Math.max(0,1-ad);
+    el.style.filter=`grayscale(${(1-near)*.92}) saturate(${.45+.55*near})`;
+    el.style.opacity=(.42+.58*near).toFixed(3);
+    el.style.transform=`scale(${.9+near*.18})`;});
+  pill.style.transform=`translateX(${cAt(i)-29}px)`;
+
+  const n=Math.round(i),st=STEPS[n],near=1-Math.min(1,Math.abs(i-n)*2);
+  document.getElementById('cEm').textContent=st.em;
+  document.getElementById('cTx').textContent=st.cta;
+  document.querySelector('.cta').style.opacity=(.35+.65*near).toFixed(3);
+  const it=document.getElementById('items');
+  it.innerHTML=st.items.map(x=>`<span class="it">${x}</span>`).join('');
+  it.style.opacity=near.toFixed(3);
 }
-window.addEventListener('resize', fit);
-const q = new URLSearchParams(location.search);
-function press(attr, val){
-  const b = document.querySelector(`.toolbar button[data-${attr}="${val}"]`);
-  if(b) b.click();
-}
-renderFridge(); renderLegend();
-applyCond(q.get('cond') || 'urgent'); applyVoice(q.get('voice') || 'waiting'); fit();
-if(q.get('cond')) press('cond', q.get('cond'));
-if(q.get('voice')) press('voice', q.get('voice'));
-if(q.get('screen')) press('screen', q.get('screen'));
+function spring(t){cancelAnimationFrame(raf);
+  const tick=()=>{progress+=(t-progress)*.18;
+    if(Math.abs(t-progress)<.0015){progress=t;render();return;}render();raf=requestAnimationFrame(tick);};tick();}
+
+let dragging=false;
+function p2p(x){const s=scaleEl.getBoundingClientRect(),px=x-s.left;
+  if(px<=cOf(0))return 0; if(px>=cOf(N-1))return N-1;
+  for(let k=0;k<N-1;k++){const a=cOf(k),b=cOf(k+1);if(px>=a&&px<=b)return k+(px-a)/(b-a);} return progress;}
+scaleEl.addEventListener('pointerdown',e=>{dragging=true;cancelAnimationFrame(raf);
+  scaleEl.setPointerCapture(e.pointerId);progress=p2p(e.clientX);render();});
+scaleEl.addEventListener('pointermove',e=>{if(dragging){progress=p2p(e.clientX);render();}});
+const ed=()=>{if(!dragging)return;dragging=false;spring(Math.round(progress));};
+scaleEl.addEventListener('pointerup',ed);scaleEl.addEventListener('pointercancel',ed);
+
+(function(){let on=false,sx=0,sp=0;const el=document.getElementById('stage');
+ el.addEventListener('pointerdown',e=>{on=true;cancelAnimationFrame(raf);el.setPointerCapture(e.pointerId);sx=e.clientX;sp=progress;});
+ el.addEventListener('pointermove',e=>{if(!on)return;progress=clamp(sp-(e.clientX-sx)/Math.min(150,innerWidth*.35),-.3,N-.7);render();});
+ const up=()=>{if(!on)return;on=false;spring(clamp(Math.round(progress),0,N-1));};
+ el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);})();
+
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-pressed','false'));
+  b.setAttribute('aria-pressed','true');
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+  document.getElementById('p-'+b.dataset.pane).classList.add('on');
+  document.getElementById('qtitle').textContent={home:'오늘 뭐 먹지?',fridge:'냉장고',hist:'변경 기록'}[b.dataset.pane];
+}));
+
+const FR=[{nm:'삼겹살',s:0,dd:'소비기한 9/27 · 지남',qt:'300g'},{nm:'두부',s:1,dd:'소비기한 9/29 · D-1',qt:'2모'},
+ {nm:'대파',s:2,dd:'품질유지 9/30 · D-2',qt:'1대'},{nm:'애호박',s:2,dd:'소비기한 10/1 · D-3',qt:'1개'},
+ {nm:'우유',s:2,dd:'개봉 9/26 · 2일',qt:'700ml'},{nm:'계란',s:3,dd:'유통기한 10/12 · D-14',qt:'8개'},
+ {nm:'다진마늘',s:3,dd:'유통기한 10/20 · D-22',qt:'미확인',b:1},{nm:'김치',s:4,dd:'기한 미확인',qt:'1통'}];
+document.getElementById('fridgeList').innerHTML=FR.map(i=>`
+ <div class="ic2 ${i.s===4?'dash':''}">${jelly(STEPS[i.s])}
+  <div><div class="nm">${i.nm}</div><div class="sub" style="color:${STEPS[i.s].c2}">${i.dd}</div></div>
+  <div class="qt">${i.qt}</div>${i.b?'<span class="bdg">잔량 미확인</span>':''}</div>`).join('');
+
+const sheet=document.getElementById('sheet');let sstep=0;
+document.getElementById('mic').onclick=()=>{sstep=0;sheet.classList.add('up');
+ document.getElementById('shSt').textContent='듣고 있어요';
+ document.getElementById('shUt').textContent='“두부 두 모랑 계란 열 개 넣었어. 두부는 소비기한 10월 3일”';};
+document.getElementById('shOk').onclick=()=>{if(sstep===0){sstep=1;
+  document.getElementById('shSt').textContent='반영했어요';
+  document.getElementById('shUt').textContent='두부 2모 · 소비기한 10/3 · 냉장 / 계란 10개 · 기한 미확인 · 냉장';
+ }else sheet.classList.remove('up');};
+document.getElementById('shNo').onclick=()=>sheet.classList.remove('up');
+
+addEventListener('resize',render);
+const qi=parseInt(new URLSearchParams(location.search).get('i'),10);
+progress=Number.isInteger(qi)?clamp(qi,0,N-1):1;
+requestAnimationFrame(render);
 </script>
 </body>
 </html>

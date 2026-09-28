@@ -1,0 +1,49 @@
+name: today_meal
+description: 말로 관리하는 우리 집 냉장고 — 핸드폰에서 재고를 기록하고 오늘의 메뉴를 정한다.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 음성 계층. 셋 다 네이티브 구현을 감싼 것이라 기기별 동작 차이가 그대로 올라온다.
+  porcupine_flutter: ^4.0.0
+  speech_to_text: ^7.5.0
+  flutter_tts: ^4.2.5
+  permission_handler: ^12.0.0
+
+  # 네트워크
+  dio: ^5.9.0
+  json_annotation: ^4.9.0
+
+  # 상태와 DI. ViewModel 은 ChangeNotifier 이고 주입은 get_it 이 한다.
+  provider: ^6.1.5
+  get_it: ^8.0.3
+
+  # 설정과 유틸
+  flutter_dotenv: ^5.2.1
+  uuid: ^4.5.1
+  intl: ^0.20.2
+  logger: ^2.5.0
+
+  # 화면을 켜 둔 상태로 유지한다. 조리 모드에서만 켠다.
+  wakelock_plus: ^1.2.10
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.14
+  json_serializable: ^6.9.5
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
+    # 한국어 커스텀 호출어 모델. Porcupine 콘솔에서 받아 여기 둔다.
+    - assets/wake_word/

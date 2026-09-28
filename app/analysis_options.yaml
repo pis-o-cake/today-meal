@@ -1,0 +1,32 @@
+# Flutter 기본 규칙에 몇 가지를 더한다. 목적은 취향 통일이 아니라
+# 나중에 디버깅으로 번질 것을 컴파일 시점에 잡는 것이다.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    avoid_print: error
+    unused_import: error
+    unused_local_variable: error
+    # Dart 3.13 의 새 제안들. 둘 다 끄는 이유가 있다.
+    # `if (x != null)` 조건부 요소가 더 읽히고,
+    # 필드를 private 로 두려면 생성자 본문 대입이 필요하다.
+    use_null_aware_elements: ignore
+    prefer_initializing_formals: ignore
+  exclude:
+    - "**/*.g.dart"
+    - "build/**"
+    - "android/**"
+    - "ios/**"
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_dynamic_calls
+    - avoid_empty_else
+    - cancel_subscriptions
+    - close_sinks
+    - prefer_final_locals
+    - prefer_single_quotes
+    - require_trailing_commas
+    - unawaited_futures
+    - use_super_parameters

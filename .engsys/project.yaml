@@ -15,7 +15,7 @@ vcs:
     subject-language: 'ko'
     subject-ending: 'noun'
     scopes:
-      - 'android'
+      - 'app'
       - 'server'
       - 'voice'
       - 'inventory'
@@ -76,6 +76,8 @@ documentation:
       - 'android'
       - 'server'
       - 'docs/product'
+      - 'mockup'
+      - 'app'
   lifecycle:
     design:
       path: 'docs/design'

@@ -34,6 +34,9 @@ app/android/local.properties
 .kotlin/
 app/.dart_tool/
 app/build/
+app/.env
+app/android/local.properties
+app/**/*.iml
 
 # Poetry / 서버 추가
 server/.venv/
