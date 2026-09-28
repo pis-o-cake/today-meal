@@ -28,6 +28,91 @@ class Strings {
   static const serverFailed = '서버에 연결할 수 없어요';
   static const retry = '다시 시도';
 
+  // 하단 탭
+  static const tabToday = '오늘';
+  static const tabFridge = '냉장고';
+  static const tabHistory = '기록';
+
+  // 신선도 밴드. 등급은 서버가 판정하고 문구만 여기 있다.
+  static const bandExpired = '지남';
+  static const bandExpiredHint = '오늘 요리 후보에서 뺐어요';
+  static const bandUrgent = '급함';
+  static const bandUrgentHint = '오늘 안에 쓰세요';
+  static const bandSoon = '챙길 것';
+  static const bandSoonHint = '이번 주에 쓰세요';
+  static const bandFresh = '여유';
+  static const bandFreshHint = '급하지 않아요';
+  static const bandUnknown = '미확인';
+  static const bandUnknownHint = '기한을 알려주세요';
+  static String bandCount(int n) => '\$n가지';
+
+  // 냉장고 컨디션
+  static const conditionRelaxed = '여유';
+  static const conditionAttention = '챙길 것';
+  static const conditionUrgent = '급함';
+
+  // 메뉴
+  static const menuSectionTitle = '오늘은 이 재료로';
+  static const menuSectionHint = '이런 메뉴 어떠세요?';
+  static const menuReady = '지금 가능';
+  static const menuNeedsCheck = '확인 필요';
+  static const menuNeedsPurchase = '재료 준비 후';
+  static const menuAllIngredients = '재료 다 있음';
+  static String menuMinutes(int n) => '약 \$n분';
+  static String menuServings(int n) => '\$n인분';
+  static const menuOpen = '보기';
+  static const menuCooked = '해먹었어요';
+  static const menuFindOnCoupang = '쿠팡에서 찾기';
+  static const menuSubstitute = '대체 재료로 만들기';
+  static const menuIngredients = '재료';
+  static const menuSteps = '조리 순서';
+
+  // 냉장고 화면
+  static const fridgeSearchHint = '재료 검색';
+  static const fridgeAll = '전체';
+  static const storageFridge = '냉장';
+  static const storageFreezer = '냉동';
+  static const storagePantry = '실온';
+  static const storageUnknown = '모름';
+  static const quantityUnknown = '잔량 미확인';
+  static const dateUnknown = '기한 미확인';
+  static String daysLeft(int n) => n < 0 ? '\${-n}일 지남' : 'D-\$n';
+  static String openedDaysAgo(int n) => '개봉 \$n일';
+  static String itemCount(int n) => '재료 \$n종';
+
+  // 기한 종류. 서로 다른 정보이므로 문구도 구분한다.
+  static const dateUseBy = '소비기한';
+  static const dateSellBy = '유통기한';
+  static const dateBestBefore = '품질유지';
+  static const dateManufactured = '제조일';
+  static const datePacked = '포장일';
+  static const dateCheckReminder = '점검 알림';
+
+  // 기록 화면
+  static const historyToday = '오늘';
+  static const historyUndoable = '되돌릴 수 있어요';
+  static const historyStockIn = '입고';
+  static const historyConsume = '사용';
+  static const historyAdjust = '보정';
+  static const historyRevert = '취소';
+  static const historyDiscard = '폐기';
+  static const historyMove = '이동';
+  static const historySplit = '소분';
+  static const historyOpened = '개봉';
+  static const historyEstimated = '추정';
+  static const historyExplicit = '명시값';
+  static const historyNoExtraDeduction = '추가 차감 없음';
+
+  // 공통
+  static const empty = '아직 등록한 재료가 없어요';
+  static const emptyHint = '"헤이 냉장고"라고 부르고 말해보세요';
+  static const undo = '되돌리기';
+  static const mute = '음소거';
+  static const unmute = '음소거 해제';
+  static const micInUse = '마이크 사용 중';
+  static const confirmYes = '네, 맞아요';
+  static const cancelJustNow = '방금 거 취소';
+
   // 아직 화면이 없는 자리
   static const uiPending = '화면은 목업 확정 후에 만듭니다';
 }

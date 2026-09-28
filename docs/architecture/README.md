@@ -61,10 +61,10 @@ today-meal/
 app/lib/
 ├── main.dart                    진입점 · DI 등록
 ├── core/
-│   ├── voice/                   VoiceSessionManager · WakeWordDetector
-│   │                            SpeechTranscriber · SpeechSpeaker
+│   ├── voice/                   VoiceSessionManager · 감지기·전사기·낭독기 계약
+│   │                            stub_voice.dart — S-01 까지의 자리표시
 │   ├── network/                 Dio · 인터셉터 · 오류 매핑
-│   ├── design/                  색 · 타이포 · 간격 토큰과 공통 위젯
+│   ├── design/                  tokens · breakpoints · responsive · labels
 │   └── l10n/                    사용자에게 보이는 문구
 ├── data/
 │   ├── remote/                  API 클라이언트 · DTO
@@ -73,12 +73,14 @@ app/lib/
 │   ├── model/                   앱이 쓰는 모델
 │   ├── repository/              인터페이스 (ViewModel이 의존하는 쪽)
 │   └── usecase/                 화면에 걸친 동작
-└── ui/
-    ├── home/                    Screen · ViewModel · UiState
-    ├── conversation/
-    ├── fridge/
-    ├── menu/
-    └── history/
+├── ui/
+│   ├── shell.dart               하단 탭 셋. 태블릿 폭에서는 좌측 레일
+│   ├── home/                    신선도 밴드 + 메뉴 추천
+│   ├── conversation/            오버레이. 탭이 아니다
+│   ├── fridge/                  검색·보관 필터
+│   ├── menu/                    메뉴 상세
+│   └── history/                 변경 기록
+└── main.dart
 ```
 
 책임 경계는 셋이다.
@@ -328,6 +330,8 @@ S-00 시점 기준이다. 이 표를 갱신하지 않고 구현을 진행하면 
 | `command` 판정 6단계 | 구현·통합 테스트 통과. 모델 없이 가짜 게이트웨이로도 전부 검증됨 |
 | 모델 호출 예산 가드 | 구현. 비용·호출 수·연속 간격 셋을 사전에 막음 |
 | 한국어 명령 해석 품질 | 15발화 73%. **무료 티어 일일 한도로 재평가 중단** |
+| 신선도·냉장고 컨디션 등급 | 서버가 계산하고 앱은 담기만 함. 테스트 4건 |
+| 앱 화면 구조 | 홈·냉장고·기록·메뉴 상세·대화 오버레이. 시각은 계속 바뀜 |
 | 실기기 동작 | **미확인** |
 
 기동 절차와 실패 대응은 [로컬 개발 런북](../runbook/local-development.md)이 갖는다.

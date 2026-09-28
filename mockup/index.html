@@ -24,9 +24,9 @@
     body{display:flex;align-items:center;justify-content:center;background:#0d0f12}
     .phone{height:min(900px,95dvh);border-radius:46px;box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 0 2px #23262b}
   }
-  .bg{position:absolute;inset:0;pointer-events:none;
+  .bg{position:absolute;inset:0;z-index:0;pointer-events:none;
       background:radial-gradient(125% 78% at 50% 16%,#fff 0%,var(--bg1) 40%,var(--bg2) 100%)}
-  .rays{position:absolute;left:50%;top:-8%;width:200%;aspect-ratio:1;transform:translateX(-50%);
+  .rays{position:absolute;z-index:0;left:50%;top:-8%;width:200%;aspect-ratio:1;transform:translateX(-50%);
         pointer-events:none;opacity:var(--ray);
         background:conic-gradient(from 0deg,transparent 0 2.6deg,rgba(255,255,255,.95) 3.4deg 4.6deg,transparent 5.4deg 10deg);
         -webkit-mask-image:radial-gradient(circle,transparent 6%,#000 22%,transparent 58%);
@@ -34,13 +34,16 @@
         animation:spin 110s linear infinite}
   @keyframes spin{to{transform:translateX(-50%) rotate(360deg)}}
 
-  .head{position:relative;flex:none;padding:calc(var(--st) + 22px) 24px 0;text-align:center}
+  .head,.pane,.tabs{position:relative;z-index:2}
+  .head{flex:none;padding:calc(var(--st) + 22px) 24px 0;text-align:center}
   .hi{font-size:14px;color:var(--ink2);font-weight:500}
   .q{font-size:27px;font-weight:700;margin-top:5px;letter-spacing:-.035em}
-  .iconbtn{position:absolute;right:20px;top:calc(var(--st) + 18px);width:44px;height:44px;border-radius:50%;
-    background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);color:var(--ink);
-    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);
-    box-shadow:0 6px 18px rgba(20,25,35,.09);z-index:7}
+  .listen{position:absolute;right:18px;top:calc(var(--st) + 22px);z-index:8;display:flex;align-items:center;gap:7px;
+    font-size:11px;font-weight:700;color:var(--ink2);background:rgba(255,255,255,.66);
+    border:1px solid rgba(255,255,255,.92);padding:7px 11px;border-radius:999px;
+    backdrop-filter:blur(12px);box-shadow:0 4px 14px rgba(20,25,35,.07);letter-spacing:-.01em}
+  .ld{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:bp 2.2s ease-in-out infinite}
+  @keyframes bp{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
 
   .pane{display:none;flex:1;min-height:0}
   .pane.on{display:flex;flex-direction:column}
@@ -72,16 +75,16 @@
   .hint{text-align:center;font-size:12px;color:var(--ink3);font-weight:500;margin:14px 0 9px;
         display:flex;align-items:center;justify-content:center;gap:6px}
   .swipe{flex:none;touch-action:none;padding-bottom:2px}
-  .scale{position:relative;height:70px;margin:0 18px;border-radius:26px;display:flex;align-items:center;
-         background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.92);
+  .scale{position:relative;height:80px;margin:0 16px;border-radius:40px;
+         background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.95);
          backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
          box-shadow:0 10px 28px rgba(20,25,35,.09),inset 0 1px 0 rgba(255,255,255,.7)}
-  .pill{position:absolute;top:6px;left:0;width:58px;height:58px;border-radius:20px;background:#fff;
-        box-shadow:0 6px 16px rgba(20,25,35,.14);will-change:transform}
-  .ticks{position:relative;display:flex;width:100%;height:100%;align-items:center;z-index:2;padding:0 4px}
-  .tick{flex:1;display:flex;align-items:center;justify-content:center;height:100%;will-change:transform,filter,opacity}
-  .tick svg{width:38px;height:38px}
-  .divider{width:1px;height:30px;background:rgba(21,24,29,.10);flex:none;margin:0 3px}
+  .pill{position:absolute;top:0;left:0;width:56px;height:56px;border-radius:19px;background:#fff;
+        box-shadow:0 8px 18px rgba(20,25,35,.13),0 1px 2px rgba(20,25,35,.06);will-change:transform}
+  .ticks{position:absolute;inset:0;z-index:2}
+  .tick{position:absolute;top:0;left:0;width:52px;height:52px;display:flex;align-items:center;
+        justify-content:center;will-change:transform,filter,opacity}
+  .tick svg{width:46px;height:46px}
 
   .tabs{flex:none;display:flex;justify-content:space-around;align-items:center;margin-top:12px;
         padding:11px 14px calc(var(--sb) + 12px);border-top:1px solid rgba(21,24,29,.07);
@@ -110,7 +113,19 @@
   .row2 .tx{font-size:15px;font-weight:500}.row2 .qy{margin-left:auto;font-size:16px;font-weight:700}
   .row2 .tm{font-size:12px;color:var(--ink3);width:42px;flex:none;font-weight:600}
 
-  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:9;background:#fff;
+  .wake{position:absolute;inset:0;z-index:30;display:none;flex-direction:column;
+    align-items:center;justify-content:flex-end;padding:0 28px calc(var(--sb) + 64px);
+    background:radial-gradient(70% 46% at 50% 40%,rgba(14,18,25,.82),rgba(7,9,13,.96));
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);opacity:0;transition:opacity .32s ease}
+  .wake.on{display:flex;opacity:1}
+  #neuro{position:absolute;inset:0;width:100%;height:100%}
+  .wtext{position:relative;text-align:center;width:100%}
+  .wstate{color:#fff;font-size:27px;font-weight:800;letter-spacing:-.035em}
+  .wutter{color:rgba(255,255,255,.66);font-size:14.5px;font-weight:500;margin-top:11px;line-height:1.6;min-height:46px}
+  .wchips{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;min-height:30px;margin-top:2px}
+  .wc{font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;color:#fff;
+      background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.20)}
+  .sheetX{position:absolute;left:0;right:0;bottom:0;z-index:9;background:#fff;
          border-radius:28px 28px 0 0;padding:22px 22px calc(var(--sb) + 20px);
          box-shadow:0 -18px 50px rgba(20,25,35,.18);
          transform:translateY(118%);transition:transform .38s cubic-bezier(.22,1,.36,1)}
@@ -132,10 +147,7 @@
     <div class="hi">안녕하세요, 철님 👋</div>
     <div class="q" id="qtitle">오늘 뭐 먹지?</div>
   </div>
-  <button class="iconbtn" id="mic" aria-label="음성">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
-      <rect x="9" y="2.8" width="6" height="11.4" rx="3"/><path d="M5.4 11.6a6.6 6.6 0 0 0 13.2 0"/><path d="M12 18.2v3"/></svg>
-  </button>
+  <div class="listen" id="listen"><span class="ld"></span>헤이 냉장고 대기 중</div>
 
   <section class="pane on" id="p-home">
     <div class="stage" id="stage">
@@ -166,11 +178,14 @@
     <div class="row2"><span class="tm">19:09</span><span class="kd k-adj">보정</span><span class="tx">“네 개 남았어”</span><span class="qy">4개</span></div>
   </div></section>
 
-  <div class="sheet" id="sheet">
-    <div class="grip"></div>
-    <div class="st2" id="shSt">듣고 있어요</div>
-    <div class="ut" id="shUt">“두부 두 모랑 계란 열 개 넣었어. 두부는 소비기한 10월 3일”</div>
-    <div class="bs"><button class="pri" id="shOk">네, 맞아요</button><button id="shNo">취소</button></div>
+
+  <div class="wake" id="wake">
+    <canvas id="neuro"></canvas>
+    <div class="wtext">
+      <div class="wstate" id="wState">헤이 냉장고</div>
+      <div class="wutter" id="wUtter"></div>
+      <div class="wchips" id="wChips"></div>
+    </div>
   </div>
 
   <nav class="tabs">
@@ -189,70 +204,107 @@
 
 <script>
 const STEPS=[
- {key:'expired',c1:'#B9BFC6',c2:'#7E858D',bg1:'#F5F6F8',bg2:'#E1E5EA',ray:.06,exp:'x',dull:1,
+ {key:'expired',body:'#C2C9D3',deep:'#8C95A3',acc:'#78828F',bg1:'#F7F8FA',bg2:'#EAEDF1',ray:.05,exp:'x',dull:1,
   big:'지남',sm:'1가지 · 오늘 요리 후보에서 뺐어요',items:['삼겹살 9/27'],em:'🗑',cta:'상태 확인하기'},
- {key:'urgent',c1:'#FF8A63',c2:'#F0431B',bg1:'#FFF3EF',bg2:'#FFD5C6',ray:.30,exp:'frown',
+ {key:'urgent',body:'#FFB3A0',deep:'#F4704E',acc:'#EF5130',bg1:'#FFF8F5',bg2:'#FFE7DE',ray:.18,exp:'frown',
   big:'급함',sm:'1가지 · 오늘 안에 쓰세요',items:['두부 D-1'],em:'🥘',cta:'두부조림 보기'},
- {key:'soon',c1:'#FFC061',c2:'#F59310',bg1:'#FFF8EC',bg2:'#FFE4B8',ray:.48,exp:'flat',
+ {key:'soon',body:'#FFD79B',deep:'#F2A63C',acc:'#DE8E12',bg1:'#FFFBF3',bg2:'#FFF0D9',ray:.28,exp:'flat',
   big:'챙길 것',sm:'3가지 · 이번 주에 쓰세요',items:['대파 D-2','애호박 D-3','우유 개봉2일'],em:'🍳',cta:'대파계란말이 보기'},
- {key:'fresh',c1:'#8BE07E',c2:'#2FB457',bg1:'#F1FCF2',bg2:'#C9EFD1',ray:.80,exp:'smile',spark:1,
+ {key:'fresh',body:'#AEE8BE',deep:'#4FC178',acc:'#22A455',bg1:'#F6FCF8',bg2:'#DDF3E4',ray:.42,exp:'smile',spark:1,
   big:'여유',sm:'2가지 · 급하지 않아요',items:['계란 D-14','다진마늘 D-22'],em:'🍚',cta:'계란찜 보기'},
- {key:'unknown',c1:'#C3C9D1',c2:'#8D96A1',bg1:'#F6F7F9',bg2:'#E3E7EC',ray:.05,exp:'q',dull:1,
+ {key:'unknown',body:'#CCD2DE',deep:'#99A2B2',acc:'#7F8899',bg1:'#F8F9FB',bg2:'#ECEFF4',ray:.05,exp:'q',dull:1,
   big:'미확인',sm:'1가지 · 기한을 알려주세요',items:['김치'],em:'❓',cta:'기한 알려주기'}
 ];
-const BLOBS=[[100,112,54],[60,86,34],[140,86,34],[76,60,28],[124,60,28],[100,50,30],[52,124,26],[148,124,26]];
+const BUBBLES=[[100,56,35],[62,72,31],[138,72,31],[44,106,26],[156,106,26],[76,40,26],[124,40,26]];
 let uidn=0;
-
-function jelly(st,px){
-  const u='j'+(++uidn), INK='#2A2E35', W=6.6;
+function jelly(st){
+  const u='j'+(++uidn), INK='#333A52', B=st.body, D=st.deep;
+  const bub=(x,y,r)=>`<g><circle cx="${x}" cy="${y}" r="${r}" fill="url(#b${u})" stroke="rgba(255,255,255,.55)" stroke-width="1"/>
+    <ellipse cx="${x-r*.34}" cy="${y-r*.40}" rx="${r*.30}" ry="${r*.21}" fill="#fff" opacity=".62" transform="rotate(-25 ${x-r*.34} ${y-r*.40})"/>
+    <circle cx="${x+r*.40}" cy="${y+r*.34}" r="${r*.11}" fill="#fff" opacity=".45"/></g>`;
   let eyes='',mouth='',extra='';
+  const eye=(cx,rot)=>`<rect x="${cx-7}" y="104" width="14" height="26" rx="7" fill="${INK}" transform="rotate(${rot} ${cx} 117)"/>`;
   if(st.exp==='smile'){
-    eyes=`<path d="M70 104 q10 -12 20 0" stroke="${INK}" stroke-width="${W}" fill="none" stroke-linecap="round"/>
-          <path d="M110 104 q10 -12 20 0" stroke="${INK}" stroke-width="${W}" fill="none" stroke-linecap="round"/>`;
-    mouth=`<path d="M85 120 q15 19 30 0" stroke="${INK}" stroke-width="${W}" fill="none" stroke-linecap="round"/>`;
+    eyes=`<path d="M78 119 q9 -13 18 0" stroke="${INK}" stroke-width="6.4" fill="none" stroke-linecap="round"/>
+          <path d="M104 119 q9 -13 18 0" stroke="${INK}" stroke-width="6.4" fill="none" stroke-linecap="round"/>`;
+    mouth=`<path d="M91 138 q9 11 18 0" stroke="${INK}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
   }else if(st.exp==='flat'){
-    eyes=`<ellipse cx="82" cy="102" rx="5.2" ry="7" fill="${INK}"/><ellipse cx="118" cy="102" rx="5.2" ry="7" fill="${INK}"/>`;
-    mouth=`<path d="M88 126 h24" stroke="${INK}" stroke-width="${W}" stroke-linecap="round"/>`;
+    eyes=eye(86,0)+eye(114,0);
+    mouth=`<rect x="93" y="142" width="14" height="5.6" rx="2.8" fill="${INK}"/>`;
   }else if(st.exp==='frown'){
-    eyes=`<path d="M70 92 l19 9" stroke="${INK}" stroke-width="${W}" stroke-linecap="round"/>
-          <path d="M130 92 l-19 9" stroke="${INK}" stroke-width="${W}" stroke-linecap="round"/>
-          <ellipse cx="83" cy="110" rx="5" ry="6.4" fill="${INK}"/><ellipse cx="117" cy="110" rx="5" ry="6.4" fill="${INK}"/>`;
-    mouth=`<path d="M85 138 q15 -17 30 0" stroke="${INK}" stroke-width="${W}" fill="none" stroke-linecap="round"/>`;
+    eyes=eye(86,16)+eye(114,-16);
+    mouth=`<path d="M92 148 q8 -9 16 0" stroke="${INK}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
   }else if(st.exp==='x'){
-    eyes=`<path d="M74 96 l15 15 M89 96 l-15 15" stroke="${INK}" stroke-width="5.6" stroke-linecap="round"/>
-          <path d="M111 96 l15 15 M126 96 l-15 15" stroke="${INK}" stroke-width="5.6" stroke-linecap="round"/>`;
-    mouth=`<path d="M89 132 h22" stroke="${INK}" stroke-width="5.6" stroke-linecap="round"/>`;
+    eyes=`<path d="M79 108 l13 13 M92 108 l-13 13" stroke="${INK}" stroke-width="5.6" stroke-linecap="round"/>
+          <path d="M108 108 l13 13 M121 108 l-13 13" stroke="${INK}" stroke-width="5.6" stroke-linecap="round"/>`;
+    mouth=`<rect x="93" y="144" width="14" height="5.4" rx="2.7" fill="${INK}"/>`;
   }else{
-    eyes=`<ellipse cx="83" cy="106" rx="4.8" ry="6.2" fill="${INK}"/><ellipse cx="117" cy="106" rx="4.8" ry="6.2" fill="${INK}"/>`;
-    mouth=`<text x="100" y="146" text-anchor="middle" font-size="40" font-weight="800" fill="${INK}"
-            font-family="Pretendard,system-ui">?</text>`;
+    eyes=eye(86,0)+eye(114,0);
+    mouth=`<rect x="94" y="144" width="12" height="5.4" rx="2.7" fill="${INK}"/>`;
+    extra=`<text x="100" y="26" text-anchor="middle" font-size="30" font-weight="800" fill="${D}"
+            font-family="Pretendard,system-ui" opacity=".9">?</text>`;
   }
-  if(st.spark){
-    extra=`<g fill="#fff" opacity=".9">
-      <path d="M168 54 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z"/>
-      <path d="M32 96 l2.4 6.4 6.4 2.4 -6.4 2.4 -2.4 6.4 -2.4 -6.4 -6.4 -2.4 6.4 -2.4z"/>
-      <path d="M150 146 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z"/></g>`;
-  }
+  if(st.spark) extra=`<g fill="${D}" opacity=".7">
+      <path d="M170 46 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z"/>
+      <path d="M26 74 l2.3 6 6 2.3 -6 2.3 -2.3 6 -2.3 -6 -6 -2.3 6 -2.3z"/></g>`;
   return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
    <defs>
-     <radialGradient id="b${u}" cx="33%" cy="22%" r="86%">
-       <stop offset="0%" stop-color="#ffffff" stop-opacity=".95"/>
-       <stop offset="38%" stop-color="${st.c1}" stop-opacity=".88"/>
-       <stop offset="100%" stop-color="${st.c2}" stop-opacity=".97"/>
-     </radialGradient>
-     <radialGradient id="h${u}"><stop offset="0%" stop-color="#fff" stop-opacity=".9"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></radialGradient>
-     <filter id="g${u}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="13"/></filter>
-     <filter id="sh${u}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="7"/></filter>
+     <radialGradient id="b${u}" cx="32%" cy="26%" r="84%">
+       <stop offset="0%" stop-color="#fff" stop-opacity=".88"/>
+       <stop offset="46%" stop-color="${B}" stop-opacity=".72"/>
+       <stop offset="100%" stop-color="${D}" stop-opacity=".78"/></radialGradient>
+     <linearGradient id="t${u}" x1="20%" y1="4%" x2="80%" y2="100%">
+       <stop offset="0%" stop-color="#fff" stop-opacity=".95"/>
+       <stop offset="48%" stop-color="${B}" stop-opacity=".62"/>
+       <stop offset="100%" stop-color="${D}" stop-opacity=".68"/></linearGradient>
+     <radialGradient id="gl${u}" cx="50%" cy="50%" r="50%">
+       <stop offset="0%" stop-color="${B}" stop-opacity=".55"/>
+       <stop offset="100%" stop-color="${B}" stop-opacity="0"/></radialGradient>
+     <filter id="sh${u}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
    </defs>
-   <g filter="url(#g${u})" opacity="${st.dull?.28:.5}"><circle cx="100" cy="100" r="66" fill="${st.c1}"/></g>
-   <ellipse cx="100" cy="178" rx="46" ry="8.5" fill="${st.c2}" opacity="${st.dull?.13:.2}" filter="url(#sh${u})"/>
-   <g opacity="${st.dull?.85:1}">
-     ${BLOBS.map(b=>`<circle cx="${b[0]}" cy="${b[1]}" r="${b[2]}" fill="url(#b${u})" stroke="rgba(255,255,255,.55)" stroke-width="1.1"/>`).join('')}
-     <ellipse cx="72" cy="58" rx="28" ry="19" fill="url(#h${u})" transform="rotate(-24 72 58)"/>
-     <circle cx="132" cy="52" r="7" fill="#fff" opacity=".75"/>
-     <circle cx="60" cy="132" r="4.5" fill="#fff" opacity=".45"/>
+   <circle cx="100" cy="98" r="88" fill="url(#gl${u})" opacity="${st.dull?.5:.85}"/>
+   <ellipse cx="100" cy="180" rx="42" ry="7.5" fill="${D}" opacity="${st.dull?.12:.18}" filter="url(#sh${u})"/>
+   <g opacity="${st.dull?.9:1}">
+     ${BUBBLES.map(b=>bub(b[0],b[1],b[2])).join('')}
+     ${bub(40,136,14)}${bub(160,136,14)}
+     <ellipse cx="83" cy="170" rx="15" ry="11" fill="url(#t${u})" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
+     <ellipse cx="117" cy="170" rx="15" ry="11" fill="url(#t${u})" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
+     <rect x="58" y="78" width="84" height="86" rx="40" ry="38" fill="url(#t${u})" opacity=".96" stroke="rgba(255,255,255,.65)" stroke-width="1.2"/>
+     ${bub(56,128,19)}${bub(144,128,19)}
+     <ellipse cx="78" cy="96" rx="16" ry="10" fill="#fff" opacity=".5" transform="rotate(-24 78 96)"/>
+     
      ${eyes}${mouth}${extra}
    </g></svg>`;
+}
+
+function faceIcon(st){
+  const u='f'+(++uidn), INK='#3A4160', B=st.body, D=st.deep;
+  let eyes='',mouth='';
+  const eye=(cx,rot)=>`<rect x="${cx-4.4}" y="40" width="8.8" height="16" rx="4.4" fill="${INK}" transform="rotate(${rot} ${cx} 48)"/>`;
+  if(st.exp==='smile'){
+    eyes=`<path d="M32 50 q6 -8 12 0" stroke="${INK}" stroke-width="4.4" fill="none" stroke-linecap="round"/>
+          <path d="M56 50 q6 -8 12 0" stroke="${INK}" stroke-width="4.4" fill="none" stroke-linecap="round"/>`;
+    mouth=`<path d="M42 64 q8 9 16 0" stroke="${INK}" stroke-width="4.2" fill="none" stroke-linecap="round"/>`;
+  }else if(st.exp==='flat'){
+    eyes=eye(38,0)+eye(62,0); mouth=`<rect x="43" y="65" width="14" height="4.4" rx="2.2" fill="${INK}"/>`;
+  }else if(st.exp==='frown'){
+    eyes=eye(38,16)+eye(62,-16); mouth=`<path d="M42 70 q8 -8 16 0" stroke="${INK}" stroke-width="4.2" fill="none" stroke-linecap="round"/>`;
+  }else if(st.exp==='x'){
+    eyes=`<path d="M32 42 l9 9 M41 42 l-9 9" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>
+          <path d="M59 42 l9 9 M68 42 l-9 9" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`;
+    mouth=`<rect x="43" y="66" width="14" height="4" rx="2" fill="${INK}"/>`;
+  }else{
+    eyes=eye(38,0)+eye(62,0);
+    mouth=`<text x="50" y="74" text-anchor="middle" font-size="19" font-weight="800" fill="${INK}" font-family="Pretendard,system-ui">?</text>`;
+  }
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs>
+    <radialGradient id="i${u}" cx="34%" cy="26%" r="80%">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".96"/>
+      <stop offset="52%" stop-color="${B}" stop-opacity=".92"/>
+      <stop offset="100%" stop-color="${D}" stop-opacity=".95"/></radialGradient></defs>
+    <circle cx="50" cy="52" r="34" fill="url(#i${u})"/>
+    <ellipse cx="37" cy="33" rx="10" ry="6.4" fill="#fff" opacity=".55" transform="rotate(-24 37 33)"/>
+    ${eyes}${mouth}</svg>`;
 }
 
 const charbox=document.getElementById('charbox'),labelbox=document.getElementById('labelbox'),
@@ -261,10 +313,24 @@ STEPS.forEach((st,k)=>{
   const c=document.createElement('div');c.className='char';c.innerHTML=jelly(st);charbox.appendChild(c);
   const l=document.createElement('div');l.className='lab';
   l.innerHTML=`<div class="big">${st.big}</div><div class="sm">${st.sm}</div>`;labelbox.appendChild(l);
-  if(k===STEPS.length-1){const d=document.createElement('div');d.className='divider';ticks.appendChild(d);}
-  const t=document.createElement('div');t.className='tick';t.dataset.k=k;t.innerHTML=jelly(st);ticks.appendChild(t);
+  const t=document.createElement('div');t.className='tick';t.dataset.k=k;t.innerHTML=faceIcon(st);ticks.appendChild(t);
 });
 const charEls=[...charbox.children],labEls=[...labelbox.children],tickEls=[...ticks.querySelectorAll('.tick')];
+const SAG=13, TILT=10;
+let POS=[];
+function layoutArc(){
+  const W=scaleEl.clientWidth,pad=40,span=Math.max(1,W-pad*2),n=tickEls.length;
+  POS=tickEls.map((_,k)=>{const u=n>1?k/(n-1):0.5,t=u*2-1;
+    return{x:pad+u*span,y:10+SAG*t*t,rot:t*TILT};});
+  tickEls.forEach((el,k)=>{el.style.left='0';el.style.top='0';
+    el.style.transformOrigin='26px 26px';});
+}
+function arcAt(i){
+  const n=POS.length; if(!n)return{x:0,y:0,rot:0};
+  const c=Math.max(0,Math.min(n-1,i)),lo=Math.floor(c),hi=Math.min(n-1,lo+1),f=c-lo;
+  const u=n>1?c/(n-1):0.5,t=u*2-1;
+  return{x:POS[lo].x+(POS[hi].x-POS[lo].x)*f, y:10+SAG*t*t, rot:t*TILT};
+}
 
 const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const th=a=>'#'+a.map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
@@ -272,13 +338,12 @@ const mix=(a,b,t)=>th(hx(a).map((v,i)=>v+(hx(b)[i]-v)*t));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const N=STEPS.length;let progress=1,raf=null;
 
-const cOf=k=>{const r=tickEls[k].getBoundingClientRect(),s=scaleEl.getBoundingClientRect();return r.left-s.left+r.width/2;};
-const cAt=i=>{const lo=Math.floor(clamp(i,0,N-1)),hi=Math.min(N-1,lo+1),f=clamp(i,0,N-1)-lo;return cOf(lo)+(cOf(hi)-cOf(lo))*f;};
+const cOf=k=>(POS[k]?POS[k].x:0);
 
 function render(){
   const i=clamp(progress,0,N-1),lo=Math.floor(i),hi=Math.min(N-1,lo+1),f=i-lo,A=STEPS[lo],B=STEPS[hi];
   const R=document.documentElement.style;
-  R.setProperty('--acc',mix(A.c2,B.c2,f));
+  R.setProperty('--acc',mix(A.acc,B.acc,f));
   R.setProperty('--bg1',mix(A.bg1,B.bg1,f));
   R.setProperty('--bg2',mix(A.bg2,B.bg2,f));
   R.setProperty('--ray',(A.ray+(B.ray-A.ray)*f).toFixed(3));
@@ -291,11 +356,12 @@ function render(){
     el.style.opacity=ad>=1?0:Math.pow(1-ad,1.7);
     el.style.transform=`translateY(${d*20}px)`;
     el.style.visibility=ad>=1?'hidden':'visible';});
-  tickEls.forEach((el,k)=>{const ad=Math.abs(k-i),near=Math.max(0,1-ad);
-    el.style.filter=`grayscale(${(1-near)*.92}) saturate(${.45+.55*near})`;
-    el.style.opacity=(.42+.58*near).toFixed(3);
-    el.style.transform=`scale(${.9+near*.18})`;});
-  pill.style.transform=`translateX(${cAt(i)-29}px)`;
+  tickEls.forEach((el,k)=>{const ad=Math.abs(k-i),near=Math.max(0,1-ad),P=POS[k]||{x:0,y:0,rot:0};
+    el.style.filter=`grayscale(${((1-near)*.78).toFixed(2)}) saturate(${(.55+.45*near).toFixed(2)})`;
+    el.style.opacity=(.55+.45*near).toFixed(3);
+    el.style.transform=`translate(${(P.x-26).toFixed(1)}px,${P.y.toFixed(1)}px) rotate(${P.rot.toFixed(1)}deg) scale(${(.88+near*.20).toFixed(3)})`;});
+  const pa=arcAt(i);
+  pill.style.transform=`translate(${(pa.x-28).toFixed(1)}px,${(pa.y-2).toFixed(1)}px) rotate(${pa.rot.toFixed(1)}deg)`;
 
   const n=Math.round(i),st=STEPS[n],near=1-Math.min(1,Math.abs(i-n)*2);
   document.getElementById('cEm').textContent=st.em;
@@ -339,23 +405,90 @@ const FR=[{nm:'삼겹살',s:0,dd:'소비기한 9/27 · 지남',qt:'300g'},{nm:'�
  {nm:'다진마늘',s:3,dd:'유통기한 10/20 · D-22',qt:'미확인',b:1},{nm:'김치',s:4,dd:'기한 미확인',qt:'1통'}];
 document.getElementById('fridgeList').innerHTML=FR.map(i=>`
  <div class="ic2 ${i.s===4?'dash':''}">${jelly(STEPS[i.s])}
-  <div><div class="nm">${i.nm}</div><div class="sub" style="color:${STEPS[i.s].c2}">${i.dd}</div></div>
+  <div><div class="nm">${i.nm}</div><div class="sub" style="color:${STEPS[i.s].acc}">${i.dd}</div></div>
   <div class="qt">${i.qt}</div>${i.b?'<span class="bdg">잔량 미확인</span>':''}</div>`).join('');
 
-const sheet=document.getElementById('sheet');let sstep=0;
-document.getElementById('mic').onclick=()=>{sstep=0;sheet.classList.add('up');
- document.getElementById('shSt').textContent='듣고 있어요';
- document.getElementById('shUt').textContent='“두부 두 모랑 계란 열 개 넣었어. 두부는 소비기한 10월 3일”';};
-document.getElementById('shOk').onclick=()=>{if(sstep===0){sstep=1;
-  document.getElementById('shSt').textContent='반영했어요';
-  document.getElementById('shUt').textContent='두부 2모 · 소비기한 10/3 · 냉장 / 계란 10개 · 기한 미확인 · 냉장';
- }else sheet.classList.remove('up');};
-document.getElementById('shNo').onclick=()=>sheet.classList.remove('up');
 
-addEventListener('resize',render);
+
+/* ── 웨이크워드 연출 (자비스형 뉴런 웹) ───────────────────────── */
+const wake=document.getElementById('wake'),cv=document.getElementById('neuro'),cx2=cv.getContext('2d');
+let W=0,H=0,DPR=1,energy=0,targetE=0,boost=0,rafW=null,accRGB=[255,94,58];
+const RING=[{n:10,r:.30},{n:16,r:.56},{n:22,r:.82}],NODES=[];
+RING.forEach((R,ri)=>{for(let k=0;k<R.n;k++)NODES.push({ri,a:k/R.n*6.283+ri*.35,r:R.r,ph:Math.random()*6.283,sp:.6+Math.random()*.9});});
+function fitCv(){DPR=Math.min(2,devicePixelRatio||1);W=cv.clientWidth;H=cv.clientHeight;
+  cv.width=W*DPR;cv.height=H*DPR;cx2.setTransform(DPR,0,0,DPR,0,0);}
+function drawN(ts){
+  const t=ts/1000,cxp=W/2,cyp=H*.40,base=Math.min(W,H)*.30,A=accRGB.join(',');
+  energy+=(targetE-energy)*.055;
+  cx2.clearRect(0,0,W,H);
+  const g=cx2.createRadialGradient(cxp,cyp,0,cxp,cyp,base*2.1);
+  g.addColorStop(0,`rgba(${A},${(.40*energy+.07).toFixed(3)})`);
+  g.addColorStop(.42,`rgba(${A},${(.13*energy).toFixed(3)})`);
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  cx2.fillStyle=g;cx2.fillRect(0,0,W,H);
+  const pts=NODES.map(n=>{
+    const pulse=1+.17*Math.sin(t*1.7*n.sp+n.ph)*(.45+energy);
+    const rr=base*n.r*pulse*(1+.26*energy+boost*.55);
+    const a=n.a+t*(.05+.14*energy)*(n.ri%2?1:-1);
+    return{x:cxp+Math.cos(a)*rr,y:cyp+Math.sin(a)*rr};});
+  const lim=base*.46;cx2.lineWidth=1;
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const d=Math.hypot(pts[i].x-pts[j].x,pts[i].y-pts[j].y);
+    if(d<lim){const k=1-d/lim;
+      cx2.strokeStyle=`rgba(${A},${(k*k*.62*(.35+energy)).toFixed(3)})`;
+      cx2.beginPath();cx2.moveTo(pts[i].x,pts[i].y);cx2.lineTo(pts[j].x,pts[j].y);cx2.stroke();}}
+  cx2.save();cx2.shadowColor=`rgba(${A},.9)`;cx2.shadowBlur=8;
+  pts.forEach((p,k)=>{const tw=.72+.28*Math.sin(t*3+k);
+    cx2.fillStyle=`rgba(255,255,255,${(( .45+.45*energy)*tw).toFixed(3)})`;
+    cx2.beginPath();cx2.arc(p.x,p.y,k%5===0?2.5:1.7,0,6.283);cx2.fill();});
+  cx2.restore();
+  const sw=t*1.15%6.283, sg=cx2.createConicGradient?cx2.createConicGradient(sw,cxp,cyp):null;
+  if(sg){sg.addColorStop(0,`rgba(${A},${(.20*energy).toFixed(3)})`);
+    sg.addColorStop(.10,`rgba(${A},${(.09*energy).toFixed(3)})`);
+    sg.addColorStop(.30,`rgba(${A},${(.02*energy).toFixed(3)})`);
+    sg.addColorStop(.46,'rgba(0,0,0,0)');sg.addColorStop(1,'rgba(0,0,0,0)');
+    cx2.save();cx2.globalCompositeOperation='lighter';cx2.fillStyle=sg;
+    cx2.beginPath();cx2.arc(cxp,cyp,base*1.30,0,6.283);cx2.fill();cx2.restore();}
+  [.58,.84,1.10].forEach((k,i)=>{
+    const rr=base*k*(1+.20*energy)+boost*base*.8,st=t*(.45+i*.28)*(i%2?-1:1);
+    cx2.strokeStyle=`rgba(${A},${(.26*(.4+energy)*(1-i*.2)).toFixed(3)})`;cx2.lineWidth=1.2;
+    cx2.beginPath();cx2.arc(cxp,cyp,rr,st,st+Math.PI*1.22);cx2.stroke();});
+  cx2.save();cx2.shadowColor=`rgba(${A},1)`;cx2.shadowBlur=26;
+  cx2.fillStyle=`rgba(255,255,255,${(.7*energy+.2).toFixed(3)})`;
+  cx2.beginPath();cx2.arc(cxp,cyp,4+3.6*energy,0,6.283);cx2.fill();cx2.restore();
+  boost*=.935;rafW=requestAnimationFrame(drawN);
+}
+let typer=null,timers=[];
+function setW(st,ut,chips){document.getElementById('wState').textContent=st;
+  const u=document.getElementById('wUtter');clearInterval(typer);
+  if(ut){u.textContent='';let n=0;typer=setInterval(()=>{u.textContent=ut.slice(0,++n);if(n>=ut.length)clearInterval(typer);},26);}
+  else u.textContent='';
+  document.getElementById('wChips').innerHTML=(chips||[]).map(c=>`<span class="wc">${c}</span>`).join('');}
+function closeW(){wake.classList.remove('on');timers.forEach(clearTimeout);timers=[];
+  clearInterval(typer);cancelAnimationFrame(rafW);rafW=null;}
+function fireWake(){
+  const acc=getComputedStyle(document.documentElement).getPropertyValue('--acc').trim();
+  accRGB=[1,3,5].map(i=>parseInt(acc.slice(i,i+2),16));
+  wake.classList.add('on');requestAnimationFrame(()=>{fitCv();if(!rafW)rafW=requestAnimationFrame(drawN);});
+  energy=0;targetE=.4;boost=1.3;setW('헤이 냉장고','',[]);
+  timers.forEach(clearTimeout);timers=[];
+  timers.push(setTimeout(()=>{targetE=1;boost=.35;setW('듣고 있어요','“두부 두 모랑 계란 열 개 넣었어. 두부는 소비기한 10월 3일”',[]);},760));
+  timers.push(setTimeout(()=>{targetE=.5;setW('확인하고 있어요','',[]);},4200));
+  timers.push(setTimeout(()=>{targetE=.85;boost=.7;
+    setW('반영했어요','“두부 두 모는 10월 3일까지, 계란 열 개는 기한 미확인으로 넣었어요.”',
+      ['두부 2모 · 10/3','계란 10개 · 기한 미확인']);},5300));
+  timers.push(setTimeout(closeW,9200));
+}
+document.getElementById('listen').addEventListener('click',fireWake);
+wake.addEventListener('click',closeW);
+addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();wake.classList.contains('on')?closeW():fireWake();}});
+addEventListener('resize',()=>{if(wake.classList.contains('on'))fitCv();});
+
+addEventListener('resize',()=>{layoutArc();render();});
 const qi=parseInt(new URLSearchParams(location.search).get('i'),10);
 progress=Number.isInteger(qi)?clamp(qi,0,N-1):1;
-requestAnimationFrame(render);
+layoutArc();requestAnimationFrame(()=>{layoutArc();render();});
+if(new URLSearchParams(location.search).get('wake'))setTimeout(fireWake,120);
 </script>
 </body>
 </html>

@@ -140,6 +140,35 @@ class PriorityReason(StrEnum):
     QUANTITY_UNKNOWN = "quantity_unknown"
 
 
+class FreshnessGrade(StrEnum):
+    """재료 한 묶음의 신선도 등급.
+
+    **기한 축만 담는다.** 잔량 미확인은 별도 신호로 분리한다 — 둘을 한 등급에 섞으면
+    "기한은 멀지만 양을 모르는" 재료와 "곧 상하는" 재료가 같은 칸에 들어간다.
+
+    IMPORTANT: 안전 여부를 판정하는 값이 아니다. `EXPIRED` 는 표시기한이 지났다는 사실만
+    말하며, 먹을 수 있는지는 사용자가 판단한다.
+    """
+
+    FRESH = "fresh"
+    SOON = "soon"
+    URGENT = "urgent"
+    EXPIRED = "expired"
+    UNKNOWN = "unknown"
+
+
+class FridgeCondition(StrEnum):
+    """냉장고 전체 컨디션.
+
+    화면 맨 위에 한 낱말로 뜨는 값이다. 계산은 서버가 하고 앱은 담기만 한다 —
+    기준이 앱에 있으면 화면마다 달라진다.
+    """
+
+    RELAXED = "relaxed"
+    ATTENTION = "attention"
+    URGENT = "urgent"
+
+
 class HistoryKind(StrEnum):
     """이력 한 줄의 종류. 수량 변경과 상태 변경을 한 타임라인에 섞어 보여준다."""
 

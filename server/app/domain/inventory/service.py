@@ -18,6 +18,8 @@ from app.core import units as unit_utils
 from app.core.enums import (
     ChangeAction,
     DateKind,
+    FreshnessGrade,
+    FridgeCondition,
     PriorityReason,
     QuantityCertainty,
     StateEventKind,
@@ -639,3 +641,94 @@ async def find_by_names(
 ) -> list[IngredientBatch]:
     """음성 조회용. 이름으로 묶음을 찾는다."""
     return await crud.find_batches_by_names(session, household_id, names)
+
+
+# 신선도 등급 경계. 가구의 알림 일정과 별개로 **화면 표현**의 기준이다.
+# 알림은 "언제 알릴까"이고 등급은 "지금 어떤 상태인가"라서 값이 갈린다.
+URGENT_WITHIN_DAYS = 1
+SOON_WITHIN_DAYS = 3
+
+
+def freshness_of(batch: IngredientBatch, *, today: date) -> tuple[FreshnessGrade, int | None]:
+    """묶음의 신선도 등급과 남은 날.
+
+    **기한 축만 본다.** 잔량 미확인은 등급에 섞지 않고 호출자가 별도 신호로 다룬다.
+
+    Args:
+        batch: 판정할 묶음.
+        today: 가구 시간대의 오늘.
+
+    Returns:
+        `(등급, 남은 날)`. 기한 정보가 없으면 `(UNKNOWN, None)`.
+    """
+    expiry = soonest_expiry(batch)
+    if expiry is None:
+        return FreshnessGrade.UNKNOWN, None
+    days_left = (expiry[1] - today).days
+    if days_left < 0:
+        return FreshnessGrade.EXPIRED, days_left
+    if days_left <= URGENT_WITHIN_DAYS:
+        return FreshnessGrade.URGENT, days_left
+    if days_left <= SOON_WITHIN_DAYS:
+        return FreshnessGrade.SOON, days_left
+    return FreshnessGrade.FRESH, days_left
+
+
+@dataclass(slots=True)
+class ConditionSummary:
+    """냉장고 전체 컨디션.
+
+    Attributes:
+        condition: 화면 맨 위에 뜨는 한 낱말.
+        urgent_count: 오늘·내일 안에 써야 하는 묶음 수.
+        soon_count: 며칠 안에 써야 하는 묶음 수.
+        expired_count: 표시기한이 지난 묶음 수.
+        unknown_quantity_count: 잔량을 모르는 묶음 수. 등급과 섞지 않는다.
+        total_count: 살아 있는 묶음 수.
+    """
+
+    condition: FridgeCondition
+    urgent_count: int
+    soon_count: int
+    expired_count: int
+    unknown_quantity_count: int
+    total_count: int
+
+
+async def condition_summary(
+    session: AsyncSession, household_id: int, *, today: date
+) -> ConditionSummary:
+    """냉장고 컨디션을 계산한다.
+
+    등급 기준을 서버에 두는 이유는 화면이 여럿이기 때문이다. 앱에 두면 홈과 냉장고 화면이
+    서로 다른 말을 한다.
+    """
+    batches = await crud.list_with_dates(session, household_id)
+    counts = {grade: 0 for grade in FreshnessGrade}
+    unknown_quantity = 0
+    for batch in batches:
+        grade, _ = freshness_of(batch, today=today)
+        counts[grade] += 1
+        if batch.quantity is None or batch.quantity_certainty in {
+            QuantityCertainty.UNKNOWN.value,
+            QuantityCertainty.ESTIMATED.value,
+        }:
+            unknown_quantity += 1
+
+    urgent = counts[FreshnessGrade.URGENT] + counts[FreshnessGrade.EXPIRED]
+    soon = counts[FreshnessGrade.SOON]
+    if urgent:
+        condition = FridgeCondition.URGENT
+    elif soon:
+        condition = FridgeCondition.ATTENTION
+    else:
+        condition = FridgeCondition.RELAXED
+
+    return ConditionSummary(
+        condition=condition,
+        urgent_count=counts[FreshnessGrade.URGENT],
+        soon_count=soon,
+        expired_count=counts[FreshnessGrade.EXPIRED],
+        unknown_quantity_count=unknown_quantity,
+        total_count=len(batches),
+    )

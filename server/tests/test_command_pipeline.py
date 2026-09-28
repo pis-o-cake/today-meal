@@ -504,3 +504,68 @@ def test_recipe_detail_scales_by_servings(client, household):
     first_four = Decimal(four["ingredients"][0]["required_amount"])
     assert first_four == first_two * 2
     assert four["steps"], "조리 순서가 있어야 한다"
+
+
+def test_freshness_is_computed_by_server_not_app(client, household):
+    """등급 계산은 서버가 하고 앱은 담기만 한다. 앱에 기준을 두면 화면마다 다른 말을 한다."""
+    say(client, household, '두부 두 모 넣었어')
+    engine = create_engine(get_settings().alembic_url)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                'insert into batch_date (batch_id, kind, date_value, is_confirmed, source) '
+                "select batch_id, 'use_by', current_date + 1, true, 'voice' "
+                'from ingredient_batch where household_id = :h'
+            ),
+            {'h': household},
+        )
+    rows = client.get(
+        '/api/inventory/batches', headers={'X-Household-Id': str(household)}
+    ).json()
+    batch = rows[0]
+    assert batch['freshness'] == 'urgent'
+    assert batch['days_left'] == 1
+    assert batch['expiry_kind'] == 'use_by'
+
+
+def test_freshness_does_not_mix_in_unknown_quantity(client, household):
+    """기한 축만 담는다. 잔량 미확인은 별도 신호다."""
+    say(client, household, '대파 조금 넣었어')
+    rows = client.get(
+        '/api/inventory/batches', headers={'X-Household-Id': str(household)}
+    ).json()
+    batch = rows[0]
+    # 기한 정보가 없으니 신선도는 unknown 이고, 잔량 미확인은 따로 표시된다.
+    assert batch['freshness'] == 'unknown'
+    assert batch['quantity_uncertain'] is True
+
+
+def test_condition_is_urgent_when_something_expires_tomorrow(client, household):
+    say(client, household, '두부 두 모 넣었어')
+    engine = create_engine(get_settings().alembic_url)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                'insert into batch_date (batch_id, kind, date_value, is_confirmed, source) '
+                "select batch_id, 'use_by', current_date + 1, true, 'voice' "
+                'from ingredient_batch where household_id = :h'
+            ),
+            {'h': household},
+        )
+    body = client.get(
+        '/api/inventory/condition', headers={'X-Household-Id': str(household)}
+    ).json()
+    assert body['condition'] == 'urgent'
+    assert body['urgent_count'] == 1
+    assert body['total_count'] == 1
+
+
+def test_condition_is_relaxed_with_no_near_dates(client, household):
+    say(client, household, '계란 열 개 넣었어')
+    body = client.get(
+        '/api/inventory/condition', headers={'X-Household-Id': str(household)}
+    ).json()
+    assert body['condition'] == 'relaxed'
+    assert body['urgent_count'] == 0
+    # 기한을 말하지 않았으니 잔량은 확실하지만 기한은 모른다. 둘을 섞지 않는다.
+    assert body['unknown_quantity_count'] == 0

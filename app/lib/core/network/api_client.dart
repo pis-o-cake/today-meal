@@ -49,6 +49,13 @@ class ApiClient {
     return response.data ?? const [];
   }
 
+  /// 냉장고 전체 컨디션. 등급 계산은 서버가 한다.
+  Future<Map<String, dynamic>> condition() async {
+    final response =
+        await _dio.get<Map<String, dynamic>>('api/inventory/condition');
+    return response.data ?? const {};
+  }
+
   /// 먼저 쓸 재료.
   Future<List<dynamic>> listPriorityBatches() async {
     final response =
