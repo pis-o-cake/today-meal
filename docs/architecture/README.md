@@ -123,6 +123,8 @@ server/app/
 ├── core/
 │   ├── config.py           pydantic-settings
 │   ├── seed.py             기본 가구 · 재료 사전 (멱등)
+│   ├── dates.py            부분 발화 날짜 확정. 없는 값을 채우지 않는다
+│   ├── particles.py        한국어 조사 선택 (을/를 · 은/는 · 이/가)
 │   ├── pending.py          미구현 엔드포인트를 501 로 드러낸다
 │   ├── enums.py            상태값 상수. DB의 CHECK 제약과 짝
 │   ├── identity.py         X-User-Id 헤더 해석. **검증하지 않는다**
@@ -133,7 +135,10 @@ server/app/
 │   ├── locale/ko.json      사용자에게 보이는 응답 문구
 │   └── llm/
 │       ├── gateway.py      제공자 무관 인터페이스
-│       ├── gemini.py       Gemini 구현
+│       ├── gemini.py       Gemini 구현 (과부하·한도 재시도 포함)
+│       ├── fake.py         결정적 가짜. 키 없이 검증 로직을 시험한다
+│       ├── budget.py       호출 예산 가드. 재시도 루프를 사전에 막는다
+│       ├── provider.py     키가 없으면 가짜를 쓰고 그 사실을 드러낸다
 │       ├── schemas.py      구조화 출력 스키마
 │       └── prompts/        명령 해석 · 메뉴 생성 · 영상 추출
 ├── domain/
@@ -312,7 +317,9 @@ S-00 시점 기준이다. 이 표를 갱신하지 않고 구현을 진행하면 
 | `core/units.py` 단위 판정 | 확인. 근거 없는 환산을 거부 |
 | `VoiceSessionManager` 상태기계 | 작성·단위 테스트 통과. **실제 마이크 배선은 없음** |
 | Porcupine · SpeechRecognizer · TextToSpeech | 인터페이스만. 구현은 S-01 |
-| `command` 판정 6단계 | 설계만. 구현은 S-02 |
+| `command` 판정 6단계 | 구현·통합 테스트 통과. 모델 없이 가짜 게이트웨이로도 전부 검증됨 |
+| 모델 호출 예산 가드 | 구현. 비용·호출 수·연속 간격 셋을 사전에 막음 |
+| 한국어 명령 해석 품질 | 15발화 73%. **무료 티어 일일 한도로 재평가 중단** |
 | 실기기 동작 | **미확인** |
 
 기동 절차와 실패 대응은 [로컬 개발 런북](../runbook/local-development.md)이 갖는다.

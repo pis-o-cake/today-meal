@@ -1,0 +1,17 @@
+#!/bin/sh
+# 비밀값이 스테이징에 들어오면 커밋을 막는다. 판정은 secret-scan.py 가 한다.
+#
+# engsys 가 소유한 commit-msg 와 달리 이 파일은 프로젝트가 소유한다.
+set -e
+root=$(git rev-parse --show-toplevel)
+scanner="$root/.githooks/secret-scan.py"
+
+if [ ! -f "$scanner" ]; then
+  echo "pre-commit: secret-scan.py 가 없다. 검사하지 않고 통과시키지 않는다." >&2
+  exit 1
+fi
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "pre-commit: python3 이 없어 비밀값 검사를 실행할 수 없다." >&2
+  exit 1
+fi
+exec python3 "$scanner"

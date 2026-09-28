@@ -40,3 +40,18 @@ server/.venv/
 server/.env
 server/.pytest_cache/
 server/.ruff_cache/
+
+# 비밀값 — 경로 전체를 막는다. 판정은 .githooks/pre-commit 이 한 번 더 한다.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+**/local.properties
+*.keystore
+*.jks
+*.p12
+*.pem
+*.key
+serviceAccount*.json

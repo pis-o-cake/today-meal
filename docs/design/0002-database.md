@@ -438,8 +438,14 @@ GIN 인덱스로 포함 검색이 된다. 문자열만으로 재고를 매칭하
 | `latency_ms` | INTEGER | | | | 응답 지연 측정 |
 | `created_at` `updated_at` | TIMESTAMPTZ | | | ✅ | |
 
-**`intent` 값**: `register`(등록) `consume`(사용) `adjust`(잔량 보정) `query`(조회)
-`correct`(정정) `cancel`(취소) `recommend`(추천) `plan_future`(미래 구매 계획) `unknown`
+**`intent` 값**: `register`(등록) `consume`(사용) `adjust`(잔량 보정) `open`(개봉) `move`(보관
+위치 이동) `query`(조회) `correct`(정정) `cancel`(취소) `recommend`(추천)
+`plan_future`(미래 구매 계획) `unknown`
+
+`open` 과 `move` 는 **수량을 바꾸지 않는다.** "우유 오늘 열었어"는 먹은 것이 아니므로 차감이
+아니고, `batch_state_event` 에만 남는다. 이 둘은 초기 스키마에 없다가 실제 발화를 모델에
+돌려보고 추가했다 — 기획서 §5.1 에 있던 발화인데 `CHECK` 제약이 막았다. 상태값의 정본이
+`enums.py` 이고 DB 가 같은 목록을 공유하기 때문에 드러난 누락이다.
 
 **`status` 값**
 

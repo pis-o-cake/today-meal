@@ -13,7 +13,6 @@ class Settings(BaseSettings):
     Attributes:
         env: 실행 환경. 로그 형식과 Swagger 노출 여부를 가른다.
         gemini_model: 모델 식별자. 코드에 박지 않고 설정으로 교체한다.
-        prompt_version: 프롬프트 버전. `command` 행에 기록해 재현에 쓴다.
     """
 
     model_config = SettingsConfigDict(
@@ -33,8 +32,22 @@ class Settings(BaseSettings):
     db_password: str = ""
 
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash"
-    prompt_version: str = "v1"
+    gemini_model: str = "gemini-3.8-flash"
+
+    # 구조화 추출에는 사고 과정이 필요 없고, 켜면 출력 토큰이 몇 배로 늘어난다.
+    gemini_thinking_budget: int = 0
+    gemini_timeout_seconds: float = 30.0
+
+    # 정상 사용량은 3일 전체가 $2 규모다. 상한은 재시도 루프를 막기 위한 것이다.
+    llm_max_usd: float = Field(default=5.0, description="누적 추정 비용 상한")
+    llm_max_calls: int = Field(default=1500, description="창 안의 호출 수 상한")
+    llm_min_interval_seconds: float = Field(
+        default=3.0,
+        description=(
+            "연속 호출 최소 간격. 재시도 루프를 잡는다. 무료 티어는 분당 요청 수가 "
+            "제한되므로 그 한도보다 넉넉하게 둔다"
+        ),
+    )
 
     youtube_api_key: str = ""
 

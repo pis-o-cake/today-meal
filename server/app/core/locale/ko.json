@@ -6,9 +6,14 @@
   "error.quantity_insufficient": "남은 양보다 많아요. 지금 몇 개 남았는지 알려주세요.",
   "error.upstream_failed": "지금은 처리할 수 없어요. 잠시 뒤에 다시 말해주세요.",
   "command.applied": "반영했어요.",
-  "command.reverted": "방금 변경을 되돌렸어요.",
+  "command.reverted": "으로 되돌렸어요.",
   "voice.listening": "듣고 있어요",
   "voice.processing": "확인하고 있어요",
   "voice.applied": "반영했어요",
-  "voice.retry": "다시 말해주세요"
+  "voice.retry": "다시 말해주세요",
+  "command.corrected": "으로 고쳤어요.",
+  "command.nothing_to_undo": "되돌릴 변경이 없어요.",
+  "intent.query": "냉장고를 확인해볼게요.",
+  "intent.recommend": "메뉴를 찾아볼게요.",
+  "intent.plan_future": "살 목록으로 기억해둘게요. 지금 재고는 그대로예요."
 }
