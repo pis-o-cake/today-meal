@@ -11,6 +11,7 @@ import 'l10n/strings.dart';
 import 'network/api_client.dart';
 import 'voice/device_speech.dart';
 import 'voice/sherpa_wake_word_detector.dart';
+import 'voice/voice_ports.dart';
 import 'voice/voice_session_manager.dart';
 
 /// 의존성 등록소.
@@ -36,10 +37,16 @@ Future<void> registerDependencies(AppConfig config) async {
     // 호출어 감지는 온디바이스(sherpa-onnx)이고 전사·낭독은 기기 내장 서비스다.
     // 셋을 싱글턴으로 두는 이유는 마이크를 다루는 객체가 여럿 생기면 소유권 관리가
     // 무의미해지기 때문이다.
-    ..registerLazySingleton<SherpaWakeWordDetector>(SherpaWakeWordDetector.new)
+    // 호출어 감지를 끄면 마이크 버튼만 쓴다. 감지기가 기기에서 문제를 일으킬 때
+    // 원인을 가르는 스위치다.
+    ..registerLazySingleton<WakeWordDetector>(
+      () => config.wakeWordEnabled
+          ? SherpaWakeWordDetector()
+          : DisabledWakeWordDetector(),
+    )
     ..registerLazySingleton<VoiceSessionManager>(
       () => VoiceSessionManager(
-        detector: di<SherpaWakeWordDetector>(),
+        detector: di<WakeWordDetector>(),
         transcriber: DeviceSpeechTranscriber(),
         speaker: DeviceSpeechSpeaker(),
         retryMessage: Strings.voiceRetry,

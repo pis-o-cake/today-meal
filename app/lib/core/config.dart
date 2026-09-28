@@ -6,8 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class AppConfig {
   const AppConfig({
     required this.apiBaseUrl,
-    required this.porcupineAccessKey,
-    required this.wakeWordAsset,
+    this.wakeWordEnabled = true,
   });
 
   /// `.env` 를 읽어 설정을 만든다.
@@ -16,24 +15,18 @@ class AppConfig {
   /// 나므로 주소만은 없으면 없는 대로 둔다.
   factory AppConfig.fromEnv() => AppConfig(
         apiBaseUrl: dotenv.maybeGet('API_BASE_URL') ?? '',
-        porcupineAccessKey: dotenv.maybeGet('PORCUPINE_ACCESS_KEY') ?? '',
-        wakeWordAsset: dotenv.maybeGet('WAKE_WORD_ASSET') ?? '',
+        wakeWordEnabled:
+            (dotenv.maybeGet('WAKE_WORD_ENABLED') ?? 'true').toLowerCase() != 'false',
       );
 
   /// 앱 서버 주소. 끝에 슬래시가 붙어야 한다.
   final String apiBaseUrl;
 
-  /// Porcupine AccessKey.
+  /// 호출어 감지를 켤지.
   ///
-  /// 없으면 웨이크워드를 기동하지 않고 그 사실을 화면에 표시한다. 조용히 넘기면 감지되는
-  /// 것으로 착각한다.
-  final String porcupineAccessKey;
-
-  /// 한국어 커스텀 호출어 모델 파일명.
-  final String wakeWordAsset;
+  /// 끄면 마이크 버튼만 쓴다. 기기에서 감지기가 문제를 일으킬 때 원인을 가르는 스위치이자,
+  /// 배터리를 아끼고 싶을 때의 설정이다.
+  final bool wakeWordEnabled;
 
   bool get hasServer => apiBaseUrl.isNotEmpty;
-
-  bool get hasWakeWord =>
-      porcupineAccessKey.isNotEmpty && wakeWordAsset.isNotEmpty;
 }

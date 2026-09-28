@@ -42,6 +42,7 @@ class SherpaWakeWordDetector implements WakeWordDetector {
   sherpa.OnlineStream? _stream;
   StreamSubscription<Uint8List>? _audio;
   bool _running = false;
+  bool _loggedFirstChunk = false;
 
   /// 호출어 뒤에 이어 말한 내용. 한 번에 말한 경우를 살린다.
   String? trailingUtterance;
@@ -53,14 +54,21 @@ class SherpaWakeWordDetector implements WakeWordDetector {
   Future<void> start() async {
     if (_running) return;
 
+    // 단계마다 로그를 남긴다. 네이티브에서 죽으면 스택이 안 남아, 마지막으로 찍힌
+    // 줄이 어디서 죽었는지 알려주는 유일한 단서가 된다.
+    _logger.i('WakeWord: checking permission');
     if (!await _recorder.hasPermission()) {
       throw StateError('microphone permission is not granted');
     }
 
+    _logger.i('WakeWord: creating recognizer');
     _recognizer ??= await _createRecognizer();
+
+    _logger.i('WakeWord: creating stream');
     _stream = _recognizer!.createStream();
     _running = true;
 
+    _logger.i('WakeWord: starting audio capture');
     final audio = await _recorder.startStream(
       const RecordConfig(
         encoder: AudioEncoder.pcm16bits,
@@ -68,6 +76,8 @@ class SherpaWakeWordDetector implements WakeWordDetector {
         numChannels: 1,
       ),
     );
+
+    _logger.i('WakeWord: subscribing to audio');
     _audio = audio.listen(_onAudio, onError: (Object error) {
       _logger.e('Wake word audio stream failed', error: error);
     });
@@ -102,6 +112,11 @@ class SherpaWakeWordDetector implements WakeWordDetector {
     final stream = _stream;
     final recognizer = _recognizer;
     if (!_running || stream == null || recognizer == null) return;
+
+    if (!_loggedFirstChunk) {
+      _loggedFirstChunk = true;
+      _logger.i('WakeWord: first audio chunk (${bytes.lengthInBytes} bytes)');
+    }
 
     stream.acceptWaveform(samples: _toFloat(bytes), sampleRate: _sampleRate);
     while (recognizer.isReady(stream)) {
@@ -157,4 +172,26 @@ class SherpaWakeWordDetector implements WakeWordDetector {
     await _recorder.dispose();
     await _detections.close();
   }
+}
+
+/// 호출어 감지를 끈 구현.
+///
+/// 마이크를 잡지 않는다. 기기에서 감지기가 문제를 일으킬 때 원인을 가르는 스위치이자,
+/// 배터리를 아끼고 싶을 때의 설정이다. 이때는 마이크 버튼이 주 진입이 된다.
+class DisabledWakeWordDetector implements WakeWordDetector {
+  final _detections = StreamController<void>.broadcast();
+
+  @override
+  Stream<void> get detections => _detections.stream;
+
+  @override
+  Future<void> start() async {
+    // 조용히 성공한다. 꺼 두기로 한 상태이므로 예외를 던지지 않는다.
+  }
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> dispose() async => _detections.close();
 }

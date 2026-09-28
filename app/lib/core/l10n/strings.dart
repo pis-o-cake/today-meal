@@ -44,7 +44,7 @@ class Strings {
   static const bandFreshHint = '급하지 않아요';
   static const bandUnknown = '미확인';
   static const bandUnknownHint = '기한을 알려주세요';
-  static String bandCount(int n) => '\$n가지';
+  static String bandCount(int n) => '$n가지';
 
   // 냉장고 컨디션
   static const conditionRelaxed = '여유';
@@ -58,8 +58,8 @@ class Strings {
   static const menuNeedsCheck = '확인 필요';
   static const menuNeedsPurchase = '재료 준비 후';
   static const menuAllIngredients = '재료 다 있음';
-  static String menuMinutes(int n) => '약 \$n분';
-  static String menuServings(int n) => '\$n인분';
+  static String menuMinutes(int n) => '약 $n분';
+  static String menuServings(int n) => '$n인분';
   static const menuOpen = '보기';
   static const menuCooked = '해먹었어요';
   static const cookedDone = '반영했어요';
@@ -79,9 +79,9 @@ class Strings {
   static const storageUnknown = '모름';
   static const quantityUnknown = '잔량 미확인';
   static const dateUnknown = '기한 미확인';
-  static String daysLeft(int n) => n < 0 ? '\${-n}일 지남' : 'D-\$n';
-  static String openedDaysAgo(int n) => '개봉 \$n일';
-  static String itemCount(int n) => '재료 \$n종';
+  static String daysLeft(int n) => n < 0 ? '${-n}일 지남' : 'D-$n';
+  static String openedDaysAgo(int n) => '개봉 $n일';
+  static String itemCount(int n) => '재료 $n종';
 
   // 기한 종류. 서로 다른 정보이므로 문구도 구분한다.
   static const dateUseBy = '소비기한';

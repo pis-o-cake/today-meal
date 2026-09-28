@@ -59,8 +59,13 @@ class DeviceSpeechTranscriber implements SpeechTranscriber {
         cancelOnError: true,
         // 명령이 짧으므로 받아쓰기 모드가 아니라 확정 모드를 쓴다.
         listenMode: ListenMode.confirmation,
-        // 발화 종료 판정은 인식 서비스에 맡기고, 앱은 별도 타임아웃을 함께 건다.
-        pauseFor: const Duration(seconds: 2),
+        // WARNING: `pauseFor` 는 발화 뒤 침묵만이 아니라 **말을 시작하기까지의 대기**
+        // 에도 쓰인다. 2초로 두었더니 사용자가 입을 떼기 전에 error_speech_timeout 으로
+        // 끊겼다. 실기기에서 확인한 값이다.
+        //
+        // 길게 두면 말이 끝난 뒤 기다리는 시간도 함께 길어진다. 4초가 타협점이고,
+        // 실제 사용에서 답답하면 줄인다.
+        pauseFor: const Duration(seconds: 4),
         listenFor: const Duration(seconds: 15),
       ),
       onResult: (result) {
