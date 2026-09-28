@@ -1,11 +1,14 @@
-/// 앱 캐릭터.
+/// 앱 캐릭터 — 냉장고 친구.
 ///
-/// 목업 `mockup/canvas/Mascot.dc.html`(캐릭터 시안 1)을 옮긴 것이다. 200×200 좌표계에서
-/// 그리고 요청 크기로 배율만 바꾼다 — 좌표를 크기마다 다시 잡으면 표정이 어긋난다.
+/// 목업 `mockup/canvas/Mascot2.dc.html`(캐릭터 시안 2, 확정안)을 옮긴 것이다. 200×200
+/// 좌표계에서 그리고 요청 크기로 배율만 바꾼다 — 좌표를 크기마다 다시 잡으면 표정이
+/// 어긋난다.
 ///
-/// 표정은 [MascotMood] 하나로 결정된다. 색·잎 기울기·볼터치·눈·입이 한 묶음이라
-/// 밖에서 부분만 바꾸지 못하게 막았다.
+/// 표정은 [MascotMood] 하나로 결정된다. 색·볼터치·눈·입·메모지가 한 묶음이라 밖에서
+/// 부분만 바꾸지 못하게 막았다.
 library;
+
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -14,266 +17,315 @@ import '../../core/design/tokens.dart';
 
 /// 캐릭터 한 마리.
 class Mascot extends StatelessWidget {
-  const Mascot({required this.mood, this.size = 164, super.key});
+  const Mascot({required this.mood, this.size = 164, this.energy = 0, super.key});
 
   final MascotMood mood;
   final double size;
+
+  /// 살아 있는 정도(0~1). 듣는 중에는 마이크 입력을 넣어 숨이 커진다.
+  final double energy;
 
   @override
   Widget build(BuildContext context) => SizedBox(
         width: size,
         height: size,
-        child: CustomPaint(painter: _MascotPainter(mood)),
+        child: CustomPaint(painter: _MascotPainter(mood, energy)),
       );
 }
 
-/// 기분별 몸 색과 잎 기울기.
+/// 기분별 몸 색과 기울기.
 class _Skin {
-  const _Skin(this.light, this.body, this.deep, this.leaf, this.leafRot, this.cheek);
+  const _Skin(this.body, this.deep, this.cheek, {this.tilt = 0, this.note = ''});
 
-  final Color light;
   final Color body;
   final Color deep;
-  final Color leaf;
-
-  /// 잎의 기울기(도). 기분에 따라 잎이 처지거나 선다.
-  final double leafRot;
 
   /// 볼터치 불투명도. 0 이면 볼터치가 없다.
   final double cheek;
+
+  /// 몸의 기울기(도). 지친 기분에서 살짝 기운다.
+  final double tilt;
+
+  /// 문에 붙은 메모지의 글자. 빈 값이면 줄만 그린다.
+  final String note;
 }
 
 const _skins = <MascotMood, _Skin>{
-  MascotMood.expired: _Skin(
-      Color(0xFFEEF1F5), Color(0xFFC2C9D3), Color(0xFF8C95A3), Color(0xFFA7B19D), 58, 0),
-  MascotMood.urgent: _Skin(
-      Color(0xFFFFE3DA), Color(0xFFFFB3A0), Color(0xFFF4704E), Color(0xFF5FB870), -8, 0.3),
-  MascotMood.soon: _Skin(
-      Color(0xFFFFF1D6), Color(0xFFFFD79B), Color(0xFFF2A63C), Color(0xFF5FB870), 0, 0.3),
-  MascotMood.fresh: _Skin(
-      Color(0xFFE4F8EA), Color(0xFFAEE8BE), Color(0xFF4FC178), Color(0xFF3FAE5E), -12, 0.35),
-  MascotMood.done: _Skin(
-      Color(0xFFE4F8EA), Color(0xFFAEE8BE), Color(0xFF4FC178), Color(0xFF3FAE5E), -16, 0.4),
-  MascotMood.unknown: _Skin(
-      Color(0xFFEEF0F5), Color(0xFFCCD2DE), Color(0xFF99A2B2), Color(0xFF9DB39D), 22, 0.12),
-  MascotMood.listening: _Skin(
-      Color(0xFFE9ECFF), Color(0xFFB9C4FF), Color(0xFF6F7FF0), Color(0xFF5FB870), -18, 0.3),
-  MascotMood.asking: _Skin(
-      Color(0xFFFFF1D6), Color(0xFFFFD79B), Color(0xFFF2A63C), Color(0xFF5FB870), 10, 0.25),
+  MascotMood.expired:
+      _Skin(Color(0xFFD5DAE1), Color(0xFF8C95A3), 0, tilt: -5),
+  MascotMood.urgent:
+      _Skin(Color(0xFFFFC2B2), Color(0xFFE8573A), 0.45, note: '!'),
+  MascotMood.soon: _Skin(Color(0xFFFFE0AA), Color(0xFFE39A2D), 0.45),
+  MascotMood.fresh: _Skin(Color(0xFFBDEBC9), Color(0xFF3FAE5E), 0.5),
+  MascotMood.done: _Skin(Color(0xFFBDEBC9), Color(0xFF3FAE5E), 0.55),
+  MascotMood.unknown:
+      _Skin(Color(0xFFD9DEE8), Color(0xFF8A94A8), 0.2, note: '?'),
+  MascotMood.listening: _Skin(Color(0xFFC7CFFF), Color(0xFF5A6BEA), 0.45),
+  MascotMood.asking:
+      _Skin(Color(0xFFFFE0AA), Color(0xFFE39A2D), 0.35, note: '?'),
 };
 
 class _MascotPainter extends CustomPainter {
-  _MascotPainter(this.mood);
+  _MascotPainter(this.mood, this.energy);
 
   final MascotMood mood;
+  final double energy;
 
   /// 목업의 좌표계. 이 값으로 그리고 마지막에 배율만 건다.
   static const _canvas = 200.0;
 
+  static const _outline = Tokens.faceInk;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final scale = size.width / _canvas;
-    canvas.scale(scale);
-
+    canvas.scale(size.width / _canvas);
     final skin = _skins[mood] ?? _skins[MascotMood.urgent]!;
-    _drawShadow(canvas, skin);
-    _drawLeaf(canvas, skin);
-    _drawBody(canvas, skin);
-    _drawGloss(canvas);
-    _drawCheeks(canvas, skin);
-    _drawFace(canvas);
-    _drawQuestion(canvas, skin);
-  }
 
-  void _drawShadow(Canvas canvas, _Skin skin) {
-    canvas.drawOval(
-      Rect.fromCenter(center: const Offset(100, 186), width: 112, height: 14),
-      Paint()..color = skin.deep.withValues(alpha: 0.22),
-    );
-  }
-
-  /// 머리 위 새싹. 기분마다 기울기가 달라 회전축을 잎 밑동에 둔다.
-  void _drawLeaf(Canvas canvas, _Skin skin) {
+    _shadow(canvas, skin);
     canvas.save();
-    canvas.translate(100, 50);
-    canvas.rotate(skin.leafRot * 3.1415926535 / 180);
-    canvas.translate(-100, -50);
+    // 듣는 중에는 목소리에 맞춰 몸이 미세하게 기운다.
+    final sway = mood == MascotMood.listening ? math.sin(energy * math.pi) * 2 : 0.0;
+    canvas.translate(100, 184);
+    canvas.rotate((skin.tilt + sway) * math.pi / 180);
+    canvas.translate(-100, -184);
 
-    final stem = Path()
-      ..moveTo(100, 52)
-      ..cubicTo(100, 42, 102, 34, 107, 29);
-    canvas.drawPath(
-      stem,
-      Paint()
-        ..color = skin.leaf
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4
-        ..strokeCap = StrokeCap.round,
-    );
-
-    final blade = Path()
-      ..moveTo(106, 30)
-      ..cubicTo(110, 16, 128, 11, 137, 17)
-      ..cubicTo(131, 29, 117, 34, 106, 30)
-      ..close();
-    canvas.drawPath(blade, Paint()..color = skin.leaf);
-
-    final vein = Path()
-      ..moveTo(109, 28)
-      ..quadraticBezierTo(121, 22, 131, 19);
-    canvas.drawPath(
-      vein,
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.55)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.6
-        ..strokeCap = StrokeCap.round,
-    );
+    _feet(canvas);
+    _body(canvas, skin);
+    _gloss(canvas);
+    _doors(canvas);
+    _memo(canvas, skin);
+    _cheeks(canvas, skin);
+    _face(canvas);
     canvas.restore();
+
+    if (mood == MascotMood.listening) _waves(canvas, skin);
   }
 
-  void _drawBody(Canvas canvas, _Skin skin) {
-    final body = Path()
-      ..moveTo(100, 46)
-      ..cubicTo(148, 46, 178, 80, 178, 118)
-      ..cubicTo(178, 154, 146, 176, 100, 176)
-      ..cubicTo(54, 176, 22, 154, 22, 118)
-      ..cubicTo(22, 80, 52, 46, 100, 46)
-      ..close();
-
-    // 왼쪽 위에서 빛이 오는 라디얼 그라데이션. 평면으로 두면 스티커처럼 보인다.
-    canvas.drawPath(
-      body,
-      Paint()
-        ..shader = RadialGradient(
-          center: const Alignment(-0.24, -0.4),
-          radius: 0.8,
-          colors: [skin.light, skin.body, skin.deep],
-          stops: const [0, 0.52, 1],
-        ).createShader(Rect.fromLTWH(0, 0, _canvas, _canvas)),
-    );
-
-    // 배 아래쪽의 반사광.
-    final belly = Path()
-      ..moveTo(46, 150)
-      ..quadraticBezierTo(100, 184, 154, 150);
-    canvas.drawPath(
-      belly,
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.35)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  /// 광택. 큰 타원 하나와 작은 원 하나로 유약 바른 질감을 낸다.
-  void _drawGloss(Canvas canvas) {
-    canvas.save();
-    canvas.translate(64, 82);
-    canvas.rotate(-32 * 3.1415926535 / 180);
+  void _shadow(Canvas canvas, _Skin skin) {
     canvas.drawOval(
-      Rect.fromCenter(center: Offset.zero, width: 38, height: 20),
-      Paint()..color = Colors.white.withValues(alpha: 0.8),
+      Rect.fromCenter(center: const Offset(100, 190), width: 96, height: 12),
+      Paint()..color = _outline.withValues(alpha: 0.12),
     );
-    canvas.restore();
-    canvas.drawCircle(
-      const Offset(146, 90), 5, Paint()..color = Colors.white.withValues(alpha: 0.55));
   }
 
-  void _drawCheeks(Canvas canvas, _Skin skin) {
-    if (skin.cheek <= 0) return;
-    final paint = Paint()..color = Tokens.blush.withValues(alpha: skin.cheek);
-    canvas.drawCircle(const Offset(60, 134), 10, paint);
-    canvas.drawCircle(const Offset(140, 134), 10, paint);
+  /// 아래 발 두 개.
+  void _feet(Canvas canvas) {
+    final paint = Paint()..color = _outline;
+    for (final x in [68.0, 118.0]) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, 176, 14, 12), const Radius.circular(4)),
+        paint,
+      );
+    }
   }
 
-  void _drawFace(Canvas canvas) {
-    final fill = Paint()..color = Tokens.faceInk;
-    final thick = Paint()
-      ..color = Tokens.faceInk
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6
-      ..strokeCap = StrokeCap.round;
-    final brow = Paint()
-      ..color = Tokens.faceInk
+  /// 냉장고 몸통.
+  void _body(Canvas canvas, _Skin skin) {
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(46, 24, 108, 156), const Radius.circular(32));
+    canvas.drawRRect(rect, Paint()..color = skin.body);
+    canvas.drawRRect(
+      rect,
+      Paint()
+        ..color = _outline
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5,
+    );
+  }
+
+  /// 표면 광택. 평면으로 두면 스티커처럼 보인다.
+  void _gloss(Canvas canvas) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.75)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(
+      Path()
+        ..moveTo(56, 36)
+        ..quadraticBezierTo(52, 44, 52, 60),
+      paint,
+    );
+    canvas.drawLine(
+      const Offset(53, 90),
+      const Offset(53, 102),
+      paint..color = Colors.white.withValues(alpha: 0.6),
+    );
+  }
+
+  /// 냉동실 칸막이와 손잡이 둘.
+  void _doors(Canvas canvas) {
+    final paint = Paint()
+      ..color = _outline
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(const Offset(46, 74), const Offset(154, 74),
+        paint..strokeCap = StrokeCap.butt);
+    final handle = Paint()
+      ..color = _outline
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(const Offset(138, 40), const Offset(138, 58), handle);
+    canvas.drawLine(const Offset(138, 88), const Offset(138, 114), handle);
+  }
+
+  /// 문에 붙은 메모지. 급한 것과 되물을 것이 여기 적힌다.
+  void _memo(Canvas canvas, _Skin skin) {
+    canvas.save();
+    canvas.translate(80, 48);
+    canvas.rotate(-8 * math.pi / 180);
+    canvas.translate(-80, -48);
+
+    final paper = RRect.fromRectAndRadius(
+      Rect.fromLTWH(66, 36, 28, 24), const Radius.circular(4));
+    canvas.drawRRect(paper, Paint()..color = const Color(0xFFFFF3B8));
+    canvas.drawRRect(
+      paper,
+      Paint()
+        ..color = _outline
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3,
+    );
+    // 자석 압정.
+    canvas.drawCircle(const Offset(80, 36), 3.5, Paint()..color = skin.deep);
+    canvas.drawCircle(
+      const Offset(80, 36),
+      3.5,
+      Paint()
+        ..color = _outline
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+
+    if (skin.note.isEmpty) {
+      final line = Paint()
+        ..color = _outline
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(const Offset(71, 46), const Offset(87, 46), line);
+      canvas.drawLine(const Offset(71, 52), const Offset(81, 52), line);
+    } else {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: skin.note,
+          style: const TextStyle(
+            color: _outline,
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+            height: 1,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      painter.paint(canvas, Offset(80 - painter.width / 2, 55 - painter.height));
+    }
+    canvas.restore();
+  }
+
+  void _cheeks(Canvas canvas, _Skin skin) {
+    if (skin.cheek <= 0) return;
+    final paint = Paint()
+      ..color = const Color(0xFFFF8A98).withValues(alpha: skin.cheek);
+    canvas.drawCircle(const Offset(72, 134), 7, paint);
+    canvas.drawCircle(const Offset(124, 134), 7, paint);
+  }
+
+  void _face(Canvas canvas) {
+    final fill = Paint()..color = _outline;
+    final stroke = Paint()
+      ..color = _outline
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+    final brow = Paint()
+      ..color = _outline
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.5
       ..strokeCap = StrokeCap.round;
     final shine = Paint()..color = Colors.white;
 
     switch (mood) {
       case MascotMood.fresh:
       case MascotMood.done:
-        // 웃는 눈. 호를 위로 굽힌다.
-        canvas.drawPath(_arc(70, 116, 90, 116, -12), thick);
-        canvas.drawPath(_arc(110, 116, 130, 116, -12), thick);
-        canvas.drawPath(_arc(90, 134, 110, 134, 11), thick);
+        canvas.drawPath(_arc(77, 121, 91, 121, -9), stroke);
+        canvas.drawPath(_arc(105, 121, 119, 121, -9), stroke);
+        canvas.drawPath(_arc(91, 135, 105, 135, 8), stroke);
       case MascotMood.soon:
-        canvas.drawPath(_pill(80, 114, 24), fill);
-        canvas.drawPath(_pill(120, 114, 24), fill);
+        canvas.drawPath(_pill(84, 119, 16), fill);
+        canvas.drawPath(_pill(112, 119, 16), fill);
         canvas.drawRRect(
           RRect.fromRectAndRadius(
-            Rect.fromLTWH(93, 137, 14, 6), const Radius.circular(3)),
+            Rect.fromLTWH(93, 136, 10, 5), const Radius.circular(2.5)),
           fill,
         );
       case MascotMood.urgent:
-        canvas.drawPath(_pill(80, 116, 24), fill);
-        canvas.drawPath(_pill(120, 116, 24), fill);
-        canvas.drawPath(Path()..moveTo(68, 100)..lineTo(86, 94), brow);
-        canvas.drawPath(Path()..moveTo(132, 100)..lineTo(114, 94), brow);
-        canvas.drawCircle(const Offset(100, 142), 6, fill);
+        canvas.drawPath(_pill(84, 121, 16), fill);
+        canvas.drawPath(_pill(112, 121, 16), fill);
+        canvas.drawLine(const Offset(75, 107), const Offset(90, 102), brow);
+        canvas.drawLine(const Offset(121, 107), const Offset(106, 102), brow);
+        canvas.drawCircle(const Offset(98, 141), 4.5, fill);
       case MascotMood.expired:
-        // 감은 눈. 선 두 개로 지친 인상을 만든다.
-        canvas.drawPath(Path()..moveTo(71, 117)..lineTo(89, 117), thick);
-        canvas.drawPath(Path()..moveTo(111, 117)..lineTo(129, 117), thick);
-        canvas.drawPath(Path()..moveTo(94, 140)..lineTo(106, 140), thick);
+        canvas.drawLine(const Offset(78, 121), const Offset(90, 121), stroke);
+        canvas.drawLine(const Offset(106, 121), const Offset(118, 121), stroke);
+        canvas.drawLine(const Offset(94, 139), const Offset(102, 139), stroke);
       case MascotMood.unknown:
-        canvas.drawCircle(const Offset(80, 115), 6, fill);
-        canvas.drawCircle(const Offset(120, 115), 6, fill);
-        canvas.drawPath(_arc(93, 140, 107, 140, -4), thick);
+        canvas.drawCircle(const Offset(84, 120), 4.5, fill);
+        canvas.drawCircle(const Offset(112, 120), 4.5, fill);
+        canvas.drawPath(_arc(93, 139, 103, 139, -3), stroke);
       case MascotMood.listening:
-        // 눈을 크게 뜨고 입을 벌린다. 듣는 중임이 표정으로 읽혀야 한다.
-        canvas.drawCircle(const Offset(80, 113), 9.5, fill);
-        canvas.drawCircle(const Offset(120, 113), 9.5, fill);
-        canvas.drawCircle(const Offset(84, 109), 3, shine);
-        canvas.drawCircle(const Offset(124, 109), 3, shine);
+        canvas.drawCircle(const Offset(84, 119), 7, fill);
+        canvas.drawCircle(const Offset(112, 119), 7, fill);
+        canvas.drawCircle(const Offset(86.5, 116), 2.2, shine);
+        canvas.drawCircle(const Offset(114.5, 116), 2.2, shine);
+        // 입이 목소리에 맞춰 벌어진다.
         canvas.drawOval(
-          Rect.fromCenter(center: const Offset(100, 139), width: 16, height: 18), fill);
+          Rect.fromCenter(
+            center: const Offset(98, 137),
+            width: 12,
+            height: 14 * (0.7 + 0.6 * energy),
+          ),
+          fill,
+        );
       case MascotMood.asking:
-        canvas.drawPath(_pill(80, 116, 22), fill);
-        canvas.drawPath(_pill(120, 116, 22), fill);
-        // 한쪽 눈썹만 올려 되묻는 표정을 만든다.
+        canvas.drawPath(_pill(84, 121, 14), fill);
+        canvas.drawPath(_pill(112, 121, 14), fill);
         canvas.drawPath(
-          Path()..moveTo(68, 98)..quadraticBezierTo(77, 90, 86, 95), brow);
-        canvas.drawPath(Path()..moveTo(114, 99)..lineTo(132, 99), brow);
-        canvas.drawPath(_arc(92, 140, 108, 140, -5), thick);
+          Path()..moveTo(76, 105)..quadraticBezierTo(83, 99, 90, 103), brow);
+        canvas.drawLine(const Offset(106, 107), const Offset(120, 107), brow);
+        canvas.drawPath(_arc(92, 139, 104, 139, -4), stroke);
     }
   }
 
-  /// 되물을 때의 물음표. 미확인과 확인 질문에만 나온다.
-  void _drawQuestion(Canvas canvas, _Skin skin) {
-    if (mood != MascotMood.unknown && mood != MascotMood.asking) return;
-    final painter = TextPainter(
-      text: TextSpan(
-        text: '?',
-        style: TextStyle(
-          color: skin.deep,
-          fontSize: 40,
-          fontWeight: FontWeight.w800,
-          height: 1,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    painter.paint(canvas, Offset(162 - painter.width / 2, 60 - painter.height));
+  /// 듣는 중의 음파. 목소리가 크면 함께 커진다.
+  void _waves(Canvas canvas, _Skin skin) {
+    final paint = Paint()
+      ..color = skin.deep.withValues(alpha: 0.5 + 0.5 * energy)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(
+      Path()
+        ..moveTo(164, 40)
+        ..quadraticBezierTo(171, 49, 164, 58),
+      paint,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(173, 33)
+        ..quadraticBezierTo(185, 49, 173, 65),
+      paint..color = skin.deep.withValues(alpha: 0.25 + 0.6 * energy),
+    );
   }
 
   /// 세로 알약. 눈으로 쓴다.
   Path _pill(double cx, double cy, double h) => Path()
     ..addRRect(RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset(cx, cy), width: 14, height: h),
-      const Radius.circular(7),
+      Rect.fromCenter(center: Offset(cx, cy), width: 10, height: h),
+      const Radius.circular(5),
     ));
 
   /// 두 점을 잇는 2차 곡선. [lift] 가 음수면 위로 굽는다.
@@ -282,5 +334,6 @@ class _MascotPainter extends CustomPainter {
     ..quadraticBezierTo((x0 + x1) / 2, y0 + lift * 2, x1, y1);
 
   @override
-  bool shouldRepaint(_MascotPainter old) => old.mood != mood;
+  bool shouldRepaint(_MascotPainter old) =>
+      old.mood != mood || old.energy != energy;
 }

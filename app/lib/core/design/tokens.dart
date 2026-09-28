@@ -75,8 +75,8 @@ abstract final class Tokens {
 /// 화면 배경은 [Bands] 가 정하는 그라데이션이라 `scaffoldBackgroundColor` 는 흰색으로
 /// 두고 각 화면이 그 위에 그린다.
 ///
-/// TODO: 목업은 Pretendard 를 쓴다. 폰트 파일을 받으면 `fontFamily` 를 지정한다. 지금은
-/// 기기 기본 한글 폰트로 떨어진다.
+/// 글꼴은 **Pretendard 가변 폰트**다. 목업과 같은 파일을 번들한다 — 기기 기본 한글
+/// 폰트는 자간과 굵기가 달라 목업의 인상이 나오지 않는다.
 ThemeData buildTheme() {
   final scheme = ColorScheme.fromSeed(
     seedColor: const Color(0xFF4FC178),
@@ -91,6 +91,7 @@ ThemeData buildTheme() {
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
+    fontFamily: 'Pretendard',
     scaffoldBackgroundColor: Colors.white,
     // 자간을 좁혀야 목업의 촘촘한 인상이 난다.
     textTheme: const TextTheme(

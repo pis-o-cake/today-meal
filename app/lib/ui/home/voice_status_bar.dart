@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/voice/voice_state.dart';
+import '../../ui/widgets/breathing_dot.dart';
 import '../../ui/widgets/glass.dart';
 import '../widgets/screen_scaffold.dart';
 import '../conversation/conversation_view_model.dart';
@@ -60,15 +61,6 @@ class VoiceStatusBar extends StatelessWidget {
             ),
           ),
           Container(width: 1, height: 18, color: Tokens.hairline),
-          // 웨이크워드가 전경 한정이라 손으로 부르는 길을 항상 남긴다. 화면 위에 뜬
-          // 버튼으로 두면 아치를 가려서, 상태를 말하는 이 줄 안에 함께 둔다.
-          IconButton(
-            onPressed: voice.onMicButton,
-            iconSize: 18,
-            color: Tokens.ink,
-            tooltip: Strings.micInUse,
-            icon: const Icon(Icons.mic_rounded),
-          ),
           IconButton(
             onPressed: voice.toggleMute,
             iconSize: 18,
@@ -90,21 +82,17 @@ class _Dot extends StatelessWidget {
   final VoiceState state;
 
   @override
-  Widget build(BuildContext context) {
-    final color = colorFor(state);
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(color: color.withValues(alpha: 0.22), blurRadius: 0, spreadRadius: 4),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => BreathingDot(
+        color: colorFor(state),
+        alive: isAlive(state),
+      );
 }
+
+/// 지금 음성이 살아 있는지. 멈춘 상태는 멈춰 보여야 한다.
+bool isAlive(VoiceState state) => switch (state) {
+      Muted() || Suspended() || Unavailable() => false,
+      _ => true,
+    };
 
 /// 목록 화면의 작은 호출 대기 배지.
 ///
@@ -116,7 +104,11 @@ class VoiceBadgeSlot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<ConversationViewModel>().state;
-    return VoiceBadge(label: labelFor(state), color: colorFor(state));
+    return VoiceBadge(
+      label: labelFor(state),
+      color: colorFor(state),
+      alive: isAlive(state),
+    );
   }
 }
 

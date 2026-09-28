@@ -19,9 +19,15 @@ final class Waiting extends VoiceState {
 
 /// 호출을 감지해 명령을 전사하는 중. 전사기가 마이크를 갖고 있다.
 final class Listening extends VoiceState {
-  const Listening({this.partialText});
+  const Listening({this.partialText, this.level = 0});
 
   final String? partialText;
+
+  /// 마이크 입력 크기(0~1).
+  ///
+  /// 듣는 중 연출이 목소리에 반응하는 근거다. 기기마다 범위가 달라 **정확한 크기가
+  /// 아니라 세기**로만 쓴다.
+  final double level;
 }
 
 /// 서버가 처리하는 중. 마이크를 아무도 갖지 않는다.

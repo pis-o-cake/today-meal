@@ -179,7 +179,7 @@ class Component extends DCLogic {
       } else {
         nodeDim += circ(p.x, p.y, r);
       }
-      var show = cls !== 'dim' || p.kind === 'menu' || p.deg >= 3;
+      var show = p.kind !== 'menu' && (cls !== 'dim' || p.deg >= 3);
       if (show) {
         var size = cls === 'hot' ? 13 : 11;
         var color = cls === 'hot' ? '#FFFFFF' : (cls === 'warm' ? 'rgba(236,236,244,0.88)' : (hoverMode ? 'rgba(210,210,222,0.22)' : 'rgba(210,210,222,0.55)'));

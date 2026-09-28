@@ -169,6 +169,25 @@ void main() {
     expect(handled, ['계란 두 개 썼어']);
   });
 
+  testWidgets('낭독이 응답하지 않아도 대기로 돌아온다', (tester) async {
+    // flutter_tts 의 완료 콜백이 오지 않으면 영원히 기다린다. 실기기에서 반영 화면에
+    // 갇힌 원인이다. 대기로 못 돌아오는 것이 이 제품에서 가장 나쁜 고장이다.
+    speaker.hangs = true;
+    final manager = build();
+    await manager.onForeground();
+
+    final states = <VoiceState>[];
+    manager.states.listen(states.add);
+
+    final session = manager.startSession((_) async => const TurnAnswered('반영했어요.'));
+    await tester.pump(VoiceSessionManager.speakTimeout + const Duration(seconds: 1));
+    await tester.pump(VoiceSessionManager.resultLinger + const Duration(seconds: 1));
+    await session;
+
+    expect(manager.state, isA<Waiting>(), reason: '낭독이 막혀도 대기로 돌아와야 한다');
+    expect(calls, contains('speaker.stop'));
+  });
+
   test('전경이 아니면 감지를 무시한다', () async {
     final manager = build();
     final handled = <String>[];
@@ -228,6 +247,7 @@ class _FakeTranscriber implements SpeechTranscriber {
   Future<String> transcribeOnce({
     String localeId = 'ko_KR',
     void Function(String partial)? onPartial,
+    void Function(double level)? onLevel,
   }) async {
     calls.add('transcriber.transcribe');
     _count += 1;
@@ -245,13 +265,17 @@ class _FakeSpeaker implements SpeechSpeaker {
   final List<String> calls;
   bool succeeds = true;
 
+  /// 완료 콜백이 오지 않는 상태. 실기기의 삼성 TTS 가 이렇게 멈췄다.
+  bool hangs = false;
+
   @override
   Future<bool> isKoreanAvailable() async => true;
 
   @override
-  Future<bool> speak(String text) async {
+  Future<bool> speak(String text) {
     calls.add('speaker.speak');
-    return succeeds;
+    if (hangs) return Completer<bool>().future;
+    return Future.value(succeeds);
   }
 
   @override

@@ -40,6 +40,23 @@ class VoiceSessionManager {
   /// 재질문 후속 응답 창.
   static const clarifyWindow = Duration(seconds: 10);
 
+  /// 낭독 한 번의 한계.
+  ///
+  /// WARNING: `flutter_tts` 는 `awaitSpeakCompletion(true)` 일 때 완료 콜백이 오지
+  /// 않으면 **영원히 기다린다.** 삼성 TTS 가 다른 앱에 오디오를 뺏기면 그렇게 된다.
+  /// 실기기에서 반영 화면에 갇힌 원인이다.
+  static const speakTimeout = Duration(seconds: 15);
+
+  /// 한 번의 대화가 쓸 수 있는 최대 시간.
+  ///
+  /// IMPORTANT: 마지막 안전장치다. 어느 단계가 막히든 이 시간이 지나면 대기로 돌아온다.
+  /// 대기로 못 돌아오는 것이 이 제품에서 가장 나쁜 고장이다 — 사용자는 앱이 죽은 것으로
+  /// 본다.
+  static const sessionTimeout = Duration(seconds: 75);
+
+  /// 결과를 읽고 나서 화면에 남겨두는 시간. 낭독이 실패해도 눈으로 읽을 틈을 준다.
+  static const resultLinger = Duration(milliseconds: 1200);
+
   final WakeWordDetector _detector;
   final SpeechTranscriber _transcriber;
   final SpeechSpeaker _speaker;
@@ -122,9 +139,22 @@ class VoiceSessionManager {
       _logger.d('Wake word ignored: a session is already running');
       return running;
     }
-    final started = _runSession(handle).whenComplete(() => _session = null);
+    // 어느 단계가 막혀도 대기로 돌아오도록 전체에 한계를 건다.
+    final started = _runSession(handle)
+        .timeout(sessionTimeout, onTimeout: () async {
+          _logger.w('Voice session exceeded ${sessionTimeout.inSeconds}s; recovering');
+          await _recover();
+        })
+        .whenComplete(() => _session = null);
     _session = started;
     return started;
+  }
+
+  /// 막힌 세션을 정리하고 대기로 돌린다.
+  Future<void> _recover() async {
+    await _transcriber.cancel();
+    await _speaker.stop();
+    await _resumeDetection();
   }
 
   Future<void> _runSession(
@@ -163,8 +193,10 @@ class VoiceSessionManager {
           await _speakAndFinish(spoken.isEmpty ? _retryMessage : spoken);
       }
     } catch (error, stack) {
+      // 실패를 완료처럼 알리지 않되, 실패한 채로 멈춰 있지도 않는다.
       _logger.e('Voice session failed', error: error, stackTrace: stack);
       _emit(const Unavailable(UnavailableReason.audioInterrupted));
+      await _speak(_retryMessage);
     } finally {
       await _resumeDetection();
     }
@@ -172,8 +204,21 @@ class VoiceSessionManager {
 
   Future<String?> _transcribe(Duration limit) async {
     try {
+      // 부분 전사와 음량을 함께 흘린다. 마지막 값을 들고 있어야 한쪽만 와도 다른 쪽을
+      // 잃지 않는다.
+      var partial = '';
+      var level = 0.0;
       return await _transcriber
-          .transcribeOnce(onPartial: (partial) => _emit(Listening(partialText: partial)))
+          .transcribeOnce(
+            onPartial: (value) {
+              partial = value;
+              _emit(Listening(partialText: partial, level: level));
+            },
+            onLevel: (value) {
+              level = value;
+              _emit(Listening(partialText: partial, level: level));
+            },
+          )
           .timeout(limit);
     } on TimeoutException {
       _logger.w('Transcription timed out after ${limit.inSeconds}s');
@@ -189,7 +234,7 @@ class VoiceSessionManager {
     Future<VoiceTurnResult> Function(String utterance) handle,
   ) async {
     _emit(Clarifying(result.question));
-    await _speaker.speak(result.question);
+    await _speak(result.question);
 
     // 호출어를 반복하지 않아도 답할 수 있게 짧은 창을 연다.
     _emit(const Listening());
@@ -212,10 +257,26 @@ class VoiceSessionManager {
 
   Future<void> _speakAndFinish(String text) async {
     _emit(Speaking(text));
-    final spoken = await _speaker.speak(text);
+    final spoken = await _speak(text);
     if (!spoken) {
       // 낭독이 실패해도 결과는 화면에 남는다. 대기 복귀는 finally 가 보장한다.
       _logger.w('TTS did not complete; result remains on screen only');
+    }
+    // 읽을 틈을 준다. 낭독이 바로 끝나면 결과가 스치고 지나간다.
+    await Future<void>.delayed(resultLinger);
+  }
+
+  /// 낭독 한 번. 막히면 멈추고 넘어간다.
+  Future<bool> _speak(String text) async {
+    try {
+      return await _speaker.speak(text).timeout(speakTimeout);
+    } on TimeoutException {
+      _logger.w('TTS timed out after ${speakTimeout.inSeconds}s');
+      await _speaker.stop();
+      return false;
+    } catch (error) {
+      _logger.w('TTS failed: $error');
+      return false;
     }
   }
 

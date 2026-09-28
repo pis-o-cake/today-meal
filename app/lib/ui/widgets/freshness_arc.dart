@@ -1,11 +1,17 @@
 /// 신선도 아치.
 ///
-/// 목업의 핵심 조작부다. 무지개 트랙 위에 등급 5개의 얼굴을 올려두고, 누른 등급이
+/// 목업의 핵심 조작부다. 무지개 궤도 위에 등급 5개의 얼굴을 올려두고, 가운데 온 등급이
 /// 화면 전체(배경색·캐릭터·문구)를 바꾼다. 목록을 훑지 않고 **색으로 골라 들어가는** 것이
 /// 이 화면의 방식이다.
 ///
-/// 지남 → 급함 → 챙길 것 → 여유 → 미확인 순으로 왼쪽부터 놓는다. 급한 것이 가운데
-/// 오도록 두지 않는다 — 순서가 바뀌면 사용자가 위치로 익힌 것이 무너진다.
+/// **얼굴은 궤도 위 제자리에 있고 고른 표시가 미끄러진다.** 얼굴까지 함께 돌리면 끝
+/// 등급을 골랐을 때 반대쪽 얼굴이 궤도 밖으로 떨어진다.
+///
+/// 손가락을 따라 표시가 따라오고, 손을 떼면 가장 가까운 얼굴로 스프링처럼 붙는다.
+/// 한 칸씩 툭툭 끊기면 어디로 갔는지 읽히지 않는다.
+///
+/// 지남 → 급함 → 챙길 것 → 여유 → 미확인 순으로 고정이다. 순서가 바뀌면 사용자가
+/// 위치로 익힌 것이 무너진다.
 library;
 
 import 'dart:math' as math;
@@ -16,10 +22,6 @@ import '../../core/design/band.dart';
 import '../../core/design/tokens.dart';
 import '../../domain/model/inventory.dart';
 
-/// 아치 전체.
-///
-/// 누르는 것과 **미는 것** 둘 다 받는다. 가로로 밀면 등급이 한 칸씩 넘어가고, 화면
-/// 배색이 따라 바뀐다. 목업의 "밀어서 재료 상태 보기" 가 이것이다.
 class FreshnessArc extends StatefulWidget {
   const FreshnessArc({
     required this.counts,
@@ -35,34 +37,86 @@ class FreshnessArc extends StatefulWidget {
   final Freshness selected;
   final ValueChanged<Freshness> onSelect;
 
-  /// 트랙 아래 안내 문구.
+  /// 궤도 아래 안내 문구.
   final String hint;
 
   /// 트랙의 세로 크기. 얼굴이 위로 튀어나오므로 여유를 둔다.
   static const height = 128.0;
 
-  /// 얼굴이 놓이는 각도(도). 왼쪽 위에서 오른쪽으로 내려온다.
-  static const _angles = [158.0, 124.0, 90.0, 56.0, 22.0];
+  /// 얼굴이 놓이는 각도(도). 왼쪽 위에서 오른쪽으로 내려온다. **고정이다.**
+  static const angles = [158.0, 124.0, 90.0, 56.0, 22.0];
 
-  /// 한 칸 넘기는 데 필요한 가로 이동.
-  ///
-  /// 짧으면 한 번 밀 때 두세 칸이 넘어가 어디로 갔는지 모른다. 실기기에서 56 은 너무
-  /// 짧았다.
-  static const _step = 96.0;
+  /// 얼굴 사이의 각도 간격. 한 칸을 화면 거리로 바꿀 때 쓴다.
+  static const gap = 34.0;
 
   @override
   State<FreshnessArc> createState() => _FreshnessArcState();
 }
 
-class _FreshnessArcState extends State<FreshnessArc> {
-  /// 미는 동안 쌓인 거리. 한 칸을 넘길 때마다 덜어낸다.
-  double _drag = 0;
+class _FreshnessArcState extends State<FreshnessArc>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _spring;
+  late final Animation<double> _curve;
 
-  void _shift(int steps) {
-    final index = Bands.ordered.indexOf(widget.selected);
-    final next = (index + steps).clamp(0, Bands.ordered.length - 1);
-    if (next == index) return;
-    widget.onSelect(Bands.ordered[next]);
+  /// 궤도 위의 현재 위치(칸 단위). 정수가 아니어도 되므로 끄는 중에도 따라온다.
+  late double _at = _indexOf(widget.selected).toDouble();
+
+  double _from = 0;
+  double _to = 0;
+  bool _dragging = false;
+
+  double get _last => (Bands.ordered.length - 1).toDouble();
+
+  @override
+  void initState() {
+    super.initState();
+    _spring = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 460),
+    );
+    // 살짝 지나쳤다 돌아온다. 딱 멈추면 기계적이다.
+    _curve = CurvedAnimation(parent: _spring, curve: Curves.easeOutBack)
+      ..addListener(() => setState(() {
+            _at = _from + (_to - _from) * _curve.value;
+          }));
+  }
+
+  @override
+  void didUpdateWidget(FreshnessArc old) {
+    super.didUpdateWidget(old);
+    // 얼굴을 눌러 바뀐 경우에도 같은 스냅으로 따라간다.
+    final target = _indexOf(widget.selected).toDouble();
+    if (!_dragging && !_spring.isAnimating && (_at - target).abs() > 0.01) {
+      _snapTo(target);
+    }
+  }
+
+  @override
+  void dispose() {
+    _spring.dispose();
+    super.dispose();
+  }
+
+  int _indexOf(Freshness grade) {
+    final at = Bands.ordered.indexOf(grade);
+    return at < 0 ? 0 : at;
+  }
+
+  void _snapTo(double target) {
+    _from = _at;
+    _to = target;
+    _spring
+      ..reset()
+      ..forward();
+  }
+
+  /// 손을 뗀 자리에서 가장 가까운 얼굴로 붙인다.
+  void _settle() {
+    _dragging = false;
+    final nearest = _at.round().clamp(0, Bands.ordered.length.toInt() - 1);
+    _snapTo(nearest.toDouble());
+    final grade = Bands.ordered[nearest];
+    if (grade != widget.selected) widget.onSelect(grade);
   }
 
   @override
@@ -72,15 +126,23 @@ class _FreshnessArcState extends State<FreshnessArc> {
           return GestureDetector(
             // 트랙이 아니라 영역 전체를 잡는다. 얼굴이 작아 트랙만 잡으면 잘 안 걸린다.
             behavior: HitTestBehavior.opaque,
-            onHorizontalDragStart: (_) => _drag = 0,
-            onHorizontalDragUpdate: (details) {
-              _drag += details.delta.dx;
-              // 왼쪽으로 밀면 오른쪽 등급으로 간다 — 손가락을 따라 트랙이 흐르는 방향이다.
-              while (_drag.abs() >= FreshnessArc._step) {
-                _shift(_drag < 0 ? 1 : -1);
-                _drag -= _drag.sign * FreshnessArc._step;
-              }
+            onHorizontalDragStart: (_) {
+              _dragging = true;
+              _spring.stop();
             },
+            onHorizontalDragUpdate: (details) => setState(() {
+              // 얼굴이 고정이므로 오른쪽으로 밀면 오른쪽 얼굴이 골라진다. 손가락이
+              // 가리키는 쪽이 그대로 선택이다.
+              _at = (_at + details.delta.dx / geometry.pixelsPerStep)
+                  .clamp(0.0, _last);
+            }),
+            onHorizontalDragEnd: (details) {
+              // 던지듯 밀면 한 칸 더 간다.
+              final fling = details.velocity.pixelsPerSecond.dx / 1600;
+              _at = (_at + fling.clamp(-1.0, 1.0)).clamp(0.0, _last);
+              _settle();
+            },
+            onHorizontalDragCancel: _settle,
             child: SizedBox(
               height: FreshnessArc.height,
               child: Stack(
@@ -90,6 +152,7 @@ class _FreshnessArcState extends State<FreshnessArc> {
                     child: CustomPaint(painter: _TrackPainter(geometry)),
                   ),
                   Positioned(left: 0, right: 0, top: 86, child: _hint(context)),
+                  _marker(geometry),
                   for (final (index, grade) in Bands.ordered.indexed)
                     _token(context, geometry, index, grade),
                 ],
@@ -114,17 +177,55 @@ class _FreshnessArcState extends State<FreshnessArc> {
         ],
       );
 
+  /// 고른 표시. 궤도 위를 미끄러지며 얼굴 뒤에 깔린다.
+  Widget _marker(_ArcGeometry geometry) {
+    // 얼굴 사이를 각도로 보간한다. 정수가 아닌 위치에서도 궤도 위에 머문다.
+    final low = _at.floor().clamp(0, FreshnessArc.angles.length - 1);
+    final high = _at.ceil().clamp(0, FreshnessArc.angles.length - 1);
+    final t = _at - low;
+    final angle = FreshnessArc.angles[low] +
+        (FreshnessArc.angles[high] - FreshnessArc.angles[low]) * t;
+    final point = geometry.pointAt(angle);
+
+    return Positioned(
+      left: point.dx - 26,
+      top: point.dy - 26,
+      child: IgnorePointer(
+        child: Transform.rotate(
+          angle: (90 - angle) * 0.35 * math.pi / 180,
+          child: Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: const [
+                BoxShadow(
+                    color: Color(0x24141923), blurRadius: 18, offset: Offset(0, 8)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _token(
     BuildContext context,
     _ArcGeometry geometry,
     int index,
     Freshness grade,
   ) {
-    final point = geometry.pointAt(FreshnessArc._angles[index]);
-    final on = grade == widget.selected;
+    final angle = FreshnessArc.angles[index];
+    final point = geometry.pointAt(angle);
+    final distance = (index - _at).abs();
+    final on = distance < 0.5;
     final count = widget.counts[grade] ?? 0;
-    // 아치를 따라 얼굴도 살짝 눕는다. 전부 정면이면 트랙 위에 붙어 보이지 않는다.
-    final tilt = (90 - FreshnessArc._angles[index]) * 0.35 * math.pi / 180;
+    // 궤도를 따라 얼굴도 살짝 눕는다. 전부 정면이면 트랙 위에 붙어 보이지 않는다.
+    final tilt = (90 - angle) * 0.35 * math.pi / 180;
+    // 가운데에서 멀수록 작고 옅다. 깊이가 생겨야 회전목마로 읽힌다.
+    final scale = (1 - distance * 0.17).clamp(0.62, 1.0);
+    final fade = (1 - distance * 0.24).clamp(0.32, 1.0);
 
     return Positioned(
       left: point.dx - 26,
@@ -137,41 +238,29 @@ class _FreshnessArcState extends State<FreshnessArc> {
           onTap: () => widget.onSelect(grade),
           child: Transform.rotate(
             angle: tilt,
-            // 고른 얼굴이 살짝 떠오른다. 밀었을 때 바뀐 것이 눈에 보여야 한다.
-            child: AnimatedScale(
-              scale: on ? 1 : 0.88,
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
+            child: Transform.scale(
+              scale: scale,
               child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: on ? Colors.white : Colors.transparent,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: on
-                    ? const [
-                        BoxShadow(
-                            color: Color(0x24141923),
-                            blurRadius: 18,
-                            offset: Offset(0, 8)),
-                      ]
-                    : null,
-              ),
-              child: SizedBox(
-                width: 52,
-                height: 52,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Center(
-                      child: Opacity(
-                        opacity: on ? 1 : 0.66,
-                        child: GradeFace(grade: grade, size: 40, dimmed: !on),
+                // 고른 표시는 따로 그린다. 여기서는 얼굴만 놓는다.
+                decoration: const BoxDecoration(),
+                child: SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Center(
+                        child: Opacity(
+                          opacity: fade,
+                          child: GradeFace(grade: grade, size: 40, dimmed: !on),
+                        ),
                       ),
-                    ),
-                    if (count > 0)
-                      Positioned(top: -4, right: -4, child: _badge(context, count)),
-                  ],
+                      if (count > 0)
+                        Positioned(
+                            top: -4, right: -4, child: _badge(context, count)),
+                    ],
+                  ),
                 ),
-              ),
               ),
             ),
           ),
@@ -226,6 +315,12 @@ class _ArcGeometry {
 
   /// 트랙 위의 가느다란 광택선.
   Path sheen() => _arc(146, 34, rx + 22, ry + 22);
+
+  /// 한 칸을 넘기는 데 필요한 가로 이동(px).
+  ///
+  /// 궤도 위 각도 간격을 화면 거리로 바꾼 값이다. 상수로 두면 화면 폭에 따라 손맛이
+  /// 달라진다.
+  double get pixelsPerStep => rx * FreshnessArc.gap * math.pi / 180;
 
   Path _arc(double from, double to, double ex, double ey) {
     final path = Path();

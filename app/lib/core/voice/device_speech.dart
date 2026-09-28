@@ -34,6 +34,7 @@ class DeviceSpeechTranscriber implements SpeechTranscriber {
   Future<String> transcribeOnce({
     String localeId = 'ko_KR',
     void Function(String partial)? onPartial,
+    void Function(double level)? onLevel,
   }) async {
     if (!await _engine.ensureReady()) {
       throw const TranscriptionException('speech recognizer is unavailable');
@@ -66,6 +67,11 @@ class DeviceSpeechTranscriber implements SpeechTranscriber {
         pauseFor: const Duration(seconds: 4),
         listenFor: const Duration(seconds: 15),
       ),
+      // 플러그인은 대략 -2..10 범위의 dB 유사값을 준다. 기기마다 달라 정확한 크기로
+      // 쓰지 않고 **연출의 세기**로만 쓴다.
+      onSoundLevelChange: onLevel == null
+          ? null
+          : (level) => onLevel(((level + 2) / 12).clamp(0.0, 1.0)),
       onResult: (result) {
         latest = result.recognizedWords;
         onPartial?.call(latest);

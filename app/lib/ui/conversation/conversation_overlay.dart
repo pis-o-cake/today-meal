@@ -82,10 +82,12 @@ class _Listening extends StatelessWidget {
             ),
           ),
         ),
+        // 그래프가 화면 높이의 40% 를 차지한다. 목업의 배치다.
         Align(
           alignment: const Alignment(0, -0.2),
           child: IngredientGraph(
             accent: Tokens.overlayGraph,
+            energy: vm.level,
             highlighted: vm.recognizedIngredients,
           ),
         ),

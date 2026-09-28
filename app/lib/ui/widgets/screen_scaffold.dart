@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/design/band.dart';
 import '../../core/design/tokens.dart';
+import 'breathing_dot.dart';
 import 'glass.dart';
 
 /// 제목 + 호출 대기 배지 + 본문.
@@ -95,10 +96,16 @@ class ScreenScaffold extends StatelessWidget {
 /// 오늘 화면의 긴 상태 표시줄과 달리 여기서는 **살아 있다는 사실만** 알린다. 목록을
 /// 보는 동안에도 불러서 쓸 수 있다는 것이 이 배지의 전부다.
 class VoiceBadge extends StatelessWidget {
-  const VoiceBadge({required this.label, required this.color, super.key});
+  const VoiceBadge({
+    required this.label,
+    required this.color,
+    this.alive = true,
+    super.key,
+  });
 
   final String label;
   final Color color;
+  final bool alive;
 
   @override
   Widget build(BuildContext context) => GlassPill(
@@ -111,21 +118,8 @@ class VoiceBadge extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                        color: color.withValues(alpha: 0.18),
-                        blurRadius: 0,
-                        spreadRadius: 3),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 6),
+              BreathingDot(color: color, size: 7, alive: alive),
+              const SizedBox(width: 2),
               Text(label, style: Theme.of(context).textTheme.labelMedium
                   ?.copyWith(fontWeight: FontWeight.w700)),
             ],

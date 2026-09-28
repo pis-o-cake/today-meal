@@ -47,9 +47,12 @@ abstract interface class SpeechTranscriber {
   /// 지원이 달라 동일한 동작을 가정하지 않으며, 호출자가 별도 타임아웃을 함께 건다.
   ///
   /// 인식 실패·오디오 중단 시 [TranscriptionException] 을 던진다.
+  /// [onLevel] 은 마이크 입력 크기다. 0 에 가까우면 조용하고 1 에 가까우면 크다.
+  /// 듣는 중 연출이 목소리에 반응하려면 이 값이 필요하다.
   Future<String> transcribeOnce({
     String localeId = 'ko_KR',
     void Function(String partial)? onPartial,
+    void Function(double level)? onLevel,
   });
 
   /// 진행 중인 전사를 취소하고 마이크를 놓는다.

@@ -49,8 +49,33 @@ class HomeScreen extends StatelessWidget {
     final palette = Bands.of(home.selected);
     final wide = !context.formFactor.isCompact;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(gradient: palette.background),
+    // 등급을 바꾸면 배경색이 툭 바뀌지 않고 흘러 넘어간다. 궤도가 미끄러지는 동안
+    // 배경이 먼저 도착하면 두 동작이 따로 논다.
+    return TweenAnimationBuilder<Color?>(
+      tween: ColorTween(end: palette.bgMid),
+      duration: const Duration(milliseconds: 460),
+      curve: Curves.easeOut,
+      builder: (context, bgMid, child) => TweenAnimationBuilder<Color?>(
+        tween: ColorTween(end: palette.bgEdge),
+        duration: const Duration(milliseconds: 460),
+        curve: Curves.easeOut,
+        builder: (context, bgEdge, child) => DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: const Alignment(0, -0.6),
+              radius: 1.25,
+              colors: [
+                Colors.white,
+                bgMid ?? palette.bgMid,
+                bgEdge ?? palette.bgEdge,
+              ],
+              stops: const [0, 0.42, 1],
+            ),
+          ),
+          child: child,
+        ),
+        child: child,
+      ),
       child: SafeArea(
         child: Column(
           children: [

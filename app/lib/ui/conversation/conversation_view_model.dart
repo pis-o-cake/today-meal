@@ -29,10 +29,14 @@ class ConversationViewModel extends ChangeNotifier {
   final String _retryMessage;
 
   VoiceState _state = const Suspended();
+  double _level = 0;
   CommandOutcome? _lastOutcome;
   String? _lastUtterance;
 
   VoiceState get state => _state;
+
+  /// 마이크 입력 크기(0~1). 듣는 중 연출이 이 값으로 숨쉰다.
+  double get level => _level;
   CommandOutcome? get lastOutcome => _lastOutcome;
   String? get lastUtterance => _lastUtterance;
 
@@ -63,8 +67,9 @@ class ConversationViewModel extends ChangeNotifier {
     _voice.bindWakeWord(_handle);
     _voice.states.listen((next) {
       _state = next;
-      if (next is Listening && next.partialText != null) {
-        _lastUtterance = next.partialText;
+      if (next is Listening) {
+        if (next.partialText != null) _lastUtterance = next.partialText;
+        _level = next.level;
       }
       if (next is Processing) _lastUtterance = next.utterance;
       notifyListeners();
