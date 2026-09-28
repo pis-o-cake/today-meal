@@ -9,7 +9,8 @@ import '../ui/home/home_view_model.dart';
 import 'config.dart';
 import 'l10n/strings.dart';
 import 'network/api_client.dart';
-import 'voice/stub_voice.dart';
+import 'voice/device_speech.dart';
+import 'voice/sherpa_wake_word_detector.dart';
 import 'voice/voice_session_manager.dart';
 
 /// 의존성 등록소.
@@ -32,13 +33,15 @@ Future<void> registerDependencies(AppConfig config) async {
     ..registerLazySingleton<MenuRepository>(
       () => RemoteMenuRepository(di<ApiClient>()),
     )
-    // 음성 계층은 아직 자리표시 구현이다. 실제 플러그인 배선은 S-01 에서 한다.
-    // 자리표시가 조용히 성공하면 감지되는 것으로 착각하므로 예외를 던진다.
+    // 호출어 감지는 온디바이스(sherpa-onnx)이고 전사·낭독은 기기 내장 서비스다.
+    // 셋을 싱글턴으로 두는 이유는 마이크를 다루는 객체가 여럿 생기면 소유권 관리가
+    // 무의미해지기 때문이다.
+    ..registerLazySingleton<SherpaWakeWordDetector>(SherpaWakeWordDetector.new)
     ..registerLazySingleton<VoiceSessionManager>(
       () => VoiceSessionManager(
-        detector: StubWakeWordDetector(),
-        transcriber: StubSpeechTranscriber(),
-        speaker: StubSpeechSpeaker(),
+        detector: di<SherpaWakeWordDetector>(),
+        transcriber: DeviceSpeechTranscriber(),
+        speaker: DeviceSpeechSpeaker(),
         retryMessage: Strings.voiceRetry,
       ),
     )

@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>재료를 말로 기록하려면 마이크가 필요해요.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>말한 내용을 글로 바꿔 냉장고에 반영해요.</string>
 </dict>
 </plist>

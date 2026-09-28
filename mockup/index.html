@@ -215,12 +215,12 @@ const STEPS=[
  {key:'unknown',body:'#CCD2DE',deep:'#99A2B2',acc:'#7F8899',bg1:'#F8F9FB',bg2:'#ECEFF4',ray:.05,exp:'q',dull:1,
   big:'미확인',sm:'1가지 · 기한을 알려주세요',items:['김치'],em:'❓',cta:'기한 알려주기'}
 ];
-const BUBBLES=[[100,56,35],[62,72,31],[138,72,31],[44,106,26],[156,106,26],[76,40,26],[124,40,26]];
+const BUBBLES=[[100,56,35],[62,72,31],[138,72,31],[42,108,29],[158,108,29],[76,40,26],[124,40,26]];
 let uidn=0;
 function jelly(st){
   const u='j'+(++uidn), INK='#333A52', B=st.body, D=st.deep;
-  const bub=(x,y,r)=>`<g><circle cx="${x}" cy="${y}" r="${r}" fill="url(#b${u})" stroke="rgba(255,255,255,.55)" stroke-width="1"/>
-    <ellipse cx="${x-r*.34}" cy="${y-r*.40}" rx="${r*.30}" ry="${r*.21}" fill="#fff" opacity=".62" transform="rotate(-25 ${x-r*.34} ${y-r*.40})"/>
+  const bub=(x,y,r)=>`<g><circle cx="${x}" cy="${y}" r="${r}" fill="url(#b${u})" stroke="rgba(255,255,255,.42)" stroke-width="0.8"/>
+    <ellipse cx="${x-r*.34}" cy="${y-r*.40}" rx="${r*.32}" ry="${r*.22}" fill="#fff" opacity=".7" transform="rotate(-25 ${x-r*.34} ${y-r*.40})"/>
     <circle cx="${x+r*.40}" cy="${y+r*.34}" r="${r*.11}" fill="#fff" opacity=".45"/></g>`;
   let eyes='',mouth='',extra='';
   const eye=(cx,rot)=>`<rect x="${cx-7}" y="104" width="14" height="26" rx="7" fill="${INK}" transform="rotate(${rot} ${cx} 117)"/>`;
@@ -250,9 +250,9 @@ function jelly(st){
   return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
    <defs>
      <radialGradient id="b${u}" cx="32%" cy="26%" r="84%">
-       <stop offset="0%" stop-color="#fff" stop-opacity=".88"/>
-       <stop offset="46%" stop-color="${B}" stop-opacity=".72"/>
-       <stop offset="100%" stop-color="${D}" stop-opacity=".78"/></radialGradient>
+       <stop offset="0%" stop-color="#fff" stop-opacity=".9"/>
+       <stop offset="52%" stop-color="${B}" stop-opacity=".58"/>
+       <stop offset="100%" stop-color="${D}" stop-opacity=".58"/></radialGradient>
      <linearGradient id="t${u}" x1="20%" y1="4%" x2="80%" y2="100%">
        <stop offset="0%" stop-color="#fff" stop-opacity=".95"/>
        <stop offset="48%" stop-color="${B}" stop-opacity=".62"/>
@@ -266,7 +266,7 @@ function jelly(st){
    <ellipse cx="100" cy="180" rx="42" ry="7.5" fill="${D}" opacity="${st.dull?.12:.18}" filter="url(#sh${u})"/>
    <g opacity="${st.dull?.9:1}">
      ${BUBBLES.map(b=>bub(b[0],b[1],b[2])).join('')}
-     ${bub(40,136,14)}${bub(160,136,14)}
+     ${bub(38,142,15)}${bub(162,142,15)}
      <ellipse cx="83" cy="170" rx="15" ry="11" fill="url(#t${u})" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
      <ellipse cx="117" cy="170" rx="15" ry="11" fill="url(#t${u})" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
      <rect x="58" y="78" width="84" height="86" rx="40" ry="38" fill="url(#t${u})" opacity=".96" stroke="rgba(255,255,255,.65)" stroke-width="1.2"/>

@@ -30,8 +30,12 @@ ALLOWED_PATHS = (
 
 # 내용 검사에서 제외할 확장자. 바이너리와 사람이 읽는 문서.
 SKIP_CONTENT = re.compile(
-    r"\.(lock|jar|apk|aab|png|jpe?g|gif|webp|svg|ico|ttf|otf|woff2?|zip|md)$"
+    r"\.(lock|jar|apk|aab|ipa|png|jpe?g|gif|webp|svg|ico|ttf|otf|woff2?|zip|gz"
+    r"|onnx|tflite|pt|bin|model|pv|ppn|so|dylib|dll|a|wasm|mp3|wav|mp4|pdf|md)$"
 )
+
+# 이보다 큰 파일은 내용을 보지 않는다. 비밀값은 작고, 큰 파일은 모델이나 자산이다.
+MAX_SCAN_BYTES = 2_000_000
 SKIP_EXACT = {".githooks/secret-scan.py", ".githooks/pre-commit"}
 
 # 제공자 접두사. 이건 변수 참조일 수 없다.
@@ -83,10 +87,23 @@ def staged_files() -> list[str]:
 
 
 def staged_content(path: str) -> str | None:
-    out = subprocess.run(
-        ["git", "show", f":{path}"], capture_output=True, text=True, check=False
-    )
-    return out.stdout if out.returncode == 0 else None
+    """스테이징된 내용을 텍스트로 읽는다.
+
+    WARNING: 바이너리를 텍스트로 디코딩하면 터진다. 실제로 ONNX 모델에서 훅이 죽었다.
+    바이트로 받아 직접 디코딩하고, 실패하면 검사 대상이 아닌 것으로 본다.
+    """
+    out = subprocess.run(["git", "show", f":{path}"], capture_output=True, check=False)
+    if out.returncode != 0:
+        return None
+    if len(out.stdout) > MAX_SCAN_BYTES:
+        return None
+    # NUL 바이트가 있으면 바이너리다.
+    if b"\x00" in out.stdout[:8192]:
+        return None
+    try:
+        return out.stdout.decode("utf-8")
+    except UnicodeDecodeError:
+        return None
 
 
 def findings(paths: list[str]) -> list[str]:

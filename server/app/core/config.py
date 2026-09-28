@@ -39,8 +39,14 @@ class Settings(BaseSettings):
     gemini_timeout_seconds: float = 30.0
 
     # 정상 사용량은 3일 전체가 $2 규모다. 상한은 재시도 루프를 막기 위한 것이다.
-    llm_max_usd: float = Field(default=5.0, description="누적 추정 비용 상한")
-    llm_max_calls: int = Field(default=1500, description="창 안의 호출 수 상한")
+    llm_max_usd: float = Field(
+        default=4.0,
+        description=(
+            "누적 추정 비용 상한. 선불 잔액보다 낮게 둬서 잔액이 0 이 되기 전에 "
+            "우리 쪽이 먼저 멈추게 한다"
+        ),
+    )
+    llm_max_calls: int = Field(default=800, description="창 안의 호출 수 상한")
     llm_min_interval_seconds: float = Field(
         default=3.0,
         description=(
