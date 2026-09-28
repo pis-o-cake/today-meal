@@ -1,0 +1,16 @@
+# 줄바꿈을 LF 로 고정한다. Windows 와 macOS 를 오가면 Git for Windows 의 기본값
+# (core.autocrlf=true)이 sh 스크립트를 CRLF 로 체크아웃해 파서가 깨진다.
+* text=auto eol=lf
+
+# 바이너리는 건드리지 않는다.
+*.onnx  binary
+*.model binary
+*.png   binary
+*.jpg   binary
+*.jar   binary
+*.apk   binary
+*.keystore binary
+
+# Windows 전용 스크립트만 CRLF 로 둔다.
+*.bat text eol=crlf
+*.cmd text eol=crlf

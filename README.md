@@ -49,18 +49,24 @@ API 문서는 서버의 Swagger UI(`/docs`)를 본다. 엔드포인트를 문서
 전제는 Flutter SDK, Android Studio, Python 3.12, Poetry, Docker다. 실기기 확인이 필요하므로
 핸드폰 한 대가 있어야 한다. iOS 빌드에는 Xcode 가 따로 필요하다.
 
-```sh
-# 서버 — 전체 절차는 런북 참조
-cd server && poetry install && docker compose up -d db
-poetry run alembic upgrade head && poetry run python -m app.core.seed
-poetry run uvicorn app.main:app --reload --port 8000
+**온디바이스 ASR 모델(134MB)은 git 에 없다.** 인코더가 126MB 로 GitHub 의 파일당 100MB
+제한을 넘기 때문이다. clone 뒤 `scripts/fetch-model.sh` 로 한 번 받는다.
 
-# 앱
+```sh
+# 0) 처음 한 번 — 온디바이스 ASR 모델을 받는다 (134MB, git 에 없다)
+sh scripts/fetch-model.sh
+
+# 1) 로컬 스택 한 번에 — DB · 마이그레이션 · 시드 · LAN 주소 설정 · 서버
+sh scripts/dev.sh
+
+# 2) 앱
 cd app && flutter pub get && flutter run
 
-# 양쪽 검증 (서버 59건 · 앱 5건)
+# 3) 양쪽 검증 (서버 122건 · 앱 27건)
 sh scripts/verify.sh
 ```
+
+Windows 는 **Git Bash** 에서 실행한다. PowerShell 과 CMD 는 sh 스크립트를 돌리지 못한다.
 
 WARNING: 호스트에 이미 PostgreSQL 이 돌면 5432 가 겹친다. 컨테이너는 5433 으로 노출하며
 자세한 대응은 [런북](docs/runbook/local-development.md)에 있다.
