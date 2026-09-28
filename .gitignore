@@ -1,0 +1,42 @@
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+.venv/
+.env
+*.db
+*.sqlite3
+data/
+
+# Android
+*.iml
+.gradle/
+local.properties
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.keystore
+
+# IDE / OS
+.idea/
+.DS_Store
+*.log
+
+# engsys 로컬 캐시
+.engsys/cache/
+
+# Gradle / Android 추가
+.kotlin/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+
+# Poetry / 서버 추가
+server/.venv/
+server/.env
+server/.pytest_cache/
+server/.ruff_cache/

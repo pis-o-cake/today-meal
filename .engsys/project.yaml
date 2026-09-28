@@ -1,0 +1,85 @@
+system:
+  profile: 'baseline'
+
+project:
+  name: 'today-meal'
+  source-of-truth:
+    android: 'android/'
+    server: 'server/'
+
+commands:
+  verify: 'sh scripts/verify.sh'
+
+vcs:
+  commit:
+    subject-language: 'ko'
+    subject-ending: 'noun'
+    scopes:
+      - 'android'
+      - 'server'
+      - 'voice'
+      - 'inventory'
+      - 'command'
+      - 'menu'
+      - 'video'
+      - 'shopping'
+      - 'auth'
+      - 'docs'
+      - 'infra'
+  branch:
+    model: 'single-main'
+    roles:
+      - role: 'production'
+        branch: 'main'
+    protected:
+      - 'main'
+    prefixes:
+      feature: 'feat/'
+  merge-request:
+    target: 'main'
+  tracker:
+    provider: 'github'
+    project: 'pis-o-cake/today-meal'
+    default-assignee: 'pis-o-cake'
+    agent:
+      search: 'allowed'
+      create: 'allowed'
+      comment: 'allowed'
+      close: 'ask'
+      accept-risk: 'ask'
+      commit-deadline: 'ask'
+
+documentation:
+  architecture: 'docs/architecture/README.md'
+  authoring:
+    assign:
+      - path: 'README.md'
+        type: 'guide'
+      - path: 'docs/adr'
+        type: 'decision-record'
+      - path: 'docs/architecture'
+        type: 'architecture'
+      - path: 'docs/scope'
+        type: 'project-scope'
+      - path: 'docs/plan'
+        type: 'work-plan'
+      - path: 'docs/design'
+        type: 'design-proposal'
+      - path: 'docs/verification'
+        type: 'verification-spec'
+      - path: 'docs/runbook'
+        type: 'runbook'
+    exempt:
+      - '.claude'
+      - '.githooks'
+      - 'scripts'
+      - 'android'
+      - 'server'
+      - 'docs/product'
+  lifecycle:
+    design:
+      path: 'docs/design'
+      frozen-status: ['implemented']
+    adr:
+      path: 'docs/adr'
+      frozen-status: ['accepted']
