@@ -6,7 +6,7 @@ last-reviewed: 2026-09-28
 
 # 오늘 뭐 먹지? — 아키텍처
 
-주방 태블릿의 안드로이드 앱과 FastAPI 서버 둘로 구성한다. 앱은 오디오 입출력과 화면을 갖고,
+**핸드폰의 Flutter 앱**과 FastAPI 서버 둘로 구성한다. 앱은 오디오 입출력과 화면을 갖고,
 재고 계산과 모델 호출은 서버가 갖는다. 제공 범위는 [기능 범위](../scope/today-meal.md),
 개발 순서는 [3일 실행 계획](../plan/hackathon-3day.md)이 갖는다.
 
@@ -17,12 +17,12 @@ last-reviewed: 2026-09-28
 
 ```mermaid
 flowchart LR
-    subgraph TAB["주방 태블릿 (Android)"]
-        WW["Porcupine<br/>웨이크워드"] --> VSM["VoiceSessionManager<br/>마이크 소유권 상태기계"]
-        VSM --> STT["SpeechRecognizer"]
-        VSM --> TTS["TextToSpeech"]
+    subgraph TAB["핸드폰 (Flutter · Android + iOS)"]
+        WW["porcupine_flutter<br/>전경 웨이크워드"] --> VSM["VoiceSessionManager<br/>마이크 소유권 상태기계"]
+        VSM --> STT["speech_to_text"]
+        VSM --> TTS["flutter_tts"]
         STT --> VM["ViewModel"]
-        VM --> UI["Compose 화면"]
+        VM --> UI["Flutter 화면 (반응형)"]
         VM --> REPO["Repository"]
     end
     subgraph SRV["앱 서버 (FastAPI)"]
@@ -49,33 +49,32 @@ flowchart LR
 
 ```
 today-meal/
-├── android/          Android 앱 (Kotlin · Compose · MVVM · Hilt)
+├── app/              Flutter 앱 (Dart · MVVM · Android + iOS)
 ├── server/           FastAPI (Poetry · Pydantic V2 · SQLAlchemy 2.0)
 ├── docs/             engineering-system이 관리하는 문서
 └── scripts/verify.sh 양쪽 native 검증 진입점
 ```
 
-### Android — MVVM
+### 앱 — Flutter MVVM
 
 ```
-android/app/src/main/kotlin/com/pisocake/todaymeal/
-├── TodayMealApplication.kt      Hilt 진입점
-├── MainActivity.kt              FLAG_KEEP_SCREEN_ON · 가로 고정
-├── di/                          Hilt 모듈
+app/lib/
+├── main.dart                    진입점 · DI 등록
 ├── core/
 │   ├── voice/                   VoiceSessionManager · WakeWordDetector
 │   │                            SpeechTranscriber · SpeechSpeaker
-│   ├── network/                 Retrofit · OkHttp · 오류 매핑
-│   └── design/                  색 · 타이포 · 간격 토큰과 공통 Composable
+│   ├── network/                 Dio · 인터셉터 · 오류 매핑
+│   ├── design/                  색 · 타이포 · 간격 토큰과 공통 위젯
+│   └── l10n/                    사용자에게 보이는 문구
 ├── data/
-│   ├── remote/                  TodayMealApi · DTO
+│   ├── remote/                  API 클라이언트 · DTO
 │   └── repository/              *RepositoryImpl
 ├── domain/
 │   ├── model/                   앱이 쓰는 모델
 │   ├── repository/              인터페이스 (ViewModel이 의존하는 쪽)
 │   └── usecase/                 화면에 걸친 동작
 └── ui/
-    ├── dashboard/               Screen · ViewModel · UiState
+    ├── home/                    Screen · ViewModel · UiState
     ├── conversation/
     ├── fridge/
     ├── menu/
@@ -84,15 +83,19 @@ android/app/src/main/kotlin/com/pisocake/todaymeal/
 
 책임 경계는 셋이다.
 
-- **View(Composable)** — `UiState` 하나를 받아 그린다. 조건 분기 외의 로직을 갖지 않는다.
-- **ViewModel** — `StateFlow<UiState>`를 노출하고 UseCase·Repository를 호출한다. Android
-  프레임워크 타입(`Context`·`View`)을 참조하지 않는다.
+- **View(Widget)** — `UiState` 하나를 받아 그린다. 조건 분기 외의 로직을 갖지 않는다.
+- **ViewModel** — `ChangeNotifier` 로 `UiState` 를 노출하고 UseCase·Repository를 호출한다.
+  `BuildContext` 를 참조하지 않는다.
 - **Repository** — 인터페이스는 `domain`, 구현은 `data`. ViewModel은 구현을 모른다.
 
-가장 위험한 구성요소는 **`VoiceSessionManager`**다. 웨이크워드 감지기와 `SpeechRecognizer`는
-같은 마이크를 동시에 점유할 수 없어, 소유권을 넘기는 지점이 곧 실패 지점이 된다. 그래서 마이크를
-만지는 코드를 이 하나에 모으고 `StateFlow<VoiceState>`를 단일 진실 원천으로 둔다. ViewModel은
-상태를 읽고 명령을 보내기만 하며 감지기나 인식기를 직접 다루지 않는다.
+화면은 **핸드폰 세로를 기준**으로 만들고, 폭에 따라 1단/2단으로 갈리는 레이아웃 하나를 쓴다.
+태블릿 전용 화면을 따로 만들지 않는다 — 주방 고정 태블릿이 후속 방향이고, 화면을 두 벌
+유지하면 그 전환에서 한쪽이 뒤처진다.
+
+가장 위험한 구성요소는 **`VoiceSessionManager`**다. 웨이크워드 감지기와 전사기는 같은 마이크를
+동시에 점유할 수 없어, 소유권을 넘기는 지점이 곧 실패 지점이 된다. 그래서 마이크를 만지는
+코드를 이 하나에 모으고 `Stream<VoiceState>`를 단일 진실 원천으로 둔다. ViewModel은 상태를
+읽고 명령을 보내기만 하며 감지기나 전사기를 직접 다루지 않는다.
 
 ```mermaid
 stateDiagram-v2
@@ -106,14 +109,19 @@ stateDiagram-v2
     Speaking --> Waiting: TTS 완료 또는 오류
     Waiting --> Muted: 음소거
     Muted --> Waiting: 음소거 해제
+    Waiting --> Suspended: 앱이 배경으로
+    Suspended --> Waiting: 전경 복귀
     Listening --> Waiting: 오디오 중단 · 권한 해제
 ```
 
 `Speaking` 동안 전사기를 멈춰 자기 응답을 명령으로 되받지 않게 한다. TTS의 완료 콜백과 오류
 콜백 **양쪽에서** 감지기를 재기동한다. 한쪽만 걸면 실패 경로에서 대기로 돌아오지 못한다.
 
-문자열은 `strings.xml`만 쓴다. Compose에 한국어를 직접 적지 않는다. 로그는 `Timber`이며 영어로
-고정한다.
+`Suspended` 가 핸드폰에서 새로 생긴 상태다. **웨이크워드는 전경 한정**이므로 앱이 배경으로
+가면 감지를 멈추고 그 사실을 화면에 표시한다 — 대기 중인 것처럼 보이게 두지 않는다.
+백그라운드 상시 대기는 후속 범위다.
+
+문자열은 `core/l10n` 에서만 온다. 위젯에 한국어를 직접 적지 않는다. 로그는 영어로 고정한다.
 
 ### Server — 도메인별 패키지
 

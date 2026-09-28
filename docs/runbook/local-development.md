@@ -22,7 +22,9 @@ last-reviewed: 2026-09-28
 | Python 3.12 | `python3.12 --version`. Homebrew 라면 `/opt/homebrew/opt/python@3.12/bin/python3.12` |
 | Poetry 2.x | `poetry --version`. `poetry export` 는 없으므로 쓰지 않는다 |
 | Docker | `docker info`. PostgreSQL 컨테이너에 필요하다 |
-| Android Studio | 번들 JBR 을 JDK 로 쓴다. 별도 JDK 설치는 필요 없다 |
+| Flutter SDK | `flutter --version`. `flutter doctor` 로 Android toolchain 을 확인한다 |
+| Android Studio | Android SDK 와 번들 JBR 을 제공한다 |
+| Xcode | **iOS 빌드에만 필요하다.** 없으면 Android 만 낸다 |
 
 ## 실행 전 확인
 
@@ -59,21 +61,27 @@ poetry run uvicorn app.main:app --reload --port 8000
 ### 2. 앱
 
 ```sh
-cd android
-cp local.properties.example local.properties   # sdk.dir 과 porcupine.accessKey 를 채운다
-./gradlew :app:assembleDebug
+cd app
+cp .env.example .env            # PORCUPINE_ACCESS_KEY 와 API_BASE_URL 을 채운다
+flutter pub get
+flutter devices                 # 붙은 기기 확인
+flutter run                     # 디버그 실행
 ```
 
-`JAVA_HOME` 을 지정하지 않아도 `scripts/verify.sh` 는 Android Studio 의 JBR 을 찾는다. Gradle 을
-직접 부를 때는 다음을 내보낸다.
+`.env` 의 `API_BASE_URL` 이 앱이 붙을 서버다. **끝에 슬래시를 붙인다.**
+
+| 실행 위치 | 주소 |
+|---|---|
+| Android 에뮬레이터 | `http://10.0.2.2:8000/` |
+| iOS 시뮬레이터 | `http://localhost:8000/` |
+| 실기기 | 개발 머신의 LAN 주소. 같은 와이파이에 있어야 한다 |
+
+릴리스 빌드는 이렇게 만든다.
 
 ```sh
-export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
-export ANDROID_HOME="$HOME/Library/Android/sdk"
+flutter build apk --release      # Android
+flutter build ios --release      # iOS. Xcode 가 있어야 한다
 ```
-
-`local.properties` 의 `todayMeal.apiBaseUrl` 이 앱이 붙을 서버다. 에뮬레이터는 `10.0.2.2`,
-실기기는 개발 머신의 LAN 주소를 쓴다. **끝에 슬래시를 붙인다** — Retrofit 이 요구한다.
 
 ### 3. 양쪽 검증
 
@@ -108,7 +116,7 @@ docker compose exec -T db psql -U today_meal -d today_meal -tAc \
   "select count(*) from pg_tables where schemaname='public' and tablename<>'alembic_version'"
 ```
 
-`scripts/verify.sh` 는 서버 59건과 앱 5건을 통과해야 한다. PostgreSQL 이 없으면 서버의 통합
+`scripts/verify.sh` 는 서버 109건과 앱 테스트를 통과해야 한다. PostgreSQL 이 없으면 서버의 통합
 테스트 10건이 **건너뛰어진다** — 통과가 아니라 건너뛴 것이므로 출력의 `skipped` 수를 본다.
 
 ## 실패와 복구
@@ -119,7 +127,10 @@ docker compose exec -T db psql -U today_meal -d today_meal -tAc \
 | `greenlet library is required` | SQLAlchemy async 의 전이 의존이 빠졌다 | `poetry install` 재실행. `greenlet` 은 명시 의존이다 |
 | 통합 테스트가 조용히 전부 skip | 환경변수가 `.env` 를 덮었다 | 셸의 `TODAY_MEAL_DB_*` 를 지운다. 환경변수가 `.env` 보다 우선한다 |
 | `alembic` 이 모델을 못 찾음 | 도메인이 `models.py` 를 갖지 않는다 | `app/domain/<name>/models.py` 를 만든다. `env.py` 는 고치지 않는다 |
-| `Failed to apply plugin 'org.jetbrains.kotlin.android'` | AGP 9 는 Kotlin 을 내장한다 | 그 플러그인을 적용하지 않는다. 이미 제거되어 있다 |
+| `flutter: command not found` | Flutter 가 PATH 에 없다 | `brew install --cask flutter` 후 새 터미널을 연다 |
+| `flutter doctor` 가 Android toolchain 실패 | SDK 라이선스 미동의 | `flutter doctor --android-licenses` 를 실행한다 |
+| iOS 빌드가 시작조차 안 됨 | **Xcode 가 없다.** Command Line Tools 만으로는 못 만든다 | Xcode 를 설치(10GB·30분+)하거나 iOS 를 후속으로 내린다 |
+| 앱이 `Connection refused` | 실기기가 `localhost` 를 자기 자신으로 본다 | `.env` 의 `API_BASE_URL` 을 개발 머신의 LAN 주소로 바꾼다 |
 | `porcupine.accessKey is missing` | AccessKey 가 없다 | `local.properties` 에 채운다. 커밋하지 않는다 |
 | 앱이 서버에 못 붙음 (`CLEARTEXT`) | 릴리스 빌드로 http 에 붙었다 | 디버그 빌드를 쓴다. 평문 허용은 디버그 매니페스트에만 있다 |
 | 마이그레이션이 절반만 적용 | DDL 트랜잭션 중단 | `alembic downgrade base` 후 `upgrade head`. 개발 DB 라 데이터 손실을 허용한다 |

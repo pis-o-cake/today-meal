@@ -7,17 +7,20 @@ __pycache__/
 *.sqlite3
 data/
 
-# Android
-*.iml
-.gradle/
-local.properties
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
 build/
-captures/
-.externalNativeBuild/
-.cxx/
 *.apk
 *.aab
+*.ipa
 *.keystore
+app/ios/Pods/
+app/ios/.symlinks/
+app/android/.gradle/
+app/android/local.properties
 
 # IDE / OS
 .idea/
@@ -27,13 +30,10 @@ captures/
 # engsys 로컬 캐시
 .engsys/cache/
 
-# Gradle / Android 추가
+# Flutter 추가
 .kotlin/
-android/.gradle/
-android/build/
-android/app/build/
-android/local.properties
-android/.idea/
+app/.dart_tool/
+app/build/
 
 # Poetry / 서버 추가
 server/.venv/

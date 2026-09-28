@@ -2,7 +2,10 @@
 
 서비스 기획서 v0.8 · 2026년 9월 28일 · 개발 9/28~9/30 · 제출 9/30 18:00 · 시연 10/2
 
-선택: Porcupine 웨이크워드 / 안드로이드 내장 STT·TTS / Gemini 단일 연결부 / FastAPI 서버 + Android MVVM / PostgreSQL 16
+선택: **핸드폰 우선** / Flutter 하이브리드 / Porcupine **전경** 웨이크워드 / 내장 STT·TTS / Gemini 단일 연결부 / FastAPI + PostgreSQL 16
+
+> **기기 방향이 바뀌었다.** MVP 는 핸드폰이고 주방 고정 태블릿의 상시 대기는 후속이다.
+> 이 문서의 '태블릿' 서술은 후속 방향으로 읽는다. 현행 범위의 정본은 [기능 범위](../scope/today-meal.md)다.
 
 위 선택은 [기술 설계](../design/0001-mvp-technical-design.md)에 근거와 함께 있으며 아직 `draft`다. 실기기 스파이크 전까지 확정이 아니다.
 
@@ -338,7 +341,7 @@ flowchart LR
 
 | 영역 | 선택안 | 이유·조건 |
 |---|---|---|
-| 태블릿 UI | Android 앱, Kotlin · Jetpack Compose · **MVVM + Hilt** | 가로형 대시보드와 네이티브 오디오 제어 |
+| 앱 UI | **Flutter 하이브리드.** 핸드폰 세로 기준 반응형, Android + iOS | 같은 코드로 폰·태블릿·양 OS. 태블릿 상시 대기가 후속 방향이라 프레임워크를 바꾸지 않고 이어진다 |
 | 웨이크워드 | Porcupine Android SDK 확정 | 한국어 커스텀 호출어 생성 후 태블릿에서 상시 감지 |
 | 기기 운영 | 상시 전원, 전경 Activity·화면 유지, 마이크 상태·음소거 표시 | 화면 유지 해제·오디오 중단 후 복구 검증 |
 | 음성 인식 | Android SpeechRecognizer | 태블릿 기본 인식 서비스 사용. 한국어·온디바이스 여부 실기기 확인 |

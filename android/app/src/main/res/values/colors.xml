@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- 대기 화면은 낮은 밝기의 대시보드다. 값의 정본은 Compose 의 Color.kt 이며
-         여기 있는 것은 시스템 창이 쓰는 최소값이다. -->
-    <color name="surface_dim">#12100E</color>
-</resources>
