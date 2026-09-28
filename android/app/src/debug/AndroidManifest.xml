@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 개발서버가 http 일 수 있어 디버그 빌드에서만 평문을 허용한다.
+     릴리스 빌드에는 적용되지 않는다. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application android:usesCleartextTraffic="true" tools:ignore="UnusedAttribute" />
+</manifest>
