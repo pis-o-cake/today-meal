@@ -5,7 +5,7 @@
 """
 
 from decimal import Decimal
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import UUID as PyUUID
 
 from sqlalchemy import (
@@ -19,10 +19,13 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.enums import ChangeAction, CommandIntent, CommandStatus, QuantityCertainty
 from app.core.models import Base, CreatedAtMixin, TimestampMixin, enum_check
+
+if TYPE_CHECKING:
+    from app.domain.inventory.models import IngredientBatch
 
 
 class Command(Base, TimestampMixin):
@@ -100,3 +103,6 @@ class ChangeEvent(Base, CreatedAtMixin):
         BigInteger, ForeignKey("change_event.change_event_id")
     )
     note: Mapped[str | None] = mapped_column(Text)
+
+    # 이력 화면이 재료명을 함께 보여주므로 묶음을 같이 읽는다.
+    batch: Mapped["IngredientBatch"] = relationship(lazy="raise_on_sql")

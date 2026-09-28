@@ -16,7 +16,7 @@ from app.core import dates as date_utils
 from app.core import units as unit_utils
 from app.core.enums import DateKind, DateSource, QuantityCertainty, StorageLocation
 from app.core.llm.schemas import CommandProposal, ProposedItem
-from app.core.particles import with_topic
+from app.core.particles import sanitize_fragment, with_topic
 
 
 @dataclass(slots=True)
@@ -87,7 +87,9 @@ def validate(
     """
     # 모델이 스스로 모호함을 신고했으면 그대로 따른다. 조용히 추측하는 것보다 안전하다.
     if proposal.needs_clarification:
-        return ValidationOutcome(question=proposal.question or "한 가지만 더 알려주세요.")
+        # 모델이 준 질문도 정제한다. 길거나 비면 우리 문구로 대체한다.
+        question = sanitize_fragment(proposal.question, limit=120)
+        return ValidationOutcome(question=question or "한 가지만 더 알려주세요.")
 
     if not proposal.items:
         return ValidationOutcome(rejection="proposal has no items")
@@ -104,9 +106,9 @@ def validate(
 def _validate_item(
     item: ProposedItem, *, today: date, require_amount: bool
 ) -> ValidationOutcome:
-    name = item.raw_name.strip()
+    name = sanitize_fragment(item.raw_name, limit=50)
     if not name:
-        return ValidationOutcome(rejection="item has empty name")
+        return ValidationOutcome(rejection=f"unusable item name: {item.raw_name!r}")
 
     amount, unit, qualitative, certainty, problem = _validate_quantity(item, require_amount)
     if problem is not None:
@@ -178,8 +180,15 @@ def _validate_quantity(
     if unit is None:
         if item.unit_text:
             # 모르는 단위다. 짐작해서 개로 바꾸면 잔량이 틀어진다.
+            # 모델이 준 문자열을 그대로 읽어주지 않는다 — 정제에 실패하면 단위를 언급하지 않는다.
+            spoken_unit = sanitize_fragment(item.unit_text, limit=10)
+            question = (
+                f"{name} {spoken_unit}가 어떤 단위인가요?"
+                if spoken_unit
+                else f"{name}의 단위를 다시 말해주세요."
+            )
             return None, None, None, QuantityCertainty.UNKNOWN, ValidationOutcome(
-                question=f"{name} {item.unit_text}가 어떤 단위인가요?"
+                question=question
             )
         # 단위를 말하지 않았다. 셀 수 있는 것으로 보고 '개' 로 둔다.
         unit = "ea"

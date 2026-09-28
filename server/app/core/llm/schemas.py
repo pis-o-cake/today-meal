@@ -36,10 +36,15 @@ class ProposedItem(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    raw_name: str = Field(min_length=1, max_length=100, description="말한 재료명 원문")
+    raw_name: str = Field(min_length=1, max_length=50, description="말한 재료명 원문")
     amount: float | None = Field(default=None, ge=0, description="수량. 말하지 않았으면 비운다")
-    unit_text: str | None = Field(default=None, description="말한 단위 원문. 예 '모', '개', '큰술'")
-    qualitative_amount: str | None = Field(default=None, description="'조금'·'반' 같은 표현")
+    # WARNING: 상한이 없으면 모델이 이 칸을 혼잣말 메모지로 쓴다. 실제로 그런 응답을 받았다.
+    unit_text: str | None = Field(
+        default=None, max_length=10, description="말한 단위 원문. 예 '모', '개', '큰술'"
+    )
+    qualitative_amount: str | None = Field(
+        default=None, max_length=10, description="'조금'·'반' 같은 표현"
+    )
     storage: StorageLocation | None = Field(default=None, description="말한 보관 위치")
     dates: list[ProposedDate] = Field(default_factory=list)
     is_remaining: bool = Field(
@@ -60,7 +65,9 @@ class CommandProposal(BaseModel):
     intent: CommandIntent = Field(description="발화의 의도")
     items: list[ProposedItem] = Field(default_factory=list)
     needs_clarification: bool = Field(default=False)
-    question: str | None = Field(default=None, description="되물을 한 가지. 짧게")
+    question: str | None = Field(
+        default=None, max_length=200, description="되물을 한 가지. 짧게"
+    )
     servings: int | None = Field(default=None, ge=1, le=12, description="말한 인분")
     max_minutes: int | None = Field(default=None, ge=1, le=600, description="말한 조리 가능 시간")
     correction_of_previous: bool = Field(
@@ -90,3 +97,57 @@ class InterpretResult(BaseModel):
     proposal: CommandProposal
     usage: LlmUsage
     raw: dict = Field(default_factory=dict, description="원본 응답. 검증 실패 재현에 쓴다")
+
+
+class ProposedRecipeIngredient(BaseModel):
+    """레시피 재료 한 줄.
+
+    분량을 정할 수 없으면 [amount] 를 비우고 [is_amount_unknown] 을 세운다. 임의의 숫자를
+    만들지 않는다.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    raw_name: str = Field(min_length=1, max_length=100)
+    amount: float | None = Field(default=None, ge=0)
+    unit_text: str | None = None
+    is_essential: bool = Field(
+        default=True, description="없으면 요리가 성립하지 않는 재료만 참"
+    )
+    is_amount_unknown: bool = False
+
+
+class ProposedRecipe(BaseModel):
+    """메뉴 후보 하나.
+
+    **보유 여부를 담지 않는다.** 재고 대조는 코드가 하며, 모델이 판정하면 없는 재료로 만들 수
+    있다고 말하는 화면이 나온다.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=100)
+    servings: int = Field(ge=1, le=12)
+    estimated_minutes: int | None = Field(default=None, ge=1, le=600)
+    reason: str | None = Field(default=None, description="이 메뉴를 고른 이유 한 문장")
+    ingredients: list[ProposedRecipeIngredient] = Field(default_factory=list)
+    steps: list[str] = Field(default_factory=list, description="조리 순서. 한 단계에 한 동작")
+
+
+class MenuProposal(BaseModel):
+    """추천 호출의 제안."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    recipes: list[ProposedRecipe] = Field(default_factory=list, max_length=5)
+    notes: str | None = None
+
+
+class MenuResult(BaseModel):
+    """추천 호출의 결과."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    proposal: MenuProposal
+    usage: LlmUsage
+    raw: dict = Field(default_factory=dict)

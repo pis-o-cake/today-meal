@@ -13,20 +13,28 @@ from __future__ import annotations
 import asyncio
 import json
 import re
-from typing import Any
+from typing import Any, TypeVar
 
 import httpx
 from loguru import logger
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from app.core.config import Settings
 from app.core.exceptions import UpstreamError
 from app.core.llm.budget import CallBudget
-from app.core.llm.gateway import InventoryContext
-from app.core.llm.prompts import command_ko
-from app.core.llm.schemas import CommandProposal, InterpretResult, LlmUsage
+from app.core.llm.gateway import InventoryContext, MenuRequest
+from app.core.llm.prompts import command_ko, menu_ko
+from app.core.llm.schemas import (
+    CommandProposal,
+    InterpretResult,
+    LlmUsage,
+    MenuProposal,
+    MenuResult,
+)
 
 _BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+
+_T = TypeVar("_T", bound=BaseModel)
 
 # 과부하 재시도. 정상 사용에서는 거의 걸리지 않으므로 짧고 적게 둔다.
 _MAX_ATTEMPTS = 4
@@ -101,6 +109,41 @@ class GeminiGateway:
         proposal = self._parse(raw)
         return InterpretResult(proposal=proposal, usage=usage, raw=raw)
 
+    async def suggest_menus(self, request: MenuRequest) -> MenuResult:
+        """메뉴 후보를 만든다. 예산을 넘으면 호출하지 않는다."""
+        self._budget.check()
+
+        payload = {
+            "systemInstruction": {"parts": [{"text": menu_ko.SYSTEM}]},
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [
+                        {
+                            "text": menu_ko.build_user_prompt(
+                                request.as_prompt_block(),
+                                request.servings,
+                                request.constraints(),
+                            )
+                        }
+                    ],
+                }
+            ],
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "responseSchema": _menu_schema(),
+                # 창의성이 조금 필요하지만 재료를 지어내면 안 된다. 낮게 둔다.
+                "temperature": 0.3,
+                "thinkingConfig": {"thinkingBudget": self._settings.gemini_thinking_budget},
+            },
+        }
+        raw = await self._post(payload)
+        usage = _usage(raw, self._settings.gemini_model)
+        self._budget.record(usage.input_tokens, usage.output_tokens)
+
+        proposal = self._parse_into(raw, MenuProposal)
+        return MenuResult(proposal=proposal, usage=usage, raw=raw)
+
     async def _post(self, payload: dict[str, Any]) -> dict[str, Any]:
         """제공자를 부른다. 일시적 과부하만 물러섰다 다시 시도한다.
 
@@ -149,6 +192,10 @@ class GeminiGateway:
         return response.json()
 
     def _parse(self, raw: dict[str, Any]) -> CommandProposal:
+        return self._parse_into(raw, CommandProposal)
+
+    def _parse_into(self, raw: dict[str, Any], model: type[_T]) -> _T:
+        """응답의 텍스트를 지정한 모델로 검증한다."""
         try:
             text = raw["candidates"][0]["content"]["parts"][0]["text"]
         except (KeyError, IndexError, TypeError) as error:
@@ -160,7 +207,7 @@ class GeminiGateway:
             raise UpstreamError(f"gemini response is not json: {error}") from error
 
         try:
-            return CommandProposal.model_validate(data)
+            return model.model_validate(data)
         except ValidationError as error:
             # 스키마 위반은 모델 결함이다. 원본을 남겨 재현할 수 있게 한다.
             logger.error("Gemini proposal failed schema validation: {}", error)
@@ -200,10 +247,11 @@ def _response_schema() -> dict[str, Any]:
     item_schema = {
         "type": "object",
         "properties": {
-            "raw_name": {"type": "string"},
+            "raw_name": {"type": "string", "maxLength": 50},
             "amount": {"type": "number", "nullable": True},
-            "unit_text": {"type": "string", "nullable": True},
-            "qualitative_amount": {"type": "string", "nullable": True},
+            # 모델이 이 칸에 사고 과정을 흘려 넣는 일이 있어 길이를 묶는다.
+            "unit_text": {"type": "string", "maxLength": 10, "nullable": True},
+            "qualitative_amount": {"type": "string", "maxLength": 10, "nullable": True},
             "storage": {"type": "string", "enum": values(StorageLocation), "nullable": True},
             "dates": {"type": "array", "items": date_schema},
             "is_remaining": {"type": "boolean"},
@@ -223,4 +271,42 @@ def _response_schema() -> dict[str, Any]:
             "notes": {"type": "string", "nullable": True},
         },
         "required": ["intent", "items", "needs_clarification", "correction_of_previous"],
+    }
+
+
+def _menu_schema() -> dict[str, Any]:
+    """추천 응답의 responseSchema.
+
+    `schemas.py` 의 `MenuProposal` 과 같은 모양이어야 한다. 어긋나면 파싱에서 걸린다.
+    """
+    ingredient_schema = {
+        "type": "object",
+        "properties": {
+            "raw_name": {"type": "string"},
+            "amount": {"type": "number", "nullable": True},
+            "unit_text": {"type": "string", "nullable": True},
+            "is_essential": {"type": "boolean"},
+            "is_amount_unknown": {"type": "boolean"},
+        },
+        "required": ["raw_name", "is_essential", "is_amount_unknown"],
+    }
+    recipe_schema = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "servings": {"type": "integer"},
+            "estimated_minutes": {"type": "integer", "nullable": True},
+            "reason": {"type": "string", "nullable": True},
+            "ingredients": {"type": "array", "items": ingredient_schema},
+            "steps": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["name", "servings", "ingredients", "steps"],
+    }
+    return {
+        "type": "object",
+        "properties": {
+            "recipes": {"type": "array", "items": recipe_schema},
+            "notes": {"type": "string", "nullable": True},
+        },
+        "required": ["recipes"],
     }

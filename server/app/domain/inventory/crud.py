@@ -92,3 +92,47 @@ async def list_events_of_command(session: AsyncSession, command_id: UUID) -> lis
         .order_by(ChangeEvent.change_event_id)
     )
     return list(result.scalars())
+
+
+async def list_with_dates(
+    session: AsyncSession, household_id: int
+) -> list[IngredientBatch]:
+    """살아 있는 묶음을 날짜와 함께 전부 읽는다.
+
+    먼저 쓸 재료 판정은 기한·개봉·잔량 확실성을 함께 봐야 해서 한 번에 읽는다. 조건을
+    SQL 로 내리지 않는 이유는 `expiry_alert_days` 가 가구마다 다르고 판정이 몇 갈래라
+    쿼리가 읽기 어려워지기 때문이다. 재고 규모가 수백 건이라 이 비용이 문제되지 않는다.
+    """
+    statement = (
+        select(IngredientBatch)
+        .where(
+            IngredientBatch.household_id == household_id,
+            IngredientBatch.deleted_at.is_(None),
+        )
+        .options(
+            selectinload(IngredientBatch.dates),
+            selectinload(IngredientBatch.state_events),
+        )
+    )
+    result = await session.execute(statement)
+    return list(result.scalars())
+
+
+async def find_batches_by_names(
+    session: AsyncSession, household_id: int, names: list[str]
+) -> list[IngredientBatch]:
+    """이름으로 묶음을 찾는다. 음성 조회에 쓴다."""
+    if not names:
+        return []
+    statement = (
+        select(IngredientBatch)
+        .where(
+            IngredientBatch.household_id == household_id,
+            IngredientBatch.deleted_at.is_(None),
+            IngredientBatch.raw_name.in_(names),
+        )
+        .options(selectinload(IngredientBatch.dates))
+        .order_by(IngredientBatch.created_at)
+    )
+    result = await session.execute(statement)
+    return list(result.scalars())

@@ -53,3 +53,40 @@ def with_topic(word: str) -> str:
 def with_subject(word: str) -> str:
     """주격 조사를 붙인다 — 이 / 가."""
     return f"{word}{'이' if has_final(word) else '가'}"
+
+
+# 사용자에게 보이는 문구에 넣을 수 있는 최대 길이. 넘으면 잘라낸다.
+MAX_SPEECH_FRAGMENT = 30
+
+
+def sanitize_fragment(value: str | None, *, limit: int = MAX_SPEECH_FRAGMENT) -> str | None:
+    """모델이 준 문자열을 사용자 문구에 넣을 수 있게 정제한다.
+
+    IMPORTANT: **모델 출력을 사용자 문구에 그대로 넣지 않는다.** 실제로 모델이 단위 칸에
+    영어 혼잣말을 흘려 넣었고 그것이 되묻는 질문에 그대로 나갔다.
+
+    줄바꿈을 없애고 길이를 자른다. 정제 후 비면 `None` 을 돌려주어 호출자가 그 조각을 빼고
+    문구를 만들게 한다.
+
+    Args:
+        value: 모델이 준 문자열.
+        limit: 허용할 최대 길이.
+
+    Returns:
+        정제된 문자열이거나, 쓸 수 없으면 `None`.
+
+    Example:
+        >>> sanitize_fragment("모랑")
+        '모랑'
+        >>> sanitize_fragment("a" * 100) is None
+        True
+    """
+    if value is None:
+        return None
+    flattened = " ".join(value.split())
+    if not flattened:
+        return None
+    if len(flattened) > limit:
+        # 길면 잘라 쓰지 않고 버린다. 잘린 혼잣말도 사용자에게는 뜻 없는 소리다.
+        return None
+    return flattened

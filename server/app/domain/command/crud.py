@@ -6,9 +6,11 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.core.enums import CommandStatus
-from app.domain.command.models import Command
+from app.core.enums import CommandStatus, HistoryKind
+from app.domain.command.models import ChangeEvent, Command
+from app.domain.inventory.models import BatchStateEvent, IngredientBatch
 
 
 async def get(session: AsyncSession, command_id: UUID) -> Command | None:
@@ -33,3 +35,35 @@ async def latest_applied(session: AsyncSession, household_id: int) -> Command | 
         .limit(1)
     )
     return result.scalar_one_or_none()
+
+
+async def list_history(
+    session: AsyncSession, household_id: int, limit: int
+) -> list[tuple[HistoryKind, object]]:
+    """수량 변경과 상태 변경을 한 타임라인으로 돌려준다.
+
+    두 테이블을 `UNION` 하지 않고 각각 읽어 Python 에서 합친다. 컬럼이 달라 `UNION` 이
+    읽기 어려워지고, 이력은 최근 것만 보므로 두 번 읽는 비용이 작다.
+    """
+    quantity = await session.execute(
+        select(ChangeEvent)
+        .join(Command, Command.command_id == ChangeEvent.command_id)
+        .where(Command.household_id == household_id)
+        .options(selectinload(ChangeEvent.batch))
+        .order_by(ChangeEvent.change_event_id.desc())
+        .limit(limit)
+    )
+    state = await session.execute(
+        select(BatchStateEvent)
+        .join(IngredientBatch, IngredientBatch.batch_id == BatchStateEvent.batch_id)
+        .where(IngredientBatch.household_id == household_id)
+        .options(selectinload(BatchStateEvent.batch))
+        .order_by(BatchStateEvent.state_event_id.desc())
+        .limit(limit)
+    )
+    rows: list[tuple[HistoryKind, object]] = [
+        (HistoryKind.QUANTITY, row) for row in quantity.scalars()
+    ]
+    rows += [(HistoryKind.STATE, row) for row in state.scalars()]
+    rows.sort(key=lambda pair: pair[1].created_at, reverse=True)
+    return rows[:limit]

@@ -32,6 +32,12 @@ _COUNTABLE: frozenset[str] = frozenset({"ea", "mo", "pack", "bunch", "sheet", "c
 # 정성 표현. 숫자로 바꾸지 않는다.
 QUALITATIVE_AMOUNTS: frozenset[str] = frozenset({"조금", "약간", "반", "많이", "적당히"})
 
+# 단위 뒤에 붙는 조사. 모델이 "두 모랑 계란" 처럼 조사를 단위에 붙여 보내는 일이 잦다.
+# 프롬프트로도 막지만 여기서 한 번 더 뗀다 — 못 떼면 멀쩡한 발화가 되묻기로 떨어진다.
+_TRAILING_PARTICLES: tuple[str, ...] = (
+    "이랑", "랑", "하고", "와", "과", "은", "는", "이", "가", "을", "를", "도", "만", "의",
+)
+
 _ALIASES: dict[str, str] = {
     "개": "ea", "알": "ea", "장": "sheet", "쪽": "clove",
     "모": "mo", "팩": "pack", "봉": "pack", "단": "bunch", "줌": "bunch",
@@ -84,6 +90,8 @@ def normalize_unit(raw: str | None) -> str | None:
         'tbsp'
         >>> normalize_unit("모")
         'mo'
+        >>> normalize_unit("모랑")
+        'mo'
         >>> normalize_unit("자루")
     """
     if raw is None:
@@ -91,8 +99,24 @@ def normalize_unit(raw: str | None) -> str | None:
     token = raw.strip().lower()
     if not token:
         return None
-    token = _ALIASES.get(token, token)
-    return token if token in ALL_UNITS else None
+
+    resolved = _lookup(token)
+    if resolved is not None:
+        return resolved
+
+    # 조사가 붙었을 수 있다. 하나씩 떼어 다시 본다. 긴 조사를 먼저 시도한다.
+    for particle in _TRAILING_PARTICLES:
+        if len(token) > len(particle) and token.endswith(particle):
+            resolved = _lookup(token[: -len(particle)])
+            if resolved is not None:
+                return resolved
+    return None
+
+
+def _lookup(token: str) -> str | None:
+    """정규화 표에서 단위를 찾는다."""
+    candidate = _ALIASES.get(token, token)
+    return candidate if candidate in ALL_UNITS else None
 
 
 def is_qualitative(raw: str | None) -> bool:

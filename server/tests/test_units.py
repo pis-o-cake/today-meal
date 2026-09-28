@@ -104,3 +104,26 @@ def test_decimal_avoids_float_drift():
     third = Quantity(Decimal("0.1"), "kg")
     total = sum((convert(third, "g").quantity.amount for _ in range(3)), Decimal("0"))
     assert total == Decimal("300")
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        # 모델이 조사를 단위에 붙여 보내는 일이 잦다. 못 떼면 멀쩡한 발화가 되묻기로 떨어진다.
+        ("모랑", "mo"),
+        ("개랑", "ea"),
+        ("개와", "ea"),
+        ("개하고", "ea"),
+        ("그램은", "g"),
+        ("컵을", "cup"),
+        ("큰술도", "tbsp"),
+        ("모이랑", "mo"),
+        # 조사를 뗀 뒤에도 모르는 단위면 여전히 None 이다.
+        ("자루랑", None),
+        # 단위 자체가 조사처럼 끝나도 깨지지 않는다.
+        ("단", "bunch"),
+        ("장", "sheet"),
+    ],
+)
+def test_normalize_unit_strips_trailing_particles(raw, expected):
+    assert normalize_unit(raw) == expected

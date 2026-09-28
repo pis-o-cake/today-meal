@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from app.core.llm.schemas import InterpretResult
+from app.core.llm.schemas import InterpretResult, MenuResult
 
 
 @runtime_checkable
@@ -29,6 +29,20 @@ class LlmGateway(Protocol):
         Raises:
             UpstreamError: 제공자 오류·타임아웃·스키마 위반.
             BudgetExceededError: 호출 예산을 넘었을 때.
+        """
+        ...
+
+    async def suggest_menus(self, request: MenuRequest) -> MenuResult:
+        """조건에 맞는 메뉴 후보를 만든다.
+
+        **보유 여부는 판정하지 않는다.** 모델은 후보와 필요한 재료만 내고, 재고 대조는
+        `menu.service` 가 한다.
+
+        Args:
+            request: 재고·먼저 쓸 재료·인분·제약.
+
+        Returns:
+            후보와 사용량.
         """
         ...
 
@@ -66,3 +80,53 @@ class InventoryContext:
         if self.previous_utterance:
             lines.append(f"직전 발화: {self.previous_utterance}")
         return "\n".join(lines)
+
+
+class MenuRequest:
+    """추천 호출의 입력.
+
+    `available` 과 `priority` 를 나누어 넘기는 이유는 **먼저 쓸 재료를 쓰는 메뉴를 우선**해야
+    하기 때문이다. 목록을 하나로 합치면 모델이 그 우선순위를 알 수 없다.
+    """
+
+    __slots__ = ("available", "avoided", "max_minutes", "priority", "servings", "tools")
+
+    def __init__(
+        self,
+        available: list[str],
+        priority: list[str],
+        servings: int,
+        *,
+        max_minutes: int | None = None,
+        avoided: list[str] | None = None,
+        tools: list[str] | None = None,
+    ) -> None:
+        self.available = available
+        self.priority = priority
+        self.servings = servings
+        self.max_minutes = max_minutes
+        self.avoided = avoided or []
+        self.tools = tools or []
+
+    def as_prompt_block(self) -> str:
+        """프롬프트에 넣을 재고 블록."""
+        lines = []
+        if self.priority:
+            lines.append("먼저 쓸 재료 (이걸 쓰는 메뉴를 우선):")
+            lines.extend(f"- {item}" for item in self.priority)
+        lines.append("그 밖의 보유 재료:")
+        lines.extend(f"- {item}" for item in self.available) if self.available else lines.append(
+            "- 없음"
+        )
+        return "\n".join(lines)
+
+    def constraints(self) -> list[str]:
+        """프롬프트에 넣을 제약 목록."""
+        out: list[str] = []
+        if self.max_minutes is not None:
+            out.append(f"조리 시간 {self.max_minutes}분 이내")
+        if self.avoided:
+            out.append(f"쓰지 말 재료: {', '.join(self.avoided)}")
+        if self.tools:
+            out.append(f"보유 도구: {', '.join(self.tools)}")
+        return out

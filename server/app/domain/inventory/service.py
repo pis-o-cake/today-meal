@@ -15,7 +15,14 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import units as unit_utils
-from app.core.enums import ChangeAction, QuantityCertainty, StateEventKind, StorageLocation
+from app.core.enums import (
+    ChangeAction,
+    DateKind,
+    PriorityReason,
+    QuantityCertainty,
+    StateEventKind,
+    StorageLocation,
+)
 from app.core.particles import with_object, with_subject, with_topic
 from app.domain.command.models import ChangeEvent
 from app.domain.command.validation import ValidatedItem
@@ -494,3 +501,141 @@ def _fmt(value: Decimal | None) -> str:
     if normalized == normalized.to_integral_value():
         return str(int(normalized))
     return str(normalized)
+
+
+@dataclass(slots=True)
+class PriorityBatch:
+    """먼저 확인할 묶음 하나.
+
+    Attributes:
+        reason: 먼저 확인하는 이유.
+        days_left: 표시기한까지 남은 날. 지났으면 음수. 기한이 없으면 `None`.
+        is_cookable: '오늘 요리할 재료' 후보로 쓸 수 있는지. 기한이 지난 항목은 제외한다.
+    """
+
+    batch: IngredientBatch
+    reason: PriorityReason
+    days_left: int | None
+    is_cookable: bool
+
+    @property
+    def sort_key(self) -> tuple[int, int]:
+        order = _REASON_ORDER[self.reason]
+        return (order, self.days_left if self.days_left is not None else 999)
+
+
+# 사유의 우선순위. 지난 것을 먼저 보여주되 요리 후보에서는 뺀다.
+_REASON_ORDER: dict[PriorityReason, int] = {
+    PriorityReason.EXPIRED: 0,
+    PriorityReason.EXPIRING: 1,
+    PriorityReason.OPENED: 2,
+    PriorityReason.QUANTITY_UNKNOWN: 3,
+}
+
+# 개봉 후 이 일수가 지나면 확인 대상으로 올린다. 제품 표시를 대체하는 값이 아니라
+# 사용자가 한 번 보게 하는 화면 기준이다.
+OPENED_REVIEW_DAYS = 3
+
+# 표시기한으로 쓰는 날짜 종류. 제조일·포장일은 기한이 아니므로 판정에 쓰지 않는다.
+_EXPIRY_KINDS = (DateKind.USE_BY, DateKind.SELL_BY, DateKind.BEST_BEFORE)
+
+
+def soonest_expiry(batch: IngredientBatch) -> tuple[DateKind, date] | None:
+    """가장 이른 표시기한과 그 종류.
+
+    IMPORTANT: 제조일을 기한으로 쓰지 않는다. 종류를 보존한 채 돌려주어 화면이 무엇인지
+    밝힐 수 있게 한다.
+    """
+    candidates = [
+        (DateKind(row.kind), row.date_value)
+        for row in batch.dates
+        if row.date_value is not None and row.kind in {k.value for k in _EXPIRY_KINDS}
+    ]
+    if not candidates:
+        return None
+    return min(candidates, key=lambda pair: pair[1])
+
+
+def _opened_on(batch: IngredientBatch) -> date | None:
+    moments = [
+        event.occurred_at.date()
+        for event in batch.state_events
+        if event.kind == StateEventKind.OPENED.value
+    ]
+    return max(moments) if moments else None
+
+
+def classify_priority(
+    batch: IngredientBatch, *, today: date, alert_days: Sequence[int]
+) -> PriorityBatch | None:
+    """묶음이 먼저 확인할 대상인지 판정한다.
+
+    Args:
+        batch: 판정할 묶음.
+        today: 가구 시간대의 오늘.
+        alert_days: 기한 알림 시점(D-n). 가구 설정에서 온다.
+
+    Returns:
+        해당하면 판정 결과, 아니면 `None`.
+    """
+    expiry = soonest_expiry(batch)
+    if expiry is not None:
+        days_left = (expiry[1] - today).days
+        if days_left < 0:
+            # 기한이 지났다. 안전을 단정하지 않고 확인 대상으로만 올린다.
+            return PriorityBatch(batch, PriorityReason.EXPIRED, days_left, is_cookable=False)
+        if alert_days and days_left <= max(alert_days):
+            return PriorityBatch(batch, PriorityReason.EXPIRING, days_left, is_cookable=True)
+
+    opened = _opened_on(batch)
+    if opened is not None and (today - opened).days >= OPENED_REVIEW_DAYS:
+        return PriorityBatch(batch, PriorityReason.OPENED, None, is_cookable=True)
+
+    if batch.quantity is None or batch.quantity_certainty in {
+        QuantityCertainty.UNKNOWN.value,
+        QuantityCertainty.ESTIMATED.value,
+    }:
+        return PriorityBatch(
+            batch, PriorityReason.QUANTITY_UNKNOWN, None, is_cookable=True
+        )
+    return None
+
+
+async def list_priority_batches(
+    session: AsyncSession, household_id: int, *, today: date, alert_days: Sequence[int]
+) -> list[PriorityBatch]:
+    """먼저 확인할 재료를 우선순위대로 돌려준다."""
+    batches = await crud.list_with_dates(session, household_id)
+    found = [
+        classified
+        for batch in batches
+        if (classified := classify_priority(batch, today=today, alert_days=alert_days))
+        is not None
+    ]
+    return sorted(found, key=lambda item: item.sort_key)
+
+
+async def cookable_batches(
+    session: AsyncSession, household_id: int, *, today: date
+) -> list[IngredientBatch]:
+    """오늘 요리에 쓸 수 있는 묶음.
+
+    기한이 지난 것과 잔량이 0 인 것을 뺀다. **기한이 지난 재료를 추천 재료로 쓰지 않는다.**
+    """
+    batches = await crud.list_with_dates(session, household_id)
+    usable: list[IngredientBatch] = []
+    for batch in batches:
+        expiry = soonest_expiry(batch)
+        if expiry is not None and (expiry[1] - today).days < 0:
+            continue
+        if batch.quantity is not None and batch.quantity <= 0:
+            continue
+        usable.append(batch)
+    return usable
+
+
+async def find_by_names(
+    session: AsyncSession, household_id: int, names: list[str]
+) -> list[IngredientBatch]:
+    """음성 조회용. 이름으로 묶음을 찾는다."""
+    return await crud.find_batches_by_names(session, household_id, names)

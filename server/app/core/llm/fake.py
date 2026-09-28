@@ -13,13 +13,17 @@ from __future__ import annotations
 import re
 
 from app.core.enums import CommandIntent, DateKind, StorageLocation
-from app.core.llm.gateway import InventoryContext
+from app.core.llm.gateway import InventoryContext, MenuRequest
 from app.core.llm.schemas import (
     CommandProposal,
     InterpretResult,
     LlmUsage,
+    MenuProposal,
+    MenuResult,
     ProposedDate,
     ProposedItem,
+    ProposedRecipe,
+    ProposedRecipeIngredient,
 )
 
 _KOREAN_NUMBERS: dict[str, float] = {
@@ -34,13 +38,14 @@ _INTENT_PATTERNS: list[tuple[CommandIntent, re.Pattern[str]]] = [
     (CommandIntent.CANCEL, re.compile(r"취소|되돌려|되돌리")),
     (CommandIntent.CORRECT, re.compile(r"아니(라|고|야)?\b|아니라|이 아니라|가 아니라")),
     (CommandIntent.PLAN_FUTURE, re.compile(r"살 ?거|사야|사올|내일|다음에")),
+    # 의문 형태는 '있어' 가 들어가도 조회다. ADJUST 보다 먼저 본다.
+    (CommandIntent.QUERY, re.compile(r"몇 ?개|얼마나|뭐 ?있|있나|있어\?|\?$")),
     (CommandIntent.OPEN, re.compile(r"열었|개봉|뜯었")),
     (CommandIntent.MOVE, re.compile(r"옮겼|옮김|옮겨")),
     (CommandIntent.ADJUST, re.compile(r"남았|남아|있어\b|있다")),
     (CommandIntent.CONSUME, re.compile(r"썼|쓸|사용|넣었는데|먹었|해먹")),
     (CommandIntent.REGISTER, re.compile(r"넣었|샀|왔|들어왔|채웠")),
     (CommandIntent.RECOMMEND, re.compile(r"뭐 ?먹|추천|해먹지|만들까")),
-    (CommandIntent.QUERY, re.compile(r"몇 ?개|얼마나|뭐 ?있|있나|남은")),
 ]
 
 _STORAGE_PATTERNS: list[tuple[StorageLocation, re.Pattern[str]]] = [
@@ -78,6 +83,7 @@ class FakeLlmGateway:
     def __init__(self, *, force_clarification: bool = False) -> None:
         self._force_clarification = force_clarification
         self.calls: list[str] = []
+        self.menu_requests: list[MenuRequest] = []
 
     async def interpret(self, utterance: str, context: InventoryContext) -> InterpretResult:
         """발화를 규칙으로 해석한다."""
@@ -99,6 +105,45 @@ class FakeLlmGateway:
             proposal=proposal,
             usage=LlmUsage(input_tokens=0, output_tokens=0, model="fake"),
             raw={"utterance": utterance},
+        )
+
+    async def suggest_menus(self, request: MenuRequest) -> MenuResult:
+        """먼저 쓸 재료로 후보 둘을 만든다.
+
+        하나는 그 재료만 쓰고, 하나는 없는 재료를 일부러 넣는다. 재고 대조가 '지금 가능' 과
+        '재료 준비 후' 를 제대로 가르는지 시험하려면 둘 다 필요하다.
+        """
+        self.menu_requests.append(request)
+        primary = _first_name(request.priority) or _first_name(request.available) or "재료"
+        recipes = [
+            ProposedRecipe(
+                name=f"{primary} 볶음",
+                servings=request.servings,
+                estimated_minutes=15,
+                reason=f"먼저 쓸 {primary}를 씁니다.",
+                ingredients=[
+                    ProposedRecipeIngredient(raw_name=primary, amount=1, unit_text="개"),
+                ],
+                steps=["재료를 손질한다", "팬에 볶는다", "그릇에 담는다"],
+            ),
+            ProposedRecipe(
+                name=f"{primary} 구이",
+                servings=request.servings,
+                estimated_minutes=20,
+                reason="없는 재료가 하나 필요합니다.",
+                ingredients=[
+                    ProposedRecipeIngredient(raw_name=primary, amount=1, unit_text="개"),
+                    ProposedRecipeIngredient(
+                        raw_name=_MISSING_INGREDIENT, amount=20, unit_text="g"
+                    ),
+                ],
+                steps=["재료를 손질한다", "굽는다"],
+            ),
+        ]
+        return MenuResult(
+            proposal=MenuProposal(recipes=recipes),
+            usage=LlmUsage(model="fake"),
+            raw={"servings": request.servings},
         )
 
     def _detect_intent(self, text: str) -> CommandIntent:
@@ -130,13 +175,6 @@ class FakeLlmGateway:
                     is_remaining=is_remaining,
                 )
             )
-        if not items and intent in _BARE_NAME_INTENTS:
-            # 수량 없이 상태만 말한 발화다. 재료명만 뽑아 준다.
-            name = self._bare_name(text)
-            if name:
-                items.append(ProposedItem(raw_name=name, storage=storage, dates=dates))
-            return items
-
         for match in _QUALITATIVE.finditer(text):
             items.append(
                 ProposedItem(
@@ -146,6 +184,12 @@ class FakeLlmGateway:
                     is_remaining=is_remaining,
                 )
             )
+
+        if not items and intent in _BARE_NAME_INTENTS:
+            # 수량도 정성 표현도 없다. 상태만 말한 발화이므로 재료명만 뽑아 준다.
+            name = self._bare_name(text)
+            if name:
+                items.append(ProposedItem(raw_name=name, storage=storage, dates=dates))
         return items
 
     def _extract_dates(self, text: str) -> list[ProposedDate]:
@@ -196,3 +240,16 @@ class FakeLlmGateway:
         if re.search(r"반\s*(?:썼|먹었|사용)", text):
             return True, "한 팩의 반인가요, 남은 양의 반인가요?"
         return False, None
+
+
+# 재고에 있을 법하지 않은 이름. '재료 준비 후 만들기' 경로를 시험한다.
+_MISSING_INGREDIENT = "트러플오일"
+
+
+def _first_name(entries: list[str]) -> str | None:
+    """`이름 수량단위` 형태의 문자열에서 이름만 뽑는다."""
+    for entry in entries:
+        name = entry.split()[0].strip() if entry.split() else ""
+        if name:
+            return name
+    return None

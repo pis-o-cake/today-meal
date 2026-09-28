@@ -19,19 +19,28 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
+from datetime import date
 from uuid import UUID
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import dates as date_utils
-from app.core.enums import ChangeAction, CommandIntent, CommandStatus
+from app.core.enums import (
+    ChangeAction,
+    CommandIntent,
+    CommandStatus,
+    HistoryKind,
+    QuantityCertainty,
+)
 from app.core.exceptions import UpstreamError
 from app.core.llm.gateway import InventoryContext, LlmGateway
 from app.core.llm.prompts import command_ko
+from app.core.llm.schemas import CommandProposal
 from app.core.locale import translate
 from app.domain.command import crud
 from app.domain.command.models import Command
+from app.domain.command.schemas import HistoryRow
 from app.domain.command.validation import ValidationOutcome, validate
 from app.domain.household import service as household_service
 from app.domain.inventory import service as inventory_service
@@ -115,10 +124,25 @@ async def interpret(
     intent = result.proposal.intent
     command.intent = intent.value
 
-    if intent in {CommandIntent.QUERY, CommandIntent.RECOMMEND}:
-        # 읽기 의도는 이 파이프라인에서 재고를 바꾸지 않는다. 담당 슬라이스가 따로 있다.
+    if intent is CommandIntent.QUERY:
+        # 조회는 재고를 바꾸지 않는다. 읽어서 답하기만 한다.
+        answer = await _answer_query(session, household_id, result.proposal, today)
         command.status = CommandStatus.APPLIED.value
-        command.spoken_response = translate(f"intent.{intent.value}", locale)
+        command.spoken_response = answer
+        await session.commit()
+        return CommandResult(
+            command_id=command_id,
+            status=CommandStatus.APPLIED,
+            intent=intent,
+            spoken=answer,
+            # IMPORTANT: 조회에는 되돌릴 것이 없다. 되돌리기 토큰을 주지 않는다.
+            undo_token=None,
+        )
+
+    if intent is CommandIntent.RECOMMEND:
+        # 추천은 별도 엔드포인트가 담당한다. 여기서는 의도만 기록한다.
+        command.status = CommandStatus.APPLIED.value
+        command.spoken_response = translate("intent.recommend", locale)
         await session.commit()
         return _from_stored(command)
 
@@ -314,6 +338,48 @@ def _from_stored(command: Command) -> CommandResult:
     )
 
 
+async def _answer_query(
+    session: AsyncSession,
+    household_id: int,
+    proposal: CommandProposal,
+    today: date,
+) -> str:
+    """조회 의도에 답한다.
+
+    재료를 지목했으면 그 잔량을, 지목하지 않았으면 먼저 쓸 재료를 답한다. **잔량을 모르는
+    항목은 숫자를 지어내지 않고** 모른다고 말한다.
+    """
+    names = [item.raw_name.strip() for item in proposal.items if item.raw_name.strip()]
+    if names:
+        batches = await inventory_service.find_by_names(session, household_id, names)
+        if not batches:
+            joined = ", ".join(names)
+            return f"{joined}은 등록된 재고에 없어요."
+        return ", ".join(_describe_stock(batch) for batch in batches) + " 있어요."
+
+    priority = await inventory_service.list_priority_batches(
+        session, household_id, today=today, alert_days=[3, 1, 0]
+    )
+    if not priority:
+        total = await inventory_service.list_batches(session, household_id, 5)
+        if not total:
+            return "등록된 재료가 없어요."
+        return ", ".join(_describe_stock(b) for b in total) + " 있어요."
+    first = priority[:3]
+    return "먼저 쓸 재료는 " + ", ".join(_describe_stock(p.batch) for p in first) + "예요."
+
+
+def _describe_stock(batch: object) -> str:
+    """잔량을 사람이 읽는 형태로. 모르면 모른다고 한다."""
+    quantity = getattr(batch, "quantity", None)
+    unit = getattr(batch, "unit", None) or ""
+    name = getattr(batch, "raw_name", "")
+    if quantity is None:
+        qualitative = getattr(batch, "qualitative_amount", None)
+        return f"{name} {qualitative}" if qualitative else f"{name} 잔량 미확인"
+    return f"{name} {_fmt(quantity)}{unit}"
+
+
 async def _build_context(
     session: AsyncSession, household_id: int, today: str, timezone: str
 ) -> InventoryContext:
@@ -392,3 +458,49 @@ async def undo(
     outcome = _finish(command, result, locale, key="command.reverted")
     await session.commit()
     return outcome
+
+
+async def history(
+    session: AsyncSession, *, household_id: int, limit: int = 50
+) -> list[HistoryRow]:
+    """변경 이력을 최근 순으로 돌려준다.
+
+    수량 변경과 상태 변경을 한 타임라인에 섞고, 명시값과 추정값을 구분해 표시한다.
+    """
+    rows = await crud.list_history(session, household_id, limit)
+    out: list[HistoryRow] = []
+    for kind, event in rows:
+        if kind is HistoryKind.QUANTITY:
+            out.append(
+                HistoryRow(
+                    kind=kind.value,
+                    action=event.action,
+                    name=event.batch.raw_name,
+                    batch_id=event.batch_id,
+                    quantity_before=_fmt(event.quantity_before)
+                    if event.quantity_before is not None
+                    else None,
+                    quantity_after=_fmt(event.quantity_after)
+                    if event.quantity_after is not None
+                    else None,
+                    unit=event.unit,
+                    is_estimated=event.certainty
+                    in {QuantityCertainty.ESTIMATED.value, QuantityCertainty.QUALITATIVE.value},
+                    occurred_at=event.created_at,
+                    command_id=event.command_id,
+                    reverses_event_id=event.reverses_event_id,
+                )
+            )
+            continue
+        out.append(
+            HistoryRow(
+                kind=kind.value,
+                action=event.kind,
+                name=event.batch.raw_name,
+                batch_id=event.batch_id,
+                # 상태 변경은 수량을 바꾸지 않는다. 잔량 칸을 비워 그 사실을 드러낸다.
+                occurred_at=event.occurred_at,
+                command_id=event.command_id,
+            )
+        )
+    return out

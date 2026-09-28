@@ -3,16 +3,15 @@
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_session
 from app.core.identity import CallerDep
 from app.core.llm.gateway import LlmGateway
 from app.core.llm.provider import get_gateway
-from app.core.pending import not_implemented
 from app.domain.command import service
-from app.domain.command.schemas import CommandRequest, CommandResponse
+from app.domain.command.schemas import CommandRequest, CommandResponse, HistoryRow
 from app.domain.command.service import CommandResult
 
 router = APIRouter()
@@ -79,7 +78,15 @@ async def undo(
     return _to_response(result)
 
 
-@router.get("/history", summary="변경 이력")
-async def history(caller: CallerDep) -> list[dict[str, object]]:
-    """입고·사용·보정·정정·취소를 시간순으로 돌려준다."""
-    raise not_implemented("S-06", "F-11")
+@router.get("/history", response_model=list[HistoryRow], summary="변경 이력")
+async def history(
+    caller: CallerDep,
+    session: SessionDep,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> list[HistoryRow]:
+    """입고·사용·보정·정정·취소·개봉·이동을 최근 순으로 돌려준다.
+
+    수량 변경과 상태 변경을 한 타임라인에 섞으며, 상태 변경은 잔량 칸이 비어 있다 —
+    개봉과 이동은 수량을 바꾸지 않는다는 사실이 화면에 드러나야 한다.
+    """
+    return await service.history(session, household_id=caller.household_id, limit=limit)

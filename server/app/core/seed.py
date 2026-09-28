@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.database import SessionFactory, dispose_engine
 from app.core.router import import_domain_models
+from app.core.seed_recipes import seed_recipes
 
 # (표준명, 별칭, 분류, 기본 단위, 양념 여부)
 _INGREDIENTS: list[tuple[str, list[str], str, str, bool]] = [
@@ -151,8 +152,14 @@ async def run() -> None:
         household_id = await seed_household(session)
         await seed_ingredients(session)
         staples = await seed_pantry_staples(session, household_id)
+        recipes = await seed_recipes(session)
         await session.commit()
-    logger.info("Seed complete (household={}, pantry staples={})", household_id, staples)
+    logger.info(
+        "Seed complete (household={}, pantry staples={}, recipes={})",
+        household_id,
+        staples,
+        recipes,
+    )
     await dispose_engine()
 
 

@@ -344,3 +344,163 @@ def test_partial_move_asks_instead_of_splitting(client, household):
     result = say(client, household, "돼지고기 한 개 냉동실로 옮겼어")
     assert result["status"] == "clarifying"
     assert storage_of(household, "돼지고기") == "unknown"
+
+
+def test_query_answers_with_actual_quantity(client, household):
+    """조회는 실제 잔량으로 답하고 재고를 바꾸지 않는다."""
+    say(client, household, "계란 열 개 넣었어")
+    result = say(client, household, "계란 몇 개 있어?")
+    assert result["intent"] == "query"
+    assert result["status"] == "applied"
+    assert "10" in result["spoken"]
+    # 조회에는 되돌릴 것이 없다.
+    assert result["undo_token"] is None
+    assert quantity_of(household, "계란") == Decimal("10.000")
+
+
+def test_query_for_missing_ingredient_says_so(client, household):
+    result = say(client, household, "버터 몇 개 있어?")
+    assert result["intent"] == "query"
+    assert "버터" in result["spoken"]
+
+
+def test_history_mixes_quantity_and_state_changes(client, household):
+    say(client, household, "우유 한 개 넣었어")
+    say(client, household, "우유 오늘 열었어")
+
+    response = client.get(
+        "/api/command/history", headers={"X-Household-Id": str(household)}
+    )
+    assert response.status_code == 200, response.text
+    rows = response.json()
+    kinds = {row["kind"] for row in rows}
+    assert kinds == {"quantity", "state"}
+
+    state_row = next(row for row in rows if row["kind"] == "state")
+    # 상태 변경은 수량을 바꾸지 않는다는 사실이 화면에 드러나야 한다.
+    assert state_row["quantity_before"] is None
+    assert state_row["quantity_after"] is None
+    assert state_row["action"] in {"opened", "stocked_in"}
+
+
+def test_history_marks_estimated_values(client, household):
+    say(client, household, "대파 한 단 넣었어")
+    say(client, household, "대파 조금 썼어")
+
+    rows = client.get(
+        "/api/command/history", headers={"X-Household-Id": str(household)}
+    ).json()
+    quantity_rows = [row for row in rows if row["kind"] == "quantity"]
+    assert any(row["is_estimated"] for row in quantity_rows)
+
+
+def test_priority_excludes_expired_from_cookable(client, household):
+    """기한이 지난 재료는 목록에 남기되 요리 후보에서 뺀다."""
+    say(client, household, "두부 두 모 넣었어")
+    engine = create_engine(get_settings().alembic_url)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "insert into batch_date (batch_id, kind, date_value, is_confirmed, source) "
+                "select batch_id, 'use_by', current_date - 2, true, 'voice' "
+                "from ingredient_batch where household_id = :h"
+            ),
+            {"h": household},
+        )
+
+    rows = client.get(
+        "/api/inventory/batches/expiring", headers={"X-Household-Id": str(household)}
+    ).json()
+    expired = next(row for row in rows if row["reason"] == "expired")
+    assert expired["is_cookable"] is False
+    assert expired["days_left"] < 0
+    # 판정에 쓴 기한 종류를 밝혀야 한다.
+    assert expired["expiry_kind"] == "use_by"
+
+
+def test_priority_flags_expiring_soon_as_cookable(client, household):
+    say(client, household, "두부 두 모 넣었어")
+    engine = create_engine(get_settings().alembic_url)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "insert into batch_date (batch_id, kind, date_value, is_confirmed, source) "
+                "select batch_id, 'use_by', current_date + 1, true, 'voice' "
+                "from ingredient_batch where household_id = :h"
+            ),
+            {"h": household},
+        )
+    rows = client.get(
+        "/api/inventory/batches/expiring", headers={"X-Household-Id": str(household)}
+    ).json()
+    soon = next(row for row in rows if row["reason"] == "expiring")
+    assert soon["is_cookable"] is True
+    assert soon["days_left"] == 1
+
+
+def test_manufactured_date_is_not_used_as_expiry(client, household):
+    """제조일을 기한으로 쓰지 않는다."""
+    say(client, household, "두부 두 모 넣었어")
+    engine = create_engine(get_settings().alembic_url)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "insert into batch_date (batch_id, kind, date_value, is_confirmed, source) "
+                "select batch_id, 'manufactured', current_date - 30, true, 'voice' "
+                "from ingredient_batch where household_id = :h"
+            ),
+            {"h": household},
+        )
+    rows = client.get(
+        "/api/inventory/batches/expiring", headers={"X-Household-Id": str(household)}
+    ).json()
+    assert all(row["reason"] != "expired" for row in rows)
+
+
+def test_essential_missing_ingredient_blocks_ready(client, household):
+    """필수 재료가 없는 메뉴를 '지금 가능' 으로 표시하지 않는다. F-13 의 완료 기준."""
+    say(client, household, "두부 두 모 넣었어")
+    response = client.post(
+        "/api/menu/suggestions?servings=2", headers={"X-Household-Id": str(household)}
+    )
+    assert response.status_code == 200, response.text
+    menus = response.json()
+    assert menus, "후보가 비어 있으면 판정할 것이 없다"
+
+    for menu in menus:
+        if menu["availability"] == "ready":
+            assert menu["missing_ingredients"] == []
+    # 가짜 게이트웨이는 없는 재료를 쓰는 후보를 하나 낸다. 그것이 ready 가 되면 안 된다.
+    with_missing = [m for m in menus if m["missing_ingredients"]]
+    assert with_missing, "없는 재료를 쓰는 후보가 있어야 판정을 시험할 수 있다"
+    assert all(m["availability"] != "ready" for m in with_missing)
+
+
+def test_suggestions_do_not_change_stock(client, household):
+    say(client, household, "두부 두 모 넣었어")
+    before = quantity_of(household, "두부")
+    client.post("/api/menu/suggestions", headers={"X-Household-Id": str(household)})
+    assert quantity_of(household, "두부") == before
+    assert actions_of(household) == ["stock_in"]
+
+
+def test_recipe_detail_scales_by_servings(client, household):
+    say(client, household, "두부 두 모 넣었어")
+    menus = client.post(
+        "/api/menu/suggestions?servings=2", headers={"X-Household-Id": str(household)}
+    ).json()
+    recipe_id = menus[0]["recipe_id"]
+
+    two = client.get(
+        f"/api/menu/recipes/{recipe_id}?servings=2",
+        headers={"X-Household-Id": str(household)},
+    ).json()
+    four = client.get(
+        f"/api/menu/recipes/{recipe_id}?servings=4",
+        headers={"X-Household-Id": str(household)},
+    ).json()
+    assert four["servings"] == 4
+    first_two = Decimal(two["ingredients"][0]["required_amount"])
+    first_four = Decimal(four["ingredients"][0]["required_amount"])
+    assert first_four == first_two * 2
+    assert four["steps"], "조리 순서가 있어야 한다"

@@ -164,3 +164,45 @@ def test_one_bad_item_blocks_the_whole_utterance():
     )
     assert result.question is not None
     assert result.items == []
+
+
+def test_model_scratchpad_in_unit_is_not_echoed_to_user():
+    """모델이 단위 칸에 사고 과정을 흘려 넣은 응답을 실제로 받았다.
+
+    그 문자열이 되묻는 질문에 그대로 나갔다. 모델 출력을 사용자 문구에 그대로 넣지 않는다.
+    """
+    rambling = "모 single-form stripped of particle: wait, need raw string not comment"
+    with pytest.raises(ValueError, match="at most 10 characters|max_length"):
+        item(amount=2, unit_text=rambling)
+
+
+def test_long_unit_text_falls_back_to_generic_question():
+    """스키마를 통과했더라도 읽기 어려운 단위는 언급하지 않는다."""
+    result = validate(
+        proposal(items=[item(amount=2, unit_text="ABCDEFGHIJ", raw_name="두부")]),
+        today=TODAY,
+        require_amount=True,
+    )
+    assert result.question is not None
+    assert "ABCDEFGHIJ" in result.question or "다시 말해주세요" in result.question
+
+
+def test_model_question_is_sanitized():
+    """모델이 준 질문도 정제한다. 줄바꿈과 과도한 길이를 걷어낸다."""
+    result = validate(
+        proposal(needs_clarification=True, question="반이\n  뭐의   반인가요?"),
+        today=TODAY,
+        require_amount=True,
+    )
+    assert result.question == "반이 뭐의 반인가요?"
+
+
+def test_unit_with_particle_is_normalized_not_asked():
+    """'모랑' 은 조사가 붙은 것이다. 되묻지 않고 처리한다."""
+    result = validate(
+        proposal(items=[item(amount=2, unit_text="모랑", raw_name="두부")]),
+        today=TODAY,
+        require_amount=True,
+    )
+    assert result.ok, result.question
+    assert result.items[0].unit == "mo"

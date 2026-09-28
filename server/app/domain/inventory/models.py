@@ -151,4 +151,6 @@ class BatchStateEvent(Base, CreatedAtMixin):
     to_location: Mapped[str | None] = mapped_column(String(20))
     note: Mapped[str | None] = mapped_column(String(500))
 
-    batch: Mapped["IngredientBatch"] = relationship(back_populates="state_events")
+    batch: Mapped["IngredientBatch"] = relationship(
+        back_populates="state_events", lazy="raise_on_sql"
+    )
