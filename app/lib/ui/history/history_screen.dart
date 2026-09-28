@@ -1,128 +1,260 @@
+/// 기록 화면.
+///
+/// 목업 `mockup/canvas/History.dc.html` 을 옮긴 것이다. 시각 · 종류 · 잔량 변화를 한 줄에
+/// 놓는다.
+///
+/// **수량을 바꾸지 않는 변경은 잔량 칸을 비운다.** 개봉과 이동이 수량을 건드리지 않는다는
+/// 사실이 화면에 드러나야 한다.
+library;
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/design/labels.dart';
-import '../../core/design/responsive.dart';
 import '../../core/design/band.dart';
+import '../../core/design/labels.dart';
 import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../domain/model/change_record.dart';
+import '../widgets/glass.dart';
+import '../widgets/screen_scaffold.dart';
 import 'history_view_model.dart';
 
-/// 변경 기록 화면.
-///
-/// 수량 변경과 상태 변경을 한 타임라인에 섞는다. **상태 변경은 잔량 칸이 비어 있어**
-/// 개봉과 이동이 수량을 바꾸지 않는다는 사실이 드러난다.
-///
-/// 역산 이벤트에는 "추가 차감 없음"을 붙인다 — 정정이 중복 차감하지 않았다는 것을
-/// 사용자가 확인할 수 있어야 한다.
 class HistoryScreen extends StatelessWidget {
-  const HistoryScreen({super.key});
+  const HistoryScreen({this.badge = const SizedBox.shrink(), super.key});
+
+  final Widget badge;
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<HistoryViewModel>();
-    final time = DateFormat.Hm('ko');
-    return RefreshIndicator(
-      onRefresh: vm.load,
-      child: ListView(
-        padding: const EdgeInsets.only(bottom: Tokens.gutterWide * 3),
-        children: [
-          ContentFrame(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  '${Strings.tabHistory} · ${Strings.historyToday}',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: Tokens.gapCard),
-                if (vm.loading && vm.records.isEmpty)
-                  const Center(child: CircularProgressIndicator())
-                else
-                  for (final record in vm.records) ...[
-                    _Row(record: record, time: time),
-                    const SizedBox(height: Tokens.gapTight),
-                  ],
-              ],
-            ),
-          ),
-        ],
-      ),
+    final history = context.watch<HistoryViewModel>();
+    return ScreenScaffold(
+      title: Strings.tabHistory,
+      subtitle: Strings.historyUndoHint,
+      badge: badge,
+      child: switch ((history.loading, history.error)) {
+        (true, _) when history.records.isEmpty =>
+          const Center(child: CircularProgressIndicator(strokeWidth: 3)),
+        (_, final Object error?) => _Failed(error: error, onRetry: history.load),
+        _ => _Timeline(records: history.records),
+      },
     );
   }
 }
 
-class _Row extends StatelessWidget {
-  const _Row({required this.record, required this.time});
+class _Timeline extends StatelessWidget {
+  const _Timeline({required this.records});
 
-  final ChangeRecord record;
-  final DateFormat time;
+  final List<ChangeRecord> records;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(Tokens.gapCard),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    if (records.isEmpty) return const _Empty();
+    final text = Theme.of(context).textTheme;
+    return Stack(
+      children: [
+        ListView(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 96),
           children: [
-            SizedBox(
-              width: 48,
-              child: Text(
-                time.format(record.occurredAt),
-                style: theme.textTheme.labelLarge
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
+            Text(
+              Strings.historyToday,
+              style: text.labelMedium
+                  ?.copyWith(color: Tokens.inkFaint, fontWeight: FontWeight.w700),
             ),
-            const SizedBox(width: Tokens.gapTight),
-            Expanded(
+            const SizedBox(height: 8),
+            GlassPanel(
+              radius: 22,
+              solid: true,
+              padding: EdgeInsets.zero,
+              shadow: Tokens.shadowRaised,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        Labels.historyAction(record),
-                        style: theme.textTheme.bodyLarge,
+                  for (final (index, record) in records.indexed) ...[
+                    if (index > 0)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child:
+                            Divider(height: 1, thickness: 1, color: Tokens.hairline),
                       ),
-                      const SizedBox(width: Tokens.gapTight),
-                      Text(record.name, style: theme.textTheme.bodyMedium),
-                    ],
-                  ),
-                  if (record.reversesEventId != null)
-                    Text(
-                      '(${Strings.historyNoExtraDeduction})',
-                      style: theme.textTheme.labelLarge
-                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                    ),
+                    _Row(record: record),
+                  ],
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+          ],
+        ),
+        const Positioned(left: 0, right: 0, bottom: 0, child: ListFade()),
+      ],
+    );
+  }
+}
+
+/// 기록 한 줄.
+class _Row extends StatelessWidget {
+  const _Row({required this.record});
+
+  final ChangeRecord record;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 40,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                _time(),
+                style: text.labelMedium?.copyWith(
+                  color: Tokens.inkFaint,
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 상태 변경은 수량을 바꾸지 않는다. 칸을 비워 그 사실을 드러낸다.
-                Text(
-                  record.changesQuantity
-                      ? '${record.quantityAfter}${record.unit ?? ''}'
-                      : '—',
-                  style: theme.textTheme.bodyLarge,
+                Row(
+                  children: [
+                    _Badge(record: record),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        record.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.titleMedium?.copyWith(fontSize: 16),
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  record.isEstimated
-                      ? Strings.historyEstimated
-                      : Strings.historyExplicit,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: record.isEstimated
-                        ? Bands.soon.accent
-                        : theme.colorScheme.onSurfaceVariant,
+                if (record.isEstimated) ...[
+                  const SizedBox(height: 5),
+                  // 사용자가 말한 숫자와 앱이 추정한 숫자는 다른 사실이다.
+                  InfoChip(label: Strings.historyEstimated),
+                ],
+                if (record.kind == HistoryKind.state) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    Strings.historyNoExtraDeduction,
+                    style: text.labelMedium?.copyWith(
+                        color: Tokens.inkFaint, fontWeight: FontWeight.w500),
                   ),
-                ),
+                ],
               ],
             ),
+          ),
+          const SizedBox(width: 12),
+          _Quantity(record: record),
+        ],
+      ),
+    );
+  }
+
+  String _time() {
+    final at = record.occurredAt.toLocal();
+    return '${at.hour.toString().padLeft(2, '0')}:'
+        '${at.minute.toString().padLeft(2, '0')}';
+  }
+}
+
+/// 동작 배지. 되돌린 기록은 색을 달리해 구분한다.
+class _Badge extends StatelessWidget {
+  const _Badge({required this.record});
+
+  final ChangeRecord record;
+
+  @override
+  Widget build(BuildContext context) {
+    final reverted = record.reversesEventId != null;
+    return InfoChip(
+      label: Labels.historyAction(record),
+      background: reverted ? Bands.soon.bgEdge : const Color(0xFFECEEF2),
+      foreground: reverted ? Bands.soon.accent : const Color(0xFF4E5661),
+    );
+  }
+}
+
+/// 잔량 변화. **수량을 바꾸지 않는 기록은 비운다.**
+class _Quantity extends StatelessWidget {
+  const _Quantity({required this.record});
+
+  final ChangeRecord record;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!record.changesQuantity) return const SizedBox.shrink();
+    final text = Theme.of(context).textTheme;
+    final unit = Labels.unit(record.unit);
+    final before = record.quantityBefore;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (before != null)
+          Text(
+            '${Labels.number(before)}$unit →',
+            style: text.labelMedium
+                ?.copyWith(color: Tokens.inkFaint, fontWeight: FontWeight.w600),
+          ),
+        Text(
+          '${Labels.number(record.quantityAfter!)}$unit',
+          style: text.titleLarge?.copyWith(fontSize: 22, letterSpacing: -0.9),
+        ),
+      ],
+    );
+  }
+}
+
+class _Empty extends StatelessWidget {
+  const _Empty();
+
+  @override
+  Widget build(BuildContext context) => Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Text(
+            Strings.emptyHint,
+            textAlign: TextAlign.center,
+            style: Theme.of(context)
+                .textTheme
+                .bodyLarge
+                ?.copyWith(color: Tokens.inkFaint),
+          ),
+        ),
+      );
+}
+
+class _Failed extends StatelessWidget {
+  const _Failed({required this.error, required this.onRetry});
+
+  final Object error;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(Strings.serverFailed, style: text.titleMedium),
+            const SizedBox(height: 6),
+            Text(
+              '$error',
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: text.bodyMedium?.copyWith(color: Tokens.inkFaint),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.tonal(onPressed: onRetry, child: const Text(Strings.retry)),
           ],
         ),
       ),

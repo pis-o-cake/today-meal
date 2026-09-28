@@ -238,6 +238,17 @@ class VoiceSessionManager {
     }
   }
 
+  /// 진행 중인 대화를 접고 대기로 돌아간다.
+  ///
+  /// 사용자가 오버레이를 닫은 것이다. 말을 걸어놓고 빠져나갈 길이 없으면 갇힌다.
+  /// 진행 중인 전사와 낭독을 버리고 감지기를 다시 세운다.
+  Future<void> cancelSession() async {
+    _logger.i('Conversation cancelled by user');
+    await _transcriber.cancel();
+    await _speaker.stop();
+    await _resumeDetection();
+  }
+
   /// 음소거한다. 대기 중으로 표시하지 않는다.
   Future<void> mute() async {
     _muted = true;

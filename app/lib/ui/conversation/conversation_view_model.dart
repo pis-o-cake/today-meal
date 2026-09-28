@@ -5,6 +5,7 @@ import '../../core/voice/voice_ports.dart';
 import '../../core/voice/voice_session_manager.dart';
 import '../../core/voice/voice_state.dart';
 import '../../domain/repository/repositories.dart';
+import '../widgets/ingredient_graph.dart';
 
 /// 대화 오버레이의 상태.
 ///
@@ -38,6 +39,25 @@ class ConversationViewModel extends ChangeNotifier {
   /// 되돌릴 것이 있는지. 조회에는 되돌릴 것이 없다.
   bool get canUndo => _lastOutcome?.undoToken != null;
 
+  /// 방금 말에서 알아들은 재료 이름.
+  ///
+  /// 듣는 중 화면에서 강조해 **무엇으로 들었는지** 보여준다. 잘못 들었으면 사용자가
+  /// 말을 끝내기 전에 안다.
+  ///
+  /// 서버가 재료를 가려낸 뒤에는 그 결과를 쓰고, 그 전에는 화면에 아는 재료 이름으로
+  /// 중간 전사를 훑는다. **없는 재료를 지어내지 않는다.**
+  List<String> get recognizedIngredients {
+    final applied = _lastOutcome?.changes.map((c) => c.name).toSet();
+    if (applied != null && applied.isNotEmpty) return applied.toList(growable: false);
+
+    final said = _lastUtterance;
+    if (said == null || said.isEmpty) return const [];
+    return [
+      for (final name in knownIngredientNames)
+        if (said.contains(name)) name,
+    ];
+  }
+
   void _subscribe() {
     // 호출어 감지를 세션 시작으로 잇는다. 감지기는 세션 매니저가 다룬다.
     _voice.bindWakeWord(_handle);
@@ -53,6 +73,12 @@ class ConversationViewModel extends ChangeNotifier {
 
   /// 마이크 버튼. 웨이크워드가 전경 한정이라 보조 경로를 상시 유지한다.
   Future<void> onMicButton() => _voice.startSession(_handle);
+
+  /// 대화를 접고 대기로 돌아간다.
+  ///
+  /// 말을 걸어놓고 빠져나갈 길이 없으면 갇힌다. 진행 중인 전사는 버리고 감지기를
+  /// 다시 세운다.
+  Future<void> cancel() => _voice.cancelSession();
 
   /// 전사된 발화를 서버로 보낸다.
   ///

@@ -34,6 +34,29 @@ class FridgeViewModel extends ChangeNotifier {
     }).toList(growable: false);
   }
 
+  /// 신선도 등급으로 묶은 목록. **급한 것부터** 위에 온다.
+  ///
+  /// 빈 등급은 내보내지 않는다 — 목록에서는 자리를 지킬 이유가 없고, 비어 있는 칸이
+  /// 무엇이 문제인지 흐린다. 자리가 고정인 것은 오늘 화면의 아치뿐이다.
+  List<FridgeSection> get sections {
+    const order = [
+      Freshness.expired,
+      Freshness.urgent,
+      Freshness.soon,
+      Freshness.unknown,
+      Freshness.fresh,
+    ];
+    final shown = visible;
+    return [
+      for (final grade in order)
+        if (shown.any((b) => b.freshness == grade))
+          FridgeSection(
+            grade: grade,
+            batches: shown.where((b) => b.freshness == grade).toList(growable: false),
+          ),
+    ];
+  }
+
   Future<void> load() async {
     _loading = true;
     _error = null;
@@ -57,4 +80,12 @@ class FridgeViewModel extends ChangeNotifier {
     _storage = value;
     notifyListeners();
   }
+}
+
+/// 같은 등급의 재료 묶음.
+class FridgeSection {
+  const FridgeSection({required this.grade, required this.batches});
+
+  final Freshness grade;
+  final List<IngredientBatch> batches;
 }

@@ -17,7 +17,10 @@ import '../../core/design/tokens.dart';
 import '../../domain/model/inventory.dart';
 
 /// 아치 전체.
-class FreshnessArc extends StatelessWidget {
+///
+/// 누르는 것과 **미는 것** 둘 다 받는다. 가로로 밀면 등급이 한 칸씩 넘어가고, 화면
+/// 배색이 따라 바뀐다. 목업의 "밀어서 재료 상태 보기" 가 이것이다.
+class FreshnessArc extends StatefulWidget {
   const FreshnessArc({
     required this.counts,
     required this.selected,
@@ -41,28 +44,56 @@ class FreshnessArc extends StatelessWidget {
   /// 얼굴이 놓이는 각도(도). 왼쪽 위에서 오른쪽으로 내려온다.
   static const _angles = [158.0, 124.0, 90.0, 56.0, 22.0];
 
+  /// 한 칸 넘기는 데 필요한 가로 이동.
+  ///
+  /// 짧으면 한 번 밀 때 두세 칸이 넘어가 어디로 갔는지 모른다. 실기기에서 56 은 너무
+  /// 짧았다.
+  static const _step = 96.0;
+
+  @override
+  State<FreshnessArc> createState() => _FreshnessArcState();
+}
+
+class _FreshnessArcState extends State<FreshnessArc> {
+  /// 미는 동안 쌓인 거리. 한 칸을 넘길 때마다 덜어낸다.
+  double _drag = 0;
+
+  void _shift(int steps) {
+    final index = Bands.ordered.indexOf(widget.selected);
+    final next = (index + steps).clamp(0, Bands.ordered.length - 1);
+    if (next == index) return;
+    widget.onSelect(Bands.ordered[next]);
+  }
+
   @override
   Widget build(BuildContext context) => LayoutBuilder(
         builder: (context, constraints) {
-          final width = constraints.maxWidth;
-          final geometry = _ArcGeometry(width);
-          return SizedBox(
-            height: height,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned.fill(
-                  child: CustomPaint(painter: _TrackPainter(geometry)),
-                ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 86,
-                  child: _hint(context),
-                ),
-                for (final (index, grade) in Bands.ordered.indexed)
-                  _token(context, geometry, index, grade),
-              ],
+          final geometry = _ArcGeometry(constraints.maxWidth);
+          return GestureDetector(
+            // 트랙이 아니라 영역 전체를 잡는다. 얼굴이 작아 트랙만 잡으면 잘 안 걸린다.
+            behavior: HitTestBehavior.opaque,
+            onHorizontalDragStart: (_) => _drag = 0,
+            onHorizontalDragUpdate: (details) {
+              _drag += details.delta.dx;
+              // 왼쪽으로 밀면 오른쪽 등급으로 간다 — 손가락을 따라 트랙이 흐르는 방향이다.
+              while (_drag.abs() >= FreshnessArc._step) {
+                _shift(_drag < 0 ? 1 : -1);
+                _drag -= _drag.sign * FreshnessArc._step;
+              }
+            },
+            child: SizedBox(
+              height: FreshnessArc.height,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(painter: _TrackPainter(geometry)),
+                  ),
+                  Positioned(left: 0, right: 0, top: 86, child: _hint(context)),
+                  for (final (index, grade) in Bands.ordered.indexed)
+                    _token(context, geometry, index, grade),
+                ],
+              ),
             ),
           );
         },
@@ -74,7 +105,7 @@ class FreshnessArc extends StatelessWidget {
           const Icon(Icons.swap_horiz_rounded, size: 15, color: Tokens.inkFaint),
           const SizedBox(width: 5),
           Text(
-            hint,
+            widget.hint,
             style: Theme.of(context)
                 .textTheme
                 .labelMedium
@@ -89,11 +120,11 @@ class FreshnessArc extends StatelessWidget {
     int index,
     Freshness grade,
   ) {
-    final point = geometry.pointAt(_angles[index]);
-    final on = grade == selected;
-    final count = counts[grade] ?? 0;
+    final point = geometry.pointAt(FreshnessArc._angles[index]);
+    final on = grade == widget.selected;
+    final count = widget.counts[grade] ?? 0;
     // 아치를 따라 얼굴도 살짝 눕는다. 전부 정면이면 트랙 위에 붙어 보이지 않는다.
-    final tilt = (90 - _angles[index]) * 0.35 * math.pi / 180;
+    final tilt = (90 - FreshnessArc._angles[index]) * 0.35 * math.pi / 180;
 
     return Positioned(
       left: point.dx - 26,
@@ -103,10 +134,15 @@ class FreshnessArc extends StatelessWidget {
         selected: on,
         label: '${_label(grade)} $count가지',
         child: GestureDetector(
-          onTap: () => onSelect(grade),
+          onTap: () => widget.onSelect(grade),
           child: Transform.rotate(
             angle: tilt,
-            child: DecoratedBox(
+            // 고른 얼굴이 살짝 떠오른다. 밀었을 때 바뀐 것이 눈에 보여야 한다.
+            child: AnimatedScale(
+              scale: on ? 1 : 0.88,
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              child: DecoratedBox(
               decoration: BoxDecoration(
                 color: on ? Colors.white : Colors.transparent,
                 borderRadius: BorderRadius.circular(18),
@@ -128,16 +164,14 @@ class FreshnessArc extends StatelessWidget {
                     Center(
                       child: Opacity(
                         opacity: on ? 1 : 0.66,
-                        child: CustomPaint(
-                          size: const Size(40, 40),
-                          painter: _FacePainter(grade, dimmed: !on),
-                        ),
+                        child: GradeFace(grade: grade, size: 40, dimmed: !on),
                       ),
                     ),
                     if (count > 0)
                       Positioned(top: -4, right: -4, child: _badge(context, count)),
                   ],
                 ),
+              ),
               ),
             ),
           ),
@@ -263,7 +297,32 @@ class _TrackPainter extends CustomPainter {
   bool shouldRepaint(_TrackPainter old) => old.geometry.width != geometry.width;
 }
 
-/// 아치 위의 작은 얼굴. 캐릭터와 같은 표정 규칙을 쓰되 48 좌표계로 줄인 것이다.
+/// 등급의 작은 얼굴.
+///
+/// 아치와 냉장고 목록이 같은 얼굴을 쓴다. 등급을 색만이 아니라 **표정으로도** 익히게
+/// 하려는 것이므로 두 곳이 달라지면 안 된다.
+class GradeFace extends StatelessWidget {
+  const GradeFace({
+    required this.grade,
+    this.size = 40,
+    this.dimmed = false,
+    super.key,
+  });
+
+  final Freshness grade;
+  final double size;
+
+  /// 고르지 않은 얼굴은 색을 뺀다.
+  final bool dimmed;
+
+  @override
+  Widget build(BuildContext context) => CustomPaint(
+        size: Size(size, size),
+        painter: _FacePainter(grade, dimmed: dimmed),
+      );
+}
+
+/// 캐릭터와 같은 표정 규칙을 48 좌표계로 줄인 것이다.
 class _FacePainter extends CustomPainter {
   _FacePainter(this.grade, {required this.dimmed});
 

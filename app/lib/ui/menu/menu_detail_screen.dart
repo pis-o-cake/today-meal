@@ -93,8 +93,19 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
   Widget build(BuildContext context) {
     final detail = _detail;
     return Scaffold(
-      appBar: AppBar(title: Text(detail?.name ?? '')),
-      body: SafeArea(
+      // 다른 화면과 같은 글라스 배색을 쓴다. 이 화면만 흰 판이면 떠 보인다.
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text(detail?.name ?? ''),
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: Tokens.ink,
+        titleTextStyle: Theme.of(context).textTheme.titleLarge,
+      ),
+      body: DecoratedBox(
+        decoration: BoxDecoration(gradient: Bands.neutral.listBackground),
+        child: SafeArea(
         child: _error != null
             ? Center(child: Text('$_error'))
             : detail == null
@@ -137,6 +148,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                       ),
                     ],
                   ),
+        ),
       ),
     );
   }

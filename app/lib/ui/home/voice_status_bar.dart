@@ -11,6 +11,7 @@ import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/voice/voice_state.dart';
 import '../../ui/widgets/glass.dart';
+import '../widgets/screen_scaffold.dart';
 import '../conversation/conversation_view_model.dart';
 
 /// 호출 대기 표시와 음소거.
@@ -44,7 +45,7 @@ class VoiceStatusBar extends StatelessWidget {
                   children: [
                     _Dot(state: state),
                     const SizedBox(width: 8),
-                    Text(_label(state), style: text.labelLarge),
+                    Text(labelFor(state), style: text.labelLarge),
                     if (state is Waiting) ...[
                       const SizedBox(width: 6),
                       Text(
@@ -80,16 +81,6 @@ class VoiceStatusBar extends StatelessWidget {
     );
   }
 
-  String _label(VoiceState state) => switch (state) {
-        Waiting() => Strings.voiceWaiting,
-        Listening() => Strings.voiceListening,
-        Processing() => Strings.voiceProcessing,
-        Clarifying() => Strings.voiceClarifying,
-        Speaking() => Strings.voiceSpeaking,
-        Muted() => Strings.voiceMuted,
-        Suspended() => Strings.voiceSuspended,
-        Unavailable() => Strings.voiceUnavailable,
-      };
 }
 
 /// 대기 점. 색만으로 구분하지 않고 옆 문구와 함께 쓴다.
@@ -100,13 +91,7 @@ class _Dot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (state) {
-      Waiting() => const Color(0xFF1B7F43),
-      Listening() || Processing() => const Color(0xFF6F7FF0),
-      Clarifying() || Speaking() => const Color(0xFFA8690A),
-      Muted() || Suspended() => Tokens.inkFaint,
-      Unavailable() => const Color(0xFFD8431F),
-    };
+    final color = colorFor(state);
     return Container(
       width: 8,
       height: 8,
@@ -120,3 +105,38 @@ class _Dot extends StatelessWidget {
     );
   }
 }
+
+/// 목록 화면의 작은 호출 대기 배지.
+///
+/// 오늘 화면의 긴 표시줄과 달리 **살아 있다는 사실만** 알린다. 같은 상태를 읽으므로
+/// 두 곳이 어긋나지 않는다.
+class VoiceBadgeSlot extends StatelessWidget {
+  const VoiceBadgeSlot({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<ConversationViewModel>().state;
+    return VoiceBadge(label: labelFor(state), color: colorFor(state));
+  }
+}
+
+/// 상태 문구. 오늘 화면과 목록 화면이 같은 표를 쓴다.
+String labelFor(VoiceState state) => switch (state) {
+      Waiting() => Strings.voiceWaiting,
+      Listening() => Strings.voiceListening,
+      Processing() => Strings.voiceProcessing,
+      Clarifying() => Strings.voiceClarifying,
+      Speaking() => Strings.voiceSpeaking,
+      Muted() => Strings.voiceMuted,
+      Suspended() => Strings.voiceSuspended,
+      Unavailable() => Strings.voiceUnavailable,
+    };
+
+/// 상태 색. **색만으로 구분하지 않으므로** 항상 문구와 함께 쓴다.
+Color colorFor(VoiceState state) => switch (state) {
+      Waiting() => const Color(0xFF3F4FD1),
+      Listening() || Processing() => const Color(0xFF6F7FF0),
+      Clarifying() || Speaking() => const Color(0xFFA8690A),
+      Muted() || Suspended() => Tokens.inkFaint,
+      Unavailable() => const Color(0xFFD8431F),
+    };

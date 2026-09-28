@@ -114,6 +114,26 @@ void main() {
     expect(find.text('다시 시도'), findsOneWidget);
   });
 
+  test('재료가 없는 등급에는 메뉴를 권하지 않는다', () async {
+    // 서버 추천은 냉장고 전체를 보고 만들어진다. 그냥 첫 번째를 꺼내면
+    // "챙길 것 0가지" 옆에 메뉴가 떠서 무엇으로 만든다는 것인지 알 수 없다.
+    final vm = HomeViewModel(inventory: _FakeInventory(), menu: _FakeMenu());
+    await vm.load();
+
+    vm.select(Freshness.fresh); // 이 등급에는 재료가 없다
+    expect(vm.counts[Freshness.fresh], 0);
+    expect(vm.topMenu, isNull);
+    expect(vm.otherMenuCount, 0);
+  });
+
+  test('그 등급의 재료를 쓰는 메뉴만 권한다', () async {
+    final vm = HomeViewModel(inventory: _FakeInventory(), menu: _FakeMenu());
+    await vm.load();
+
+    vm.select(Freshness.urgent); // 두부
+    expect(vm.topMenu?.name, '두부조림');
+  });
+
   test('아치는 빈 등급도 0 으로 세어 자리를 지킨다', () async {
     // 목록([bands])은 빈 등급을 빼지만 아치는 위치가 고정이라 빼지 못한다.
     final vm = HomeViewModel(inventory: _FakeInventory(), menu: _FakeMenu());

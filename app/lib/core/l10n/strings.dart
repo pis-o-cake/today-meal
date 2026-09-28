@@ -19,6 +19,13 @@ class Strings {
   static const voiceSuspended = '앱을 열어두면 불러서 쓸 수 있어요';
   static const voiceUnavailable = '마이크를 쓸 수 없어요';
   static const voiceRetry = '다시 말해주세요';
+  static const voiceTapToClose = '탭하면 닫혀요';
+  static const voiceDone = '반영했어요';
+
+  /// 되묻기 흐름의 진행 단계.
+  static const stepListen = '듣기';
+  static const stepConfirm = '확인';
+  static const stepApply = '반영';
   static const wakeWordHint = '"자비스, 오늘 뭐 먹지?"';
   // 호출에 바로 답하는 짧은 응답. 불러도 반응이 없으면 안 되는 것으로 보인다.
   static const voiceAck = '네?';
@@ -85,6 +92,8 @@ class Strings {
   // 냉장고 화면
   static const fridgeSearchHint = '재료 검색';
   static const fridgeAll = '전체';
+  static const fridgeSortHint = '급한 것부터';
+  static const historyUndoHint = '잘못 반영됐으면 바로 되돌릴 수 있어요';
   static const storageFridge = '냉장';
   static const storageFreezer = '냉동';
   static const storagePantry = '실온';

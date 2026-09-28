@@ -48,17 +48,30 @@ class HomeViewModel extends ChangeNotifier {
   List<IngredientBatch> get selectedBatches =>
       _batches.where((b) => b.freshness == selected).toList(growable: false);
 
-  /// 고른 등급에서 권할 메뉴. 기한이 지난 등급에서는 권하지 않는다.
-  MenuSuggestion? get topMenu {
-    if (!selected.isCookable || selected == Freshness.unknown) return null;
-    return _menus.isEmpty ? null : _menus.first;
-  }
+  /// 고른 등급에서 권할 메뉴.
+  ///
+  /// **그 등급의 재료를 실제로 쓰는 메뉴만** 권한다. 서버 추천은 냉장고 전체를 보고
+  /// 만들어지므로, 그냥 첫 번째를 꺼내면 재료가 하나도 없는 등급에서도 메뉴가 뜬다.
+  /// 실기기에서 "챙길 것 0가지" 옆에 메뉴가 떠 있었다.
+  ///
+  /// 기한이 지난 등급과 기한을 모르는 등급에서는 권하지 않는다 — 먼저 할 일이 다르다.
+  MenuSuggestion? get topMenu => _menusForSelected.firstOrNull;
 
   /// 첫 메뉴 말고 남은 개수.
-  ///
-  /// 권할 메뉴가 없는 등급에서는 0 이다 — 첫 메뉴를 감춰놓고 "다른 메뉴"만 세면
-  /// 무엇의 다른 메뉴인지 알 수 없다.
-  int get otherMenuCount => topMenu == null ? 0 : _menus.length - 1;
+  int get otherMenuCount {
+    final count = _menusForSelected.length;
+    return count <= 1 ? 0 : count - 1;
+  }
+
+  List<MenuSuggestion> get _menusForSelected {
+    if (!selected.isCookable || selected == Freshness.unknown) return const [];
+    final names = selectedBatches.map((b) => b.name).toSet();
+    if (names.isEmpty) return const [];
+    return [
+      for (final menu in _menus)
+        if (menu.priorityIngredients.any(names.contains)) menu,
+    ];
+  }
 
   /// 등급을 고른다. 화면 배색이 함께 바뀐다.
   void select(Freshness grade) {

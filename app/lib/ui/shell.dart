@@ -86,8 +86,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         onOpenMenu: _openMenu,
         voiceBar: const VoiceStatusBar(),
       ),
-      const FridgeScreen(),
-      const HistoryScreen(),
+      const FridgeScreen(badge: VoiceBadgeSlot()),
+      const HistoryScreen(badge: VoiceBadgeSlot()),
     ];
     const items = [
       NavItem(label: Strings.tabToday, icon: Icons.ramen_dining_rounded),
@@ -95,11 +95,13 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       NavItem(label: Strings.tabHistory, icon: Icons.schedule_rounded),
     ];
 
-    return Scaffold(
-      // 화면마다 배경 그라데이션을 그리므로 셸은 SafeArea 를 쓰지 않는다.
-      body: Stack(
-        children: [
-          Row(
+    // IMPORTANT: 오버레이가 Scaffold 밖에 있어야 하단 탭까지 덮는다. 안에 두면
+    // bottomNavigationBar 가 오버레이 위에 남아, 대화 중에 탭이 눌린다.
+    return Stack(
+      children: [
+        Scaffold(
+          // 화면마다 배경 그라데이션을 그리므로 셸은 SafeArea 를 쓰지 않는다.
+          body: Row(
             children: [
               if (useRail)
                 SafeArea(
@@ -112,20 +114,20 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               Expanded(child: pages[_index]),
             ],
           ),
-          // 호출어는 어느 탭에서나 받는다. 오버레이로 덮는다.
-          const Positioned.fill(child: ConversationOverlay()),
-        ],
-      ),
-      bottomNavigationBar: useRail
-          ? null
-          : SafeArea(
-              top: false,
-              child: GlassNavBar(
-                items: items,
-                current: _index,
-                onSelect: _select,
-              ),
-            ),
+          bottomNavigationBar: useRail
+              ? null
+              : SafeArea(
+                  top: false,
+                  child: GlassNavBar(
+                    items: items,
+                    current: _index,
+                    onSelect: _select,
+                  ),
+                ),
+        ),
+        // 호출어는 어느 탭에서나 받는다. 화면 전체를 덮는다.
+        const Positioned.fill(child: ConversationOverlay()),
+      ],
     );
   }
 

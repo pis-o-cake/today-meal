@@ -48,6 +48,14 @@ class BandPalette {
         colors: [Colors.white, bgMid, bgEdge],
         stops: const [0, 0.42, 1],
       );
+
+  /// 목록 화면의 배경. 빛이 화면 꼭대기에서 온다.
+  Gradient get listBackground => RadialGradient(
+        center: const Alignment(0, -1),
+        radius: 1.25,
+        colors: [Colors.white, bgMid, bgEdge],
+        stops: const [0, 0.45, 1],
+      );
 }
 
 /// 캐릭터 표정. 신선도 5종에 음성 상태 3종을 더한 것이다.
@@ -118,6 +126,19 @@ abstract final class Bands {
     bgEdge: Color(0xFFFFE6BA),
     mascotBody: Color(0xFFFFD79B),
     mood: MascotMood.asking,
+  );
+
+  /// 목록 화면의 배경.
+  ///
+  /// 오늘 화면은 등급 색을 입지만 냉장고·기록은 여러 등급을 한 화면에 담는다. 한 등급의
+  /// 색을 입히면 나머지가 그 색에 눌린다.
+  static const neutral = BandPalette(
+    accent: Color(0xFF3F4FD1),
+    accentSoft: Color(0x2E3F4FD1),
+    bgMid: Color(0xFFF6F7F9),
+    bgEdge: Color(0xFFE8EBF0),
+    mascotBody: Color(0xFFCCD2DE),
+    mood: MascotMood.unknown,
   );
 
   /// 화면에 나오는 순서. 급한 것이 왼쪽이 아니라, 아치를 따라 지남→여유로 흐른다.
