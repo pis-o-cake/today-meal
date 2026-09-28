@@ -1,0 +1,14 @@
+{
+  "error.unexpected": "잠시 문제가 생겼어요. 다시 말해주세요.",
+  "error.not_found": "찾는 재료가 없어요.",
+  "error.command_rejected": "말씀을 정확히 이해하지 못했어요. 다시 말해주세요.",
+  "error.unit_needs_confirm": "양의 단위를 확인해야 해요.",
+  "error.quantity_insufficient": "남은 양보다 많아요. 지금 몇 개 남았는지 알려주세요.",
+  "error.upstream_failed": "지금은 처리할 수 없어요. 잠시 뒤에 다시 말해주세요.",
+  "command.applied": "반영했어요.",
+  "command.reverted": "방금 변경을 되돌렸어요.",
+  "voice.listening": "듣고 있어요",
+  "voice.processing": "확인하고 있어요",
+  "voice.applied": "반영했어요",
+  "voice.retry": "다시 말해주세요"
+}

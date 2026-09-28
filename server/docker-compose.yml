@@ -1,0 +1,48 @@
+name: today-meal
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${TODAY_MEAL_DB_NAME:-today_meal}
+      POSTGRES_USER: ${TODAY_MEAL_DB_USER:-today_meal}
+      POSTGRES_PASSWORD: ${TODAY_MEAL_DB_PASSWORD:-change-me}
+    ports:
+      # 호스트에 이미 PostgreSQL 이 돌 수 있어 기본 노출 포트를 5433 으로 둔다.
+      # 컨테이너 안에서는 항상 5432 이며 api 는 db:5432 로 붙는다.
+      - "${TODAY_MEAL_DB_HOST_PORT:-5433}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TODAY_MEAL_DB_USER:-today_meal}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      TODAY_MEAL_ENV: ${TODAY_MEAL_ENV:-dev}
+      TODAY_MEAL_DB_HOST: db
+      TODAY_MEAL_DB_PORT: 5432
+      TODAY_MEAL_DB_NAME: ${TODAY_MEAL_DB_NAME:-today_meal}
+      TODAY_MEAL_DB_USER: ${TODAY_MEAL_DB_USER:-today_meal}
+      TODAY_MEAL_DB_PASSWORD: ${TODAY_MEAL_DB_PASSWORD:-change-me}
+      TODAY_MEAL_GEMINI_API_KEY: ${TODAY_MEAL_GEMINI_API_KEY:-}
+      TODAY_MEAL_GEMINI_MODEL: ${TODAY_MEAL_GEMINI_MODEL:-gemini-2.5-flash}
+      TODAY_MEAL_YOUTUBE_API_KEY: ${TODAY_MEAL_YOUTUBE_API_KEY:-}
+    ports:
+      - "8000:8000"
+    # 기동 시 스키마를 맞춘 뒤 서버를 띄운다.
+    command: >
+      sh -c "alembic upgrade head &&
+             gunicorn app.main:app
+             --worker-class uvicorn.workers.UvicornWorker
+             --workers 2 --bind 0.0.0.0:8000
+             --access-logfile - --error-logfile -"
+
+volumes:
+  db-data:
