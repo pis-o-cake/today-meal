@@ -5,6 +5,9 @@
 set -e
 root=$(cd "$(dirname "$0")/.." && pwd)
 
+python3 "$root/scripts/check-repository.py"
+python3 -m unittest discover -s "$root/scripts" -p 'test_*.py'
+
 if [ -f "$root/server/pyproject.toml" ]; then
   echo "== server =="
   # 통합 테스트는 PostgreSQL 이 없으면 스스로 건너뛴다. 나머지는 DB 없이 돈다.
