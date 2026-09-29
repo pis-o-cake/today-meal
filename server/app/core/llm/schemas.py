@@ -151,3 +151,52 @@ class MenuResult(BaseModel):
     proposal: MenuProposal
     usage: LlmUsage
     raw: dict = Field(default_factory=dict)
+
+
+class ProposedVideoStep(BaseModel):
+    """영상 레시피의 한 단계.
+
+    `timer_seconds` 는 **글에 시간이 적혀 있을 때만** 채운다. 없는 시간을 붙이면 조리 중에
+    타이머가 엉뚱하게 울린다.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=300)
+    timer_seconds: int | None = Field(default=None, ge=5, le=14_400)
+    timer_label: str | None = Field(default=None, max_length=30)
+    ingredients: list[str] = Field(
+        default_factory=list, description="이 단계에 쓰는 재료 이름", max_length=10
+    )
+
+
+class ProposedVideoRecipe(BaseModel):
+    """영상 하나에서 정리한 레시피.
+
+    `is_recipe` 가 거짓이면 나머지는 비어 있다 — 요리 영상이 아니거나 글에서 재료·순서를 찾을
+    수 없었다는 뜻이며, **억지로 만든 결과를 돌려주지 않는다.**
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    is_recipe: bool
+    dish_name: str | None = Field(default=None, max_length=100)
+    base_servings: int | None = Field(default=None, ge=1, le=12)
+    estimated_minutes: int | None = Field(default=None, ge=1, le=600)
+    ingredients: list[ProposedRecipeIngredient] = Field(default_factory=list, max_length=40)
+    steps: list[ProposedVideoStep] = Field(default_factory=list, max_length=20)
+    unresolved: list[str] = Field(
+        default_factory=list,
+        description="글만으로 알 수 없어 사용자가 확인해야 하는 것",
+        max_length=10,
+    )
+
+
+class VideoResult(BaseModel):
+    """영상 정리 호출의 결과."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    proposal: ProposedVideoRecipe
+    usage: LlmUsage
+    raw: dict = Field(default_factory=dict)

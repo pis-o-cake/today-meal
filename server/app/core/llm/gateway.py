@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from app.core.llm.schemas import InterpretResult, MenuResult
+from app.core.llm.schemas import InterpretResult, MenuResult, VideoResult
 
 
 @runtime_checkable
@@ -43,6 +43,24 @@ class LlmGateway(Protocol):
 
         Returns:
             후보와 사용량.
+        """
+        ...
+
+    async def analyze_video(self, request: VideoSource) -> VideoResult:
+        """요리 영상의 글을 조리 단계로 정리한다.
+
+        **모델은 영상을 보지 못한다.** 제목·설명·자막만 받으므로 글에 없는 것은 비워 둔
+        결과가 온다(`is_recipe` 가 거짓일 수도 있다). 빠진 것을 코드가 채우지 않는다.
+
+        Args:
+            request: 영상의 제목·채널·길이와 설명·자막 원문.
+
+        Returns:
+            정리 결과와 사용량.
+
+        Raises:
+            UpstreamError: 제공자 오류·타임아웃·스키마 위반.
+            BudgetExceededError: 호출 예산을 넘었을 때.
         """
         ...
 
@@ -130,3 +148,39 @@ class MenuRequest:
         if self.tools:
             out.append(f"보유 도구: {', '.join(self.tools)}")
         return out
+
+
+class VideoSource:
+    """영상 정리 호출의 입력.
+
+    **글이 전부다.** 영상의 화면과 소리는 모델에 닿지 않으므로, 여기 담기지 않은 것은 결과에도
+    없어야 한다.
+    """
+
+    __slots__ = ("body", "channel", "duration_seconds", "title")
+
+    def __init__(
+        self,
+        title: str,
+        body: str,
+        *,
+        channel: str | None = None,
+        duration_seconds: int | None = None,
+    ) -> None:
+        self.title = title
+        self.body = body
+        self.channel = channel
+        self.duration_seconds = duration_seconds
+
+    @property
+    def has_body(self) -> bool:
+        """정리할 글이 있는지.
+
+        제목만으로는 정리하지 않는다 — 제목에는 재료도 순서도 없어서 모델이 채워 넣는 수밖에
+        없고, 그것이 곧 지어낸 레시피다.
+        """
+        return len(self.body.strip()) >= _MIN_BODY_CHARS
+
+
+#: 정리를 시도할 최소 글자 수. 이보다 짧으면 재료·순서가 들어 있을 수 없다.
+_MIN_BODY_CHARS = 60

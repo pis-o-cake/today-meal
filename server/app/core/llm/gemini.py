@@ -22,14 +22,16 @@ from pydantic import BaseModel, ValidationError
 from app.core.config import Settings
 from app.core.exceptions import UpstreamError
 from app.core.llm.budget import CallBudget
-from app.core.llm.gateway import InventoryContext, MenuRequest
-from app.core.llm.prompts import command_ko, menu_ko
+from app.core.llm.gateway import InventoryContext, MenuRequest, VideoSource
+from app.core.llm.prompts import command_ko, menu_ko, video_ko
 from app.core.llm.schemas import (
     CommandProposal,
     InterpretResult,
     LlmUsage,
     MenuProposal,
     MenuResult,
+    ProposedVideoRecipe,
+    VideoResult,
 )
 
 _BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
@@ -143,6 +145,42 @@ class GeminiGateway:
 
         proposal = self._parse_into(raw, MenuProposal)
         return MenuResult(proposal=proposal, usage=usage, raw=raw)
+
+    async def analyze_video(self, request: VideoSource) -> VideoResult:
+        """영상의 글을 조리 단계로 정리한다. 예산을 넘으면 호출하지 않는다."""
+        self._budget.check()
+
+        payload = {
+            "systemInstruction": {"parts": [{"text": video_ko.SYSTEM}]},
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [
+                        {
+                            "text": video_ko.build_user_prompt(
+                                title=request.title,
+                                channel=request.channel,
+                                duration_seconds=request.duration_seconds,
+                                body=request.body,
+                            )
+                        }
+                    ],
+                }
+            ],
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "responseSchema": _video_schema(),
+                # 옮겨 적는 일이다. 창의성이 끼면 글에 없는 단계가 생긴다.
+                "temperature": 0.0,
+                "thinkingConfig": {"thinkingBudget": self._settings.gemini_thinking_budget},
+            },
+        }
+        raw = await self._post(payload)
+        usage = _usage(raw, self._settings.gemini_model)
+        self._budget.record(usage.input_tokens, usage.output_tokens)
+
+        proposal = self._parse_into(raw, ProposedVideoRecipe)
+        return VideoResult(proposal=proposal, usage=usage, raw=raw)
 
     async def _post(self, payload: dict[str, Any]) -> dict[str, Any]:
         """제공자를 부른다. 일시적 과부하만 물러섰다 다시 시도한다.
@@ -309,4 +347,45 @@ def _menu_schema() -> dict[str, Any]:
             "notes": {"type": "string", "nullable": True},
         },
         "required": ["recipes"],
+    }
+
+
+def _video_schema() -> dict[str, Any]:
+    """영상 정리 응답의 responseSchema.
+
+    `schemas.py` 의 `ProposedVideoRecipe` 와 같은 모양이어야 한다. 어긋나면 파싱에서 걸린다.
+    """
+    ingredient_schema = {
+        "type": "object",
+        "properties": {
+            "raw_name": {"type": "string"},
+            "amount": {"type": "number", "nullable": True},
+            "unit_text": {"type": "string", "nullable": True},
+            "is_essential": {"type": "boolean"},
+            "is_amount_unknown": {"type": "boolean"},
+        },
+        "required": ["raw_name", "is_essential", "is_amount_unknown"],
+    }
+    step_schema = {
+        "type": "object",
+        "properties": {
+            "text": {"type": "string"},
+            "timer_seconds": {"type": "integer", "nullable": True},
+            "timer_label": {"type": "string", "nullable": True},
+            "ingredients": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["text"],
+    }
+    return {
+        "type": "object",
+        "properties": {
+            "is_recipe": {"type": "boolean"},
+            "dish_name": {"type": "string", "nullable": True},
+            "base_servings": {"type": "integer", "nullable": True},
+            "estimated_minutes": {"type": "integer", "nullable": True},
+            "ingredients": {"type": "array", "items": ingredient_schema},
+            "steps": {"type": "array", "items": step_schema},
+            "unresolved": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["is_recipe", "ingredients", "steps"],
     }

@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 
 from app.core.enums import CommandIntent, DateKind, StorageLocation
-from app.core.llm.gateway import InventoryContext, MenuRequest
+from app.core.llm.gateway import InventoryContext, MenuRequest, VideoSource
 from app.core.llm.schemas import (
     CommandProposal,
     InterpretResult,
@@ -24,6 +24,9 @@ from app.core.llm.schemas import (
     ProposedItem,
     ProposedRecipe,
     ProposedRecipeIngredient,
+    ProposedVideoRecipe,
+    ProposedVideoStep,
+    VideoResult,
 )
 
 _KOREAN_NUMBERS: dict[str, float] = {
@@ -84,6 +87,7 @@ class FakeLlmGateway:
         self._force_clarification = force_clarification
         self.calls: list[str] = []
         self.menu_requests: list[MenuRequest] = []
+        self.video_requests: list[VideoSource] = []
 
     async def interpret(self, utterance: str, context: InventoryContext) -> InterpretResult:
         """발화를 규칙으로 해석한다."""
@@ -105,6 +109,41 @@ class FakeLlmGateway:
             proposal=proposal,
             usage=LlmUsage(input_tokens=0, output_tokens=0, model="fake"),
             raw={"utterance": utterance},
+        )
+
+    async def analyze_video(self, request: VideoSource) -> VideoResult:
+        """글에서 `재료:` · `1.` 꼴의 줄만 뽑아 단계로 만든다.
+
+        요리 영상이 아닌 글을 넣었을 때 `is_recipe` 가 거짓으로 오는지 시험할 수 있어야 하므로,
+        **단계를 하나도 못 찾으면 비운 결과를 돌려준다.** 가짜라고 늘 성공하지 않는다.
+        """
+        self.video_requests.append(request)
+        steps = _fake_steps(request.body)
+        if not steps:
+            return VideoResult(
+                proposal=ProposedVideoRecipe(is_recipe=False),
+                usage=LlmUsage(model="fake"),
+                raw={"title": request.title},
+            )
+
+        names = _fake_ingredients(request.body)
+        return VideoResult(
+            proposal=ProposedVideoRecipe(
+                is_recipe=True,
+                dish_name=request.title.strip()[:100] or None,
+                base_servings=2,
+                estimated_minutes=len(steps) * 5,
+                ingredients=[
+                    ProposedRecipeIngredient(
+                        raw_name=name, is_essential=True, is_amount_unknown=True
+                    )
+                    for name in names
+                ],
+                steps=steps,
+                unresolved=["분량이 적혀 있지 않아요"] if names else [],
+            ),
+            usage=LlmUsage(model="fake"),
+            raw={"title": request.title},
         )
 
     async def suggest_menus(self, request: MenuRequest) -> MenuResult:
@@ -268,3 +307,47 @@ def _first_item(entries: list[str]) -> tuple[str, str] | None:
         if name:
             return name, unit
     return None
+
+
+#: 번호로 시작하는 줄. 설명글의 조리 순서는 대개 이 꼴이다.
+_STEP_LINE = re.compile(r"^\s*(?:\d{1,2})[.)]\s*(.+)$")
+
+#: `재료:` 뒤에 쉼표로 이어지는 줄.
+_INGREDIENT_LINE = re.compile(r"^\s*재료\s*[:：]\s*(.+)$")
+
+#: `3분`, `10초` 처럼 시간이 적힌 표현.
+_DURATION = re.compile(r"(\d{1,3})\s*(분|초)")
+
+
+def _fake_steps(body: str) -> list[ProposedVideoStep]:
+    """번호 붙은 줄만 단계로 만든다. 없으면 빈 목록이다."""
+    steps: list[ProposedVideoStep] = []
+    for line in body.splitlines():
+        found = _STEP_LINE.match(line)
+        if found is None:
+            continue
+        text = found.group(1).strip()[:300]
+        seconds = _fake_seconds(text)
+        steps.append(ProposedVideoStep(text=text, timer_seconds=seconds))
+    return steps[:20]
+
+
+def _fake_seconds(text: str) -> int | None:
+    """글에 적힌 시간만 초로 바꾼다. 없으면 `None` — 숫자를 만들지 않는다."""
+    found = _DURATION.search(text)
+    if found is None:
+        return None
+    amount = int(found.group(1))
+    seconds = amount * 60 if found.group(2) == "분" else amount
+    return seconds if 5 <= seconds <= 14_400 else None
+
+
+def _fake_ingredients(body: str) -> list[str]:
+    """`재료:` 줄을 쉼표로 쪼갠다."""
+    for line in body.splitlines():
+        found = _INGREDIENT_LINE.match(line)
+        if found is None:
+            continue
+        names = [part.strip() for part in found.group(1).split(",")]
+        return [name[:100] for name in names if name][:40]
+    return []
