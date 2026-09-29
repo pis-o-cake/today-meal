@@ -85,7 +85,7 @@ class ClarifyView extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  Strings.voiceClarifying,
+                  Strings.voiceHeroClarifying,
                   textAlign: TextAlign.center,
                   style: Tokens.hero(34, height: 1.15).copyWith(color: palette.accent),
                 ),

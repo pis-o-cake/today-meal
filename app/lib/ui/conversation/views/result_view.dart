@@ -64,7 +64,7 @@ class ResultView extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  Strings.voiceDone,
+                  Strings.voiceHeroDone,
                   style: Tokens.hero(46, height: 1.15).copyWith(color: palette.accent),
                 ),
                 if (spoken.isNotEmpty) ...[

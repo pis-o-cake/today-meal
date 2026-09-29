@@ -176,6 +176,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           recipeId: suggestion.recipeId,
           suggestionId: suggestion.suggestionId,
           servings: suggestion.servings,
+          // 가용성과 이유는 상세 응답에 없다. 추천이 갖고 있으므로 함께 넘긴다.
+          availability: suggestion.availability,
+          reason: suggestion.reason,
           // 상세를 닫고 조리로 들어간다. 겹쳐 두면 조리 중에 뒤로 가 상세가 나온다.
           onStartCooking: (detail) {
             Navigator.of(route).pop();

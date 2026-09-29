@@ -71,7 +71,7 @@ class ListeningView extends StatelessWidget {
           ),
         ),
         Text(
-          processing ? Strings.voiceProcessing : Strings.voiceListening,
+          processing ? Strings.voiceProcessing : Strings.voiceHeroListening,
           style: Tokens.hero(38, height: 1.15).copyWith(color: palette.accent),
         ),
         const SizedBox(height: 8),

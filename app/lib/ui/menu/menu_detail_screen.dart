@@ -35,6 +35,8 @@ class MenuDetailScreen extends StatefulWidget {
     this.suggestionId,
     this.servings,
     this.onStartCooking,
+    this.availability,
+    this.reason,
     super.key,
   });
 
@@ -44,6 +46,14 @@ class MenuDetailScreen extends StatefulWidget {
   final int? suggestionId;
 
   final int? servings;
+
+  /// 이 메뉴를 지금 만들 수 있는지. 상세 응답에는 없고 **추천이 갖고 있다.**
+  ///
+  /// 없으면 칩을 그리지 않는다 — 판정을 앱이 다시 하면 서버와 다른 말을 하게 된다.
+  final MenuAvailability? availability;
+
+  /// 이 메뉴를 고른 이유. 어떤 재료를 먼저 쓰는지 말한다.
+  final String? reason;
 
   /// 조리 진행 화면으로 넘긴다.
   ///
@@ -157,7 +167,12 @@ class _MenuDetailScreenState extends State<MenuDetailScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _Head(detail: ready, skin: skin),
+                            _Head(
+                              detail: ready,
+                              skin: skin,
+                              availability: widget.availability,
+                              reason: widget.reason,
+                            ),
                             const SizedBox(height: Tokens.gapCard),
                             _Servings(
                               servings: ready.servings,
@@ -194,19 +209,32 @@ class _MenuDetailScreenState extends State<MenuDetailScreen>
 
 /// 가용성 · 이름 · 시간 · 먼저 쓰는 이유.
 class _Head extends StatelessWidget {
-  const _Head({required this.detail, required this.skin});
+  const _Head({
+    required this.detail,
+    required this.skin,
+    this.availability,
+    this.reason,
+  });
 
   final MenuDetail detail;
   final Skin skin;
+  final MenuAvailability? availability;
+  final String? reason;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final minutes = detail.estimatedMinutes;
+    final state = availability;
+    final why = reason;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (state != null) ...[
+          _Availability(state: state, skin: skin),
+          const SizedBox(height: 8),
+        ],
         Text(detail.name, style: Tokens.hero(32)),
         if (minutes != null) ...[
           const SizedBox(height: 6),
@@ -217,7 +245,81 @@ class _Head extends StatelessWidget {
                 ?.copyWith(color: skin.inkFaint, fontWeight: FontWeight.w500),
           ),
         ],
+        if (why != null && why.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          _Reason(text: why, skin: skin),
+        ],
       ],
+    );
+  }
+}
+
+/// 지금 만들 수 있는지. **서버가 판정한 값만 그린다.**
+class _Availability extends StatelessWidget {
+  const _Availability({required this.state, required this.skin});
+
+  final MenuAvailability state;
+  final Skin skin;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = skin.band(Labels.availabilityBand(state));
+    // 색만으로 구분하지 않는다. 아이콘 모양과 문구도 함께 바꾼다.
+    final icon = switch (state) {
+      MenuAvailability.ready => Icons.check_rounded,
+      MenuAvailability.needsCheck => Icons.help_outline_rounded,
+      MenuAvailability.needsPurchase => Icons.shopping_cart_outlined,
+    };
+    return InfoChip(
+      label: Labels.availability(state),
+      icon: icon,
+      background: palette.accentSoft,
+      foreground: palette.accent,
+    );
+  }
+}
+
+/// 이 메뉴를 고른 이유. 캐릭터가 말하는 한 줄이다.
+class _Reason extends StatelessWidget {
+  const _Reason({required this.text, required this.skin});
+
+  final String text;
+  final Skin skin;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = skin.band(Freshness.urgent);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 10, 16, 10),
+      decoration: BoxDecoration(
+        color: skin.fillOf(skin.glassThick),
+        gradient: skin.sheen,
+        borderRadius: BorderRadius.circular(Tokens.radiusTile),
+        boxShadow: [skin.shade(0.05, 16, 5)],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              color: palette.accentSoft,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: const Mascot(mood: MascotMood.urgent, size: 34),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: palette.accent, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

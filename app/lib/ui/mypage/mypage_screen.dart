@@ -350,7 +350,7 @@ class _Swatch extends StatelessWidget {
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: sample.band(Freshness.urgent).accentBright,
+                        color: sample.swatch,
                         shape: BoxShape.circle,
                       ),
                     ),

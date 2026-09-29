@@ -87,10 +87,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
                         Text(
                           Strings.permissionTitle,
                           textAlign: TextAlign.center,
-                          style: text.headlineMedium?.copyWith(
-                            height: 1.3,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: Tokens.hero(29, height: 1.3),
                         ),
                         const SizedBox(height: 10),
                         Text(

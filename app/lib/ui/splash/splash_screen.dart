@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import '../../core/design/band.dart';
 import '../../core/design/motion.dart';
 import '../../core/design/skin.dart';
+import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../widgets/mascot.dart';
 
@@ -121,10 +122,7 @@ class _SplashScreenState extends State<SplashScreen>
           opacity: titleIn,
           child: Transform.translate(
             offset: Offset(0, 18 * (1 - titleIn)),
-            child: Text(
-              Strings.appName,
-              style: text.headlineMedium?.copyWith(fontSize: 34),
-            ),
+            child: Text(Strings.appName, style: Tokens.hero(36)),
           ),
         ),
         const SizedBox(height: 8),
