@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 다크 테마의 배경(`Skin.background` 의 다크 고정색)과 같은 값이다. -->
+<!--
+  앱이 뜨는 동안 보이는 배경.
+
+  기본 화면 테마(파스텔)의 진입 배경(`Skins.pastel.hello.bgMid`)과 같은 값이다.
+  **기기의 다크 모드를 따르지 않는다** — 파스텔을 쓰는 사람이 기기를 다크로 두었다고
+  검은 화면부터 볼 이유가 없다. 고른 테마에 맞추는 것은 `MainActivity` 가 한다.
+-->
 <resources>
-    <color name="launch_background">#202124</color>
+    <color name="launch_background">#F6F7FF</color>
 </resources>

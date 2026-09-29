@@ -164,7 +164,9 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     // WARNING: `pumpAndSettle` 은 캐릭터의 끝없는 움직임 때문에 영원히 기다린다.
-    // 스플래시 연출(1.8초)보다 넉넉히 흘려 보낸다.
+    // 연출은 화면에 그려진 뒤에 시작하는데, 시험 환경은 래스터를 보고하지 않아 그
+    // 기다림이 상한(4초)에 걸린다. 상한과 연출(1.8초)을 합친 것보다 넉넉히 흘려 보낸다.
+    await tester.pump(const Duration(seconds: 5));
     await tester.pump(const Duration(seconds: 3));
     expect(ready, isTrue, reason: '연출이 끝나면 다음 화면으로 넘어가야 한다');
   });

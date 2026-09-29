@@ -19,6 +19,7 @@ import '../../core/design/motion.dart';
 import '../../core/design/skin.dart';
 import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
+import '../../core/launch_screen.dart';
 import '../widgets/mascot.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -51,6 +52,23 @@ class _SplashScreenState extends State<SplashScreen>
     super.didChangeDependencies();
     if (_started) return;
     _started = true;
+    unawaited(_startWhenVisible());
+  }
+
+  /// **화면에 실제로 그려진 뒤** 연출을 시작한다.
+  ///
+  /// 위젯이 만들어진 시점과 첫 프레임이 화면에 나오는 시점은 다르다. 앱을 처음 열 때는
+  /// 엔진이 뜨는 데 1~2초가 걸리고, 그동안 시스템 스플래시가 화면을 덮고 있다. 위젯이
+  /// 만들어지자마자 돌리면 그 시간만큼 연출이 지나간 뒤에야 보여 **중간부터** 시작한
+  /// 것처럼 보인다 — 실기기에서 겪었다.
+  ///
+  /// 시스템 스플래시가 걷히면 시작한다.
+  ///
+  /// Flutter 의 첫 프레임은 시스템 스플래시 **뒤에서** 그려지므로, 프레임을 기다리는
+  /// 것만으로는 부족하다. 걷힌 시각은 네이티브가 알려준다([LaunchScreen.gone]).
+  Future<void> _startWhenVisible() async {
+    await LaunchScreen.gone();
+    if (!mounted) return;
     unawaited(_run());
   }
 
