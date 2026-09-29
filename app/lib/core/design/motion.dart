@@ -43,8 +43,10 @@ abstract final class Motion {
   /// 읽을 시간을 줘야 한다. 이보다 짧으면 이름을 다 읽기 전에 바뀐다.
   static const menuTurn = Duration(milliseconds: 3600);
 
-  /// 그 한 번의 넘김.
-  static const menuFlip = Duration(milliseconds: 420);
+  /// 알약이 반 바퀴 도는 시간.
+  ///
+  /// 이보다 빠르면 무엇이 돌았는지 못 보고 글자만 바뀐 것으로 읽힌다.
+  static const menuFlip = Duration(milliseconds: 620);
 
   /// 등급을 넘길 때의 스프링.
   static const bandSpring = Duration(milliseconds: 460);

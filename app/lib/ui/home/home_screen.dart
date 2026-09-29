@@ -9,6 +9,7 @@
 library;
 
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -456,12 +457,29 @@ class _Action extends StatefulWidget {
   State<_Action> createState() => _ActionState();
 }
 
-class _ActionState extends State<_Action> {
+class _ActionState extends State<_Action>
+    with SingleTickerProviderStateMixin {
   /// 지금 보여주는 메뉴의 자리.
   int _at = 0;
 
+  /// 한 번의 회전. 0 → 1 이 반 바퀴이며, 0.5 를 지날 때 다음 메뉴로 바뀐다.
+  late final AnimationController _spin = AnimationController(
+    vsync: this,
+    duration: Motion.menuFlip,
+  )..addStatusListener((status) {
+      if (status == AnimationStatus.completed) _spin.reset();
+    });
+
+  /// 도는 속도. 시작과 끝이 느리고 가운데가 빠르다 — 뒤집히는 순간이 가장 빨라야
+  /// 글자가 바뀌는 장면이 보이지 않는다.
+  late final Animation<double> _turned =
+      CurvedAnimation(parent: _spin, curve: Curves.easeInOutCubic);
+
   Timer? _turn;
   bool _armed = false;
+
+  /// 회전이 반을 넘겼는지. 넘긴 뒤부터 다음 메뉴를 그린다.
+  bool _flipped = false;
 
   @override
   void didChangeDependencies() {
@@ -469,6 +487,7 @@ class _ActionState extends State<_Action> {
     // IMPORTANT: MediaQuery 는 initState 에서 읽을 수 없다.
     if (_armed) return;
     _armed = true;
+    _turned.addListener(_halfway);
     _rearm();
   }
 
@@ -478,26 +497,43 @@ class _ActionState extends State<_Action> {
     // 등급이 바뀌면 메뉴 목록도 바뀐다. 자리를 처음으로 되돌린다.
     if (old.grade != widget.grade || old.menus.length != widget.menus.length) {
       _at = 0;
+      _spin.reset();
+      _flipped = false;
       _rearm();
     }
   }
 
+  /// 반 바퀴를 돌아 뒷면이 보이는 순간에 내용을 바꾼다.
+  ///
+  /// 그래야 글자가 바뀌는 장면이 보이지 않는다 — 앞면에서 바꾸면 결국 글자만 바뀌는
+  /// 것으로 보인다.
+  void _halfway() {
+    final past = _turned.value >= 0.5;
+    if (past == _flipped) return;
+    setState(() {
+      _flipped = past;
+      if (past) _at = (_at + 1) % widget.menus.length;
+    });
+  }
+
   /// 메뉴가 둘 이상일 때만 돌린다.
   ///
-  /// 모션 감소에서는 돌리지 않는다 — 스스로 바뀌는 글자는 움직임이며, 읽는 중에 바뀌면
+  /// 모션 감소에서는 돌리지 않는다 — 스스로 바뀌는 화면은 움직임이며, 읽는 중에 바뀌면
   /// 따라잡을 수 없다. 그때는 첫 메뉴만 보이고 "다른 메뉴 N개" 로 나머지를 알린다.
   void _rearm() {
     _turn?.cancel();
     if (widget.menus.length < 2 || context.reduceMotion) return;
     _turn = Timer.periodic(Motion.menuTurn, (_) {
-      if (!mounted) return;
-      setState(() => _at = (_at + 1) % widget.menus.length);
+      if (!mounted || _spin.isAnimating) return;
+      _flipped = false;
+      _spin.forward(from: 0);
     });
   }
 
   @override
   void dispose() {
     _turn?.cancel();
+    _spin.dispose();
     super.dispose();
   }
 
@@ -528,70 +564,19 @@ class _ActionState extends State<_Action> {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Column(
         children: [
-          // WARNING: 그림자는 면 **바깥**에 있어야 한다. Material 안에 두면 그림자가 흰
-          // 면 위에 덧칠돼 알약이 회색으로 보인다 — 실기기에서 겪은 결함이다.
-          DecoratedBox(
-            decoration: ShapeDecoration(
-              shape: const StadiumBorder(),
-              shadows: skin.shadowAction,
+          // 알약 **전체**가 좌에서 우로 반 바퀴 돌고 다음 메뉴가 나온다. 글자만 바뀌면
+          // 읽던 사람이 놀란다 — 무엇이 바뀌는지 먼저 보여야 한다.
+          AnimatedBuilder(
+            animation: _turned,
+            builder: (context, child) => Transform(
+              alignment: Alignment.center,
+              // 원근을 살짝 준다. 없으면 가로로 납작해지기만 하고 도는 것으로 안 보인다.
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.0012)
+                ..rotateY(_turned.value * math.pi),
+              child: child,
             ),
-            child: Material(
-              color: skin.raised,
-              shape: const StadiumBorder(),
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                onTap: action,
-                customBorder: const StadiumBorder(),
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: 62),
-                  padding: const EdgeInsets.fromLTRB(8, 8, 18, 8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _Badge(palette: palette, glyph: glyph),
-                      const SizedBox(width: 12),
-                      // 메뉴가 여럿이면 여기만 휙 넘어간다. 알약과 배지는 제자리에
-                      // 있어야 무엇이 바뀐 것인지 읽힌다.
-                      Flexible(
-                        child: AnimatedSwitcher(
-                          duration: Motion.menuFlip,
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: _flip,
-                          // 같은 메뉴를 다시 그릴 때는 넘기지 않는다.
-                          child: Column(
-                            key: ValueKey(label),
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                label,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: text.titleMedium?.copyWith(height: 1.3),
-                              ),
-                              if (meta.isNotEmpty)
-                                Text(
-                                  meta,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: text.labelMedium?.copyWith(
-                                      height: 1.3,
-                                      color: skin.inkFaint,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Icon(Icons.arrow_forward_rounded,
-                          size: 20, color: palette.accent),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            child: _pill(context, text, skin, palette, glyph, label, meta, action),
           ),
           // 자리는 늘 지킨다. 메뉴 수에 따라 화면이 위아래로 흔들리지 않는다.
           SizedBox(
@@ -612,20 +597,81 @@ class _ActionState extends State<_Action> {
     );
   }
 
-  /// 다음 메뉴가 아래에서 올라오고 이전 것은 위로 빠진다.
+  /// 알약 한 개. 회전은 바깥에서 건다.
   ///
-  /// 가로로 밀면 아치의 좌우 스와이프와 방향이 겹쳐 무엇이 움직이는지 헷갈린다.
-  static Widget _flip(Widget child, Animation<double> t) => ClipRect(
-        child: SlideTransition(
-          // 들어올 때는 아래(+)에서, 나갈 때는 위(-)로. `AnimatedSwitcher` 가 나가는
-          // 쪽에는 되감는 애니메이션을 주므로 같은 Tween 이 양쪽을 다 만든다.
-          position: Tween<Offset>(
-            begin: const Offset(0, 0.35),
-            end: Offset.zero,
-          ).animate(t),
-          child: FadeTransition(opacity: t, child: child),
+  /// 반 바퀴를 넘기면 글자가 뒤집혀 보이므로 그 구간만 한 번 더 뒤집는다. 판과 그림자는
+  /// 뒤집지 않는다 — 그림자까지 뒤집히면 빛이 반대에서 오는 것으로 보인다.
+  Widget _pill(
+    BuildContext context,
+    TextTheme text,
+    Skin skin,
+    BandPalette palette,
+    int glyph,
+    String label,
+    String meta,
+    VoidCallback action,
+  ) {
+    // WARNING: 그림자는 면 **바깥**에 있어야 한다. Material 안에 두면 그림자가 흰
+    // 면 위에 덧칠돼 알약이 회색으로 보인다 — 실기기에서 겪은 결함이다.
+    return DecoratedBox(
+      decoration: ShapeDecoration(
+        shape: const StadiumBorder(),
+        shadows: skin.shadowAction,
+      ),
+      child: Material(
+        color: skin.raised,
+        shape: const StadiumBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: action,
+          customBorder: const StadiumBorder(),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 62),
+            padding: const EdgeInsets.fromLTRB(8, 8, 18, 8),
+            child: Transform(
+              alignment: Alignment.center,
+              // 뒷면에서는 글자가 거울처럼 보인다. 그 구간만 되뒤집어 바로 세운다.
+              transform: Matrix4.identity()..rotateY(_flipped ? math.pi : 0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _Badge(palette: palette, glyph: glyph),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: text.titleMedium?.copyWith(height: 1.3),
+                        ),
+                        if (meta.isNotEmpty)
+                          Text(
+                            meta,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: text.labelMedium?.copyWith(
+                                height: 1.3,
+                                color: skin.inkFaint,
+                                fontWeight: FontWeight.w500),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Icon(Icons.arrow_forward_rounded,
+                      size: 20, color: palette.accent),
+                ],
+              ),
+            ),
+          ),
         ),
-      );
+      ),
+    );
+  }
 
   /// 인분·시간·재료 상태. 모르는 값은 빼고 아는 것만 잇는다.
   ///
