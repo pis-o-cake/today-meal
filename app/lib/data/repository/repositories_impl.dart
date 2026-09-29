@@ -197,12 +197,21 @@ class RemoteCommandRepository implements CommandRepository {
       _outcome(await _api.undo(commandId));
 
   @override
-  Future<List<ChangeRecord>> history({int limit = 50}) async {
-    final rows = await _api.history(limit: limit);
+  Future<List<ChangeRecord>> history({int limit = 50, DateTime? on}) async {
+    final rows = await _api.history(limit: limit, on: on);
     return rows
         .map((e) => recordFromJson(e as Map<String, dynamic>))
         .toList(growable: false);
   }
+
+  @override
+  Future<List<DateTime>> historyDays({int limit = 60}) async {
+    final rows = await _api.historyDays(limit: limit);
+    return rows
+        .map((e) => DateTime.parse(e as String))
+        .toList(growable: false);
+  }
+
 
   CommandOutcome _outcome(Map<String, dynamic> body) {
     final screen = body['screen'] as Map<String, dynamic>? ?? const {};

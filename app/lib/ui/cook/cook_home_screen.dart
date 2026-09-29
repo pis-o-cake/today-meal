@@ -269,7 +269,7 @@ class _PickRow extends StatelessWidget {
     final parts = <String>[Strings.menuServings(pick.servings)];
     final minutes = pick.estimatedMinutes;
     if (minutes != null) parts.add(Strings.menuMinutes(minutes));
-    parts.add(Labels.availability(pick.availability));
+    parts.add(Labels.stock(pick.availability));
     return parts.join(' · ');
   }
 }

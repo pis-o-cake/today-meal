@@ -306,7 +306,7 @@ class _Command implements CommandRepository {
       const CommandOutcome(commandId: 'x', status: 'applied', intent: 'cancel');
 
   @override
-  Future<List<ChangeRecord>> history({int limit = 50}) async => [
+  Future<List<ChangeRecord>> history({int limit = 50, DateTime? on}) async => [
         ChangeRecord(
           kind: HistoryKind.quantity,
           action: 'stock_in',
@@ -319,6 +319,9 @@ class _Command implements CommandRepository {
           spokenResponse: '계란 10개 등록했어요.',
         ),
       ];
+
+  @override
+  Future<List<DateTime>> historyDays({int limit = 60}) async => const [];
 }
 
 /// 조리 한 판. 타이머가 있는 단계와 없는 단계를 섞는다 — 둘의 그림이 다르다.

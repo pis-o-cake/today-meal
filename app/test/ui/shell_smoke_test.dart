@@ -63,8 +63,9 @@ void main() {
     expect(find.textContaining('하루이틀 안에 쓰면 좋아요'), findsOneWidget);
 
     // 고른 등급의 재료만 칩으로 나온다. 다른 등급은 아치의 배지로만 센다.
-    // 단위는 한국어 표기로 나와야 한다 — 'mo' 가 그대로 보이면 안 된다.
-    expect(find.text('두부 · 2모 · D-1'), findsOneWidget);
+    // 단위는 한국어 표기로 나와야 하고('mo' 가 보이면 안 된다), 기한에는 종류가 붙는다 —
+    // 소비기한과 점검 알림은 같은 D-1 이어도 뜻이 다르다.
+    expect(find.text('두부 2모 · 소비기한 D-1'), findsOneWidget);
     expect(find.textContaining('대파'), findsNothing);
 
     // 주 행동은 그 등급으로 만들 메뉴다.
@@ -96,8 +97,8 @@ void main() {
     await _settle(tester);
 
     expect(find.text('기한이 며칠 안 남았어요'), findsOneWidget);
-    expect(find.text('대파 · 1단 · D-2'), findsOneWidget);
-    expect(find.text('두부 · 2모 · D-1'), findsNothing);
+    expect(find.text('대파 1단 · 품질유지 D-2'), findsOneWidget);
+    expect(find.text('두부 2모 · 소비기한 D-1'), findsNothing);
   });
 
   testWidgets('재고를 읽지 못하면 빈 냉장고로 그리지 않는다', (tester) async {
@@ -337,7 +338,7 @@ class _FakeCommand implements CommandRepository {
       const CommandOutcome(commandId: 'x', status: 'applied', intent: 'cancel');
 
   @override
-  Future<List<ChangeRecord>> history({int limit = 50}) async => [
+  Future<List<ChangeRecord>> history({int limit = 50, DateTime? on}) async => [
         ChangeRecord(
           kind: HistoryKind.quantity,
           action: 'stock_in',
@@ -355,6 +356,9 @@ class _FakeCommand implements CommandRepository {
           occurredAt: DateTime(2026, 9, 28, 19, 5),
         ),
       ];
+
+  @override
+  Future<List<DateTime>> historyDays({int limit = 60}) async => const [];
 }
 
 /// 배치가 끝날 만큼만 흘린다.

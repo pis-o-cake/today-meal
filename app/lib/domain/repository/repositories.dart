@@ -225,8 +225,14 @@ abstract interface class CommandRepository {
   /// 명령 묶음 전체를 되돌린다.
   Future<CommandOutcome> undo(String commandId);
 
-  /// 변경 이력.
-  Future<List<ChangeRecord>> history({int limit});
+  /// 변경 이력. 최근 순이다.
+  ///
+  /// [on] 을 주면 그 날 하루치만 온다. 날짜는 가구의 시간대로 잘리므로 **서버가 자른다** —
+  /// 앱에서 자르면 밤 늦게 한 일이 다음 날로 넘어간다.
+  Future<List<ChangeRecord>> history({int limit, DateTime? on});
+
+  /// 기록이 남은 날짜. 달력이 고를 수 있는 날을 정한다.
+  Future<List<DateTime>> historyDays({int limit});
 }
 
 abstract interface class MenuRepository {
