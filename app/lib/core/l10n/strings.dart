@@ -376,6 +376,21 @@ class Strings {
   static const cookPicksBadge = 'AI 추천';
   static const cookPicksTitle = '냉장고 재료로 요리하기';
   static const cookPicksEmpty = '추천할 요리를 아직 못 골랐어요';
+
+  /// 추천을 기다리는 동안 돌려 보여주는 말.
+  ///
+  /// **실제로 하는 일만 적는다.** 재고를 읽고, 기한이 급한 것을 앞세우고, 조합을 고르고,
+  /// 시간을 어림한다 — 하지 않는 일을 적으면 재미있는 거짓말이 된다.
+  static const cookThinking = <String>[
+    '냉장고 문을 열어보는 중…',
+    '기한 코앞인 재료부터 챙기는 중…',
+    '뭐랑 뭐가 어울릴지 짝지어 보는 중…',
+    '오늘 몇 분이나 걸릴지 어림잡는 중…',
+    '이거 맛있으려나 혼자 고민하는 중…',
+  ];
+
+  /// 기다림의 제목. 무엇을 기다리는지 한 줄로 말한다.
+  static const cookThinkingTitle = '냉장고를 뒤져보는 중';
   static const cookStart = '시작';
   static const cookVideoTitle = '영상 레시피로 요리하기';
   static const cookVideoHint = '유튜브 링크를 넣으면 단계별로 정리해 드려요';

@@ -5,11 +5,15 @@
 /// 의도다: 냉장고를 먼저 권하되 링크를 감추지 않는다.
 library;
 
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/design/band.dart';
 import '../../core/design/labels.dart';
+import '../../core/design/motion.dart';
 import '../../core/design/skin.dart';
 import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
@@ -140,16 +144,7 @@ class _Picks extends StatelessWidget {
           ],
           const SizedBox(height: 6),
           if (cook.loadingPicks && picks.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 3),
-                ),
-              ),
-            )
+            const _Thinking()
           else if (cook.picksError != null)
             // 못 고른 것과 부르지 못한 것은 다른 상황이다. 다시 시도할 수 있어야 한다.
             Padding(
@@ -636,4 +631,131 @@ class _VoiceHint extends StatelessWidget {
           ),
         ],
       );
+}
+
+/// 추천을 기다리는 동안.
+///
+/// 도는 원 하나로 두지 않는다. 모델 호출이라 몇 초가 걸리는데, 그동안 무엇을 하고 있는지
+/// 말해 주지 않으면 멈춘 것으로 읽힌다. 캐릭터가 고민하고, 하는 일을 한 줄씩 바꿔 적는다.
+///
+/// IMPORTANT: 문구는 **실제로 하는 일만** 말한다([Strings.cookThinking]).
+class _Thinking extends StatefulWidget {
+  const _Thinking();
+
+  @override
+  State<_Thinking> createState() => _ThinkingState();
+}
+
+class _ThinkingState extends State<_Thinking>
+    with SingleTickerProviderStateMixin {
+  /// 점이 튀어 오르는 한 판.
+  late final AnimationController _hop =
+      AnimationController(vsync: this, duration: Motion.pulse);
+
+  Timer? _next;
+  int _at = 0;
+  bool _armed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // IMPORTANT: MediaQuery 는 initState 에서 읽을 수 없다.
+    if (_armed) return;
+    _armed = true;
+    if (context.reduceMotion) return;
+    _hop.repeat();
+    _next = Timer.periodic(_hold, (_) {
+      if (!mounted) return;
+      setState(() => _at = (_at + 1) % Strings.cookThinking.length);
+    });
+  }
+
+  @override
+  void dispose() {
+    _next?.cancel();
+    _hop.dispose();
+    super.dispose();
+  }
+
+  /// 한 문구를 보여주는 시간. 읽을 만큼은 둬야 한다.
+  static const _hold = Duration(milliseconds: 2400);
+
+  @override
+  Widget build(BuildContext context) {
+    final skin = context.skin;
+    final text = Theme.of(context).textTheme;
+    final palette = skin.asking;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 14, 0, 18),
+      child: Column(
+        children: [
+          const Mascot(mood: MascotMood.asking, size: 84),
+          const SizedBox(height: 10),
+          Text(Strings.cookThinkingTitle, style: text.titleSmall),
+          const SizedBox(height: 6),
+          // 문구가 바뀔 때 자리가 흔들리지 않게 높이를 잡아 둔다.
+          SizedBox(
+            height: 20,
+            child: AnimatedSwitcher(
+              duration: Motion.skinFade,
+              child: Text(
+                Strings.cookThinking[_at],
+                key: ValueKey(_at),
+                textAlign: TextAlign.center,
+                style: text.labelMedium?.copyWith(
+                    color: skin.inkSubtle, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _Hops(play: _hop, color: palette.accentBright),
+        ],
+      ),
+    );
+  }
+}
+
+/// 차례로 튀어 오르는 점 셋.
+class _Hops extends StatelessWidget {
+  const _Hops({required this.play, required this.color});
+
+  final AnimationController play;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final still = context.reduceMotion;
+    return AnimatedBuilder(
+      animation: play,
+      builder: (context, _) => Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          for (var i = 0; i < 3; i++)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Transform.translate(
+                offset: Offset(0, still ? 0 : -7 * _hop(play.value, i)),
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.85 - i * 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 점 하나의 튀어 오름. 점마다 위상을 어긋나게 해 물결처럼 보이게 한다.
+  double _hop(double t, int index) {
+    final at = (t + index * 0.16) % 1;
+    // 앞쪽 40% 만 튀고 나머지는 바닥에 있는다.
+    if (at > 0.4) return 0;
+    return math.sin(at / 0.4 * math.pi);
+  }
 }
