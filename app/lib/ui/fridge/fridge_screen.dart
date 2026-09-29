@@ -240,7 +240,7 @@ class _StatusChips extends StatelessWidget {
             child: Row(
               children: [
                 if (grade != null) ...[
-                  LineFace(grade: grade, color: fg, size: 18),
+                  LineFace.compact(grade: grade, color: fg, size: 18),
                   const SizedBox(width: 4),
                 ],
                 Text(
@@ -486,10 +486,9 @@ class _Tile extends StatelessWidget {
                       label: Labels.freshnessShort(batch.freshness),
                       background: palette.bgEdge,
                       foreground: palette.accent,
-                      leading: LineFace(
+                      leading: LineFace.compact(
                         grade: batch.freshness,
                         color: palette.accent,
-                        size: 14,
                       ),
                     ),
                   ),

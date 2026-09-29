@@ -265,8 +265,9 @@ class _BottomDeckState extends State<BottomDeck>
               child: Center(
                 child: LineFace(
                   grade: grade,
-                  // 고른 얼굴만 등급 색이다. 나머지는 회색으로 물러난다.
-                  color: on ? palette.accent : skin.inkDim,
+                  // 고른 얼굴만 등급 색이고 볼터치가 뜬다. 나머지는 회색으로 물러난다.
+                  color: on ? palette.accent : skin.inkSubtle,
+                  selected: on,
                 ),
               ),
             ),

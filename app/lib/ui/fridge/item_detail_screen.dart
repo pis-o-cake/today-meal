@@ -265,7 +265,7 @@ class _BandChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              LineFace(grade: grade, color: palette.accent, size: 14),
+              LineFace.compact(grade: grade, color: palette.accent),
               const SizedBox(width: 3),
               Text(
                 Labels.freshnessShort(grade),
