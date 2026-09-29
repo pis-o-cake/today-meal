@@ -131,6 +131,23 @@ abstract final class Labels {
         _ => action,
       };
 
+  /// 기록 한 줄이 무엇을 했는지 한 문장으로.
+  ///
+  /// 칩은 동작 이름(`보정`)이고 이 문장이 무엇이 일어났는지 말한다. 둘 다 있어야 색을
+  /// 못 보는 사람도 읽을 수 있다.
+  static String historySaid(ChangeRecord record) => switch (record.action) {
+        'stock_in' || 'stocked_in' || 'purchased' => Strings.historySaidStockIn,
+        'consume' => Strings.historySaidConsume,
+        'adjust' => Strings.historySaidAdjust,
+        'correct' => Strings.historySaidAdjust,
+        'revert' => Strings.historySaidRevert,
+        'discard' => Strings.historySaidDiscard,
+        'move' || 'moved' => Strings.historySaidMove,
+        'split' || 'portioned' => Strings.historySaidSplit,
+        'opened' => Strings.historySaidOpened,
+        _ => Strings.historySaidAdjust,
+      };
+
   static String historyAction(ChangeRecord record) => switch (record.action) {
         'stock_in' => Strings.historyStockIn,
         'consume' => Strings.historyConsume,

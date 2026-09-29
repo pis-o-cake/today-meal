@@ -11,6 +11,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../domain/model/change_record.dart';
 import '../../domain/model/inventory.dart';
 import 'band.dart';
 
@@ -31,6 +32,18 @@ enum SkinName {
   dark;
 
   bool get isDark => this == SkinName.dark;
+}
+
+/// 기록의 동작 칩 색.
+///
+/// 동작마다 색이 다르다 — 넣은 것과 뺀 것, 고친 것과 되돌린 것이 한 줄씩 섞여 흐르므로
+/// 글자만으로는 훑어지지 않는다. 색만으로 구분하지 않도록 동작 이름을 함께 적는다.
+@immutable
+class ChipPalette {
+  const ChipPalette(this.background, this.foreground);
+
+  final Color background;
+  final Color foreground;
 }
 
 /// 고른 얼굴 뒤에서 도는 갈기의 색.
@@ -83,6 +96,8 @@ class Skin {
     required this.divider,
     required this.hairline,
     required this.mane,
+    required this.swatch,
+    required this.historyKinds,
     required this.bands,
     required this.listening,
     required this.asking,
@@ -139,6 +154,20 @@ class Skin {
 
   /// 고른 얼굴 뒤에서 도는 갈기.
   final ManePalette mane;
+
+  /// 마이페이지의 테마 견본에 찍는 점.
+  ///
+  /// 테마마다 **그 테마를 대표하는 색**이 다르다 — 파스텔은 부드러운 살구, 화이트는 또렷한
+  /// 주홍, 글래스와 다크는 파랑이다. 한 밴드의 색으로 통일하면 네 견본이 같은 색이 되어
+  /// 무엇이 다른지 보이지 않는다.
+  final Color swatch;
+
+  /// 기록의 동작 칩 색. 키는 `Labels.changeAction` 이 쓰는 동작 이름이다.
+  final Map<HistoryAction, ChipPalette> historyKinds;
+
+  /// 한 동작의 칩 색. 모르는 동작은 중립으로 둔다.
+  ChipPalette historyKind(HistoryAction value) =>
+      historyKinds[value] ?? historyKinds[HistoryAction.revert]!;
 
   /// 막대의 바탕.
   final Color track;
@@ -300,6 +329,14 @@ abstract final class Skins {
       stroke: Colors.transparent,
       shadow: Color(0x29141824),
     ),
+    swatch: Color(0xFFFFB199),
+    historyKinds: {
+      HistoryAction.stockIn: ChipPalette(Color(0xFFDDF3E4), Color(0xFF17703C)),
+      HistoryAction.consume: ChipPalette(Color(0xFFE4E8FF), Color(0xFF3346B8)),
+      HistoryAction.correct: ChipPalette(Color(0xFFFFEBC7), Color(0xFF8F5A08)),
+      HistoryAction.revert: ChipPalette(Color(0xFFECEEF2), Color(0xFF4E5661)),
+      HistoryAction.adjust: ChipPalette(Color(0xFFF0E6FD), Color(0xFF6B35B0)),
+    },
     bands: _pastelBands,
     listening: BandPalette(
       accent: Color(0xFF3F4FD1),
@@ -378,6 +415,14 @@ abstract final class Skins {
       stroke: Color(0x142B2F3B),
       shadow: Color(0x24141824),
     ),
+    swatch: Color(0xFFF24216),
+    historyKinds: {
+      HistoryAction.stockIn: ChipPalette(Color(0xFFD3F3DD), Color(0xFF0A7D3A)),
+      HistoryAction.consume: ChipPalette(Color(0xFFDADFFF), Color(0xFF102AC6)),
+      HistoryAction.correct: ChipPalette(Color(0xFFFFE9C2), Color(0xFF8F5A08)),
+      HistoryAction.revert: ChipPalette(Color(0xFFECEEF2), Color(0xFF4E5661)),
+      HistoryAction.adjust: ChipPalette(Color(0xFFEADBFD), Color(0xFF6010C6)),
+    },
     bands: _whiteBands,
     listening: BandPalette(
       accent: Color(0xFF2B40EE),
@@ -456,6 +501,14 @@ abstract final class Skins {
       stroke: Color(0xF2FFFFFF),
       shadow: Color(0x2E242942),
     ),
+    swatch: Color(0xFF5B6FEE),
+    historyKinds: {
+      HistoryAction.stockIn: ChipPalette(Color(0x213CDD6F), Color(0xFF11763B)),
+      HistoryAction.consume: ChipPalette(Color(0x211A3BFF), Color(0xFF1D35C9)),
+      HistoryAction.correct: ChipPalette(Color(0x21FFAD1A), Color(0xFF8F5A08)),
+      HistoryAction.revert: ChipPalette(Color(0x1A788096), Color(0xFF4E5661)),
+      HistoryAction.adjust: ChipPalette(Color(0x217F2AEE), Color(0xFF681DC8)),
+    },
     bands: _glassBands,
     // 안쪽 광택. 판 위에 한 겹 덮어 유리처럼 세운다.
     sheen: LinearGradient(
@@ -539,6 +592,14 @@ abstract final class Skins {
       stroke: Color(0x0FFFFFFF),
       shadow: Color(0x59000000),
     ),
+    swatch: Color(0xFF8BB5F8),
+    historyKinds: {
+      HistoryAction.stockIn: ChipPalette(Color(0x2981C995), Color(0xFF81C995)),
+      HistoryAction.consume: ChipPalette(Color(0x298AB4F8), Color(0xFF8AB4F8)),
+      HistoryAction.correct: ChipPalette(Color(0x29FCAD70), Color(0xFFFCAD70)),
+      HistoryAction.revert: ChipPalette(Color(0xFF3C4043), Color(0xFFBDC1C6)),
+      HistoryAction.adjust: ChipPalette(Color(0x29C58AF9), Color(0xFFC58AF9)),
+    },
     bands: _darkBands,
     listening: BandPalette(
       accent: Color(0xFF8AB4F8),

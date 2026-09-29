@@ -28,6 +28,12 @@ class Strings {
   static const voiceDone = '반영했어요';
   static const voiceTranscribing = '받아 적는 중';
 
+  // 대화 오버레이의 큰 한마디. 상태 칩의 짧은 말과 **다르다** — 칩은 좁은 자리에서
+  // 상태를 알리고, 이쪽은 화면을 가득 채워 캐릭터가 말을 거는 자리다.
+  static const voiceHeroListening = '쫑긋, 듣고 있어요';
+  static const voiceHeroClarifying = '하나만 물어볼게요!';
+  static const voiceHeroDone = '싱싱해요!';
+
   /// 아직 아무 말도 들리지 않았을 때. **예시 문장을 채우지 않는다.**
   static const voiceNothingHeard = '말씀하시면 여기에 적어요';
   static const voiceCancel = '취소';
@@ -135,7 +141,7 @@ class Strings {
   static const menuMissing = '없어요';
 
   /// 조리 시작. 단계 화면이 화면을 켜 두고 호출어 없이 듣는다.
-  static const cookModeStart = '조리 시작';
+  static const cookModeStart = '조리 모드 시작';
   static const cookModeStop = '조리 모드 끝내기';
   static const cookModeHint = '단계마다 읽어 주고, 타이머도 말로 맞춰요.\n'
       '다 만들면 쓴 재료를 알아서 빼 둘게요.';
@@ -210,6 +216,17 @@ class Strings {
   static const historySplit = '소분';
   static const historyOpened = '개봉';
   static const historyEstimated = '추정';
+  static const historyExact = '명시값';
+
+  // 기록 한 줄의 설명. 칩은 동작 이름(위)이고 이 문장이 무엇이 일어났는지 말한다.
+  static const historySaidStockIn = '넣은 만큼 채웠어요';
+  static const historySaidConsume = '쓴 만큼 뺐어요';
+  static const historySaidAdjust = '남은 양을 맞췄어요';
+  static const historySaidRevert = '방금 것을 되돌렸어요';
+  static const historySaidDiscard = '버린 만큼 뺐어요';
+  static const historySaidMove = '보관 위치를 옮겼어요';
+  static const historySaidSplit = '나눠 담았어요';
+  static const historySaidOpened = '개봉으로 표시했어요';
 
   /// 수량을 바꾸지 않은 변경. 개봉·이동처럼 상태만 바뀐 기록에 쓴다.
   static const historyNoQuantityChange = '수량 변화 없음';

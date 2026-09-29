@@ -18,7 +18,6 @@ import '../../core/design/skin.dart';
 import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../domain/model/change_record.dart';
-import '../../domain/model/inventory.dart';
 import '../widgets/glass.dart';
 import '../widgets/mascot.dart';
 import '../widgets/screen_scaffold.dart';
@@ -287,8 +286,9 @@ class _Applied extends StatelessWidget {
     final skin = context.skin;
     final text = Theme.of(context).textTheme;
     final reverted = record.reversesEventId != null;
-    // 되돌린 기록은 다른 색으로 묶는다. 같은 초록이면 "또 반영했다" 로 읽힌다.
-    final kind = reverted ? skin.band(Freshness.soon) : skin.done;
+    // 동작마다 칩 색이 다르다. 넣은 것과 뺀 것, 고친 것과 되돌린 것이 한 줄씩 섞여 흐르므로
+    // 글자만으로는 훑어지지 않는다.
+    final chip = skin.historyKind(HistoryAction.parse(record.action));
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,13 +332,15 @@ class _Applied extends StatelessWidget {
                   children: [
                     InfoChip(
                       label: Labels.historyAction(record),
-                      background: reverted ? kind.bgEdge : skin.chipNeutral,
-                      foreground: reverted ? kind.accent : skin.inkFaint,
+                      background: chip.background,
+                      foreground: chip.foreground,
                     ),
                     const SizedBox(width: 8),
+                    // 칩은 동작 이름, 이 문장은 무엇이 일어났는지다. 둘 다 있어야 색을
+                    // 못 보는 사람도 읽을 수 있다.
                     Flexible(
                       child: Text(
-                        record.name,
+                        Labels.historySaid(record),
                         overflow: TextOverflow.ellipsis,
                         style: text.bodyLarge
                             ?.copyWith(fontSize: 15, fontWeight: FontWeight.w700),
@@ -374,11 +376,25 @@ class _Change extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final name = Text(
+      record.name,
+      style: text.labelMedium
+          ?.copyWith(color: skin.inkFaint, fontWeight: FontWeight.w500),
+    );
+
     if (!record.changesQuantity) {
-      return Text(
-        Strings.historyNoQuantityChange,
-        style: text.labelMedium
-            ?.copyWith(color: skin.inkFaint, fontWeight: FontWeight.w500),
+      return Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 6,
+        runSpacing: 4,
+        children: [
+          name,
+          Text(
+            Strings.historyNoQuantityChange,
+            style: text.labelMedium
+                ?.copyWith(color: skin.inkFaint, fontWeight: FontWeight.w500),
+          ),
+        ],
       );
     }
 
@@ -389,6 +405,8 @@ class _Change extends StatelessWidget {
       spacing: 6,
       runSpacing: 4,
       children: [
+        // 재료 이름은 동작 문장이 아니라 수량 줄에 붙는다 — "계란 8 → 9개" 가 한 덩어리다.
+        name,
         if (before != null)
           Text(
             '${Labels.number(before)}$unit',
@@ -400,7 +418,13 @@ class _Change extends StatelessWidget {
           '${Labels.number(record.quantityAfter!)}$unit',
           style: text.titleLarge?.copyWith(fontSize: 20, letterSpacing: -0.8),
         ),
-        if (record.isEstimated) InfoChip(label: Strings.historyEstimated),
+        // 추정과 명시를 **둘 다** 표시한다. 추정에만 배지를 달면 배지가 없는 줄이
+        // 확인된 값인지 표시를 빠뜨린 것인지 알 수 없다.
+        InfoChip(
+          label: record.isEstimated
+              ? Strings.historyEstimated
+              : Strings.historyExact,
+        ),
       ],
     );
   }

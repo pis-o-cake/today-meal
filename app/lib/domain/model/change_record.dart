@@ -58,3 +58,35 @@ enum HistoryKind {
   static HistoryKind parse(String? raw) =>
       raw == 'state' ? HistoryKind.state : HistoryKind.quantity;
 }
+
+/// 기록 한 줄이 말하는 동작.
+///
+/// 서버의 `action` 문자열은 열 가지가 넘고 같은 뜻이 두 이름으로 온다(`stock_in` ·
+/// `stocked_in`). 화면이 그 문자열을 직접 분기하면 새 이름이 늘 때마다 빠뜨린다.
+/// **다섯 갈래로 모아** 색과 문장을 여기에 건다.
+enum HistoryAction {
+  /// 넣었다.
+  stockIn,
+
+  /// 썼거나 버렸다. 줄어든 쪽이다.
+  consume,
+
+  /// 사용량을 고쳤다. 추가 차감은 없다.
+  correct,
+
+  /// 되돌렸다.
+  revert,
+
+  /// 남은 양을 맞췄다. 수량을 바꾸지 않는 상태 변화도 여기 든다.
+  adjust;
+
+  /// 서버가 준 동작 이름을 갈래로 모은다. 모르는 이름은 [adjust] 로 둔다 —
+  /// 색을 지어내는 것보다 중립이 낫다.
+  static HistoryAction parse(String raw) => switch (raw) {
+        'stock_in' || 'stocked_in' || 'purchased' => HistoryAction.stockIn,
+        'consume' || 'discard' => HistoryAction.consume,
+        'correct' => HistoryAction.correct,
+        'revert' => HistoryAction.revert,
+        _ => HistoryAction.adjust,
+      };
+}
