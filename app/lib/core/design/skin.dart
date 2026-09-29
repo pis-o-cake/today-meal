@@ -709,9 +709,9 @@ abstract final class Skins {
 
   static const _pastelBands = <Freshness, BandPalette>{
     Freshness.expired: BandPalette(
-      accent: Color(0xFF6E7784),
-      accentBright: Color(0xFF8C95A3),
-      accentSoft: Color(0x246E7784),
+      accent: Color(0xFF4F5B6E),
+      accentBright: Color(0xFF6E7A90),
+      accentSoft: Color(0x244F5B6E),
       bgMid: Color(0xFFF7F8FA),
       bgEdge: Color(0xFFE6E9EE),
       mascotBody: Color(0xFFD5DAE1),
@@ -765,9 +765,9 @@ abstract final class Skins {
 
   static const _whiteBands = <Freshness, BandPalette>{
     Freshness.expired: BandPalette(
-      accent: Color(0xFF6E7784),
-      accentBright: Color(0xFF8C95A3),
-      accentSoft: Color(0x246E7784),
+      accent: Color(0xFF0E4CAF),
+      accentBright: Color(0xFF2F6FD4),
+      accentSoft: Color(0x24115DD4),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F3),
       mascotBody: Color(0xFFD5DAE1),
@@ -821,9 +821,9 @@ abstract final class Skins {
 
   static const _glassBands = <Freshness, BandPalette>{
     Freshness.expired: BandPalette(
-      accent: Color(0xFF6E7784),
-      accentBright: Color(0xFF8C95A3),
-      accentSoft: Color(0x246E7784),
+      accent: Color(0xFF184EA5),
+      accentBright: Color(0xFF3A71C6),
+      accentSoft: Color(0x241D5FC9),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F4),
       mascotBody: Color(0xFFD5DAE1),
@@ -876,9 +876,9 @@ abstract final class Skins {
   // 평면이므로(`Skin.background`), 여기 값은 칩과 막대에만 쓰인다.
   static const _darkBands = <Freshness, BandPalette>{
     Freshness.expired: BandPalette(
-      accent: Color(0xFF9AA0A6),
-      accentBright: Color(0xFF9AA0A6),
-      accentSoft: Color(0x2B9AA0A6),
+      accent: Color(0xFF8AB4F8),
+      accentBright: Color(0xFFA8C7FA),
+      accentSoft: Color(0x2B8AB4F8),
       bgMid: Color(0xFF202124),
       bgEdge: Color(0xFF3C4043),
       mascotBody: Color(0xFFD5DAE1),
@@ -918,7 +918,7 @@ abstract final class Skins {
     Freshness.unknown: BandPalette(
       accent: Color(0xFFBDC1C6),
       accentBright: Color(0xFFBDC1C6),
-      accentSoft: Color(0x2BBDC1C6),
+      accentSoft: Color(0xFF80868B),
       bgMid: Color(0xFF202124),
       bgEdge: Color(0xFF3C4043),
       mascotBody: Color(0xFFD9DEE8),

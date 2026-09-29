@@ -150,6 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 grade: shown,
                 skin: skin,
                 menus: home.menusFor(shown),
+                first: home.batchesOf(shown).firstOrNull?.name,
                 onOpenFridge: widget.onOpenFridge,
                 onOpenMenu: widget.onOpenMenu,
               ),
@@ -442,6 +443,7 @@ class _Action extends StatefulWidget {
     required this.grade,
     required this.skin,
     required this.menus,
+    required this.first,
     required this.onOpenFridge,
     required this.onOpenMenu,
   });
@@ -450,6 +452,9 @@ class _Action extends StatefulWidget {
   final Freshness grade;
   final Skin skin;
   final List<MenuSuggestion> menus;
+
+  /// 이 등급의 첫 재료 이름. 요리를 권하지 않는 등급에서 **무엇 때문인지** 말한다.
+  final String? first;
   final VoidCallback onOpenFridge;
   final void Function(MenuSuggestion suggestion) onOpenMenu;
 
@@ -557,7 +562,13 @@ class _ActionState extends State<_Action>
         (pick.name, _meta(pick), _Badge.pot, () => onOpenMenu(pick)),
       null when grade == Freshness.unknown =>
         (Strings.dateTell, Strings.dateTellExample, _Badge.mic, onOpenFridge),
-      null => (Strings.fridgeOpen, '', _Badge.fridge, onOpenFridge),
+      // 요리를 권하지 않는 등급이다. 무엇 때문에 냉장고로 가는지 함께 적는다.
+      null => (
+          Strings.fridgeOpen,
+          widget.first == null ? '' : Strings.fridgeCheckHint(widget.first!),
+          _Badge.fridge,
+          onOpenFridge,
+        ),
     };
 
     return Padding(

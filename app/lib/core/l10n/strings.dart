@@ -169,6 +169,9 @@ class Strings {
   static const fridgeAll = '전체';
   static const fridgeStatusFilter = '기한 상태로 거르기';
 
+  /// 기한이 지난 등급의 주 행동에 붙는 한 줄. 무엇을 하러 가는지 말한다.
+  static String fridgeCheckHint(String name) => '$name · 상태 보고 정리해요';
+
   /// 냉장고 머리말 한 줄. **0 인 항목은 적지 않는다** — 없는 걱정을 만들지 않는다.
   static String fridgeSummary(int total, int urgent, int expired) {
     final parts = <String>['$total가지'];
