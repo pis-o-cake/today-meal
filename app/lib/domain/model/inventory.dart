@@ -85,6 +85,14 @@ enum StorageLocation {
         'pantry' => StorageLocation.pantry,
         _ => StorageLocation.unknown,
       };
+
+  /// 서버가 쓰는 값. `parse` 의 역방향이며 둘이 어긋나면 저장이 조용히 무시된다.
+  String get wire => switch (this) {
+        StorageLocation.fridge => 'fridge',
+        StorageLocation.freezer => 'freezer',
+        StorageLocation.pantry => 'pantry',
+        StorageLocation.unknown => 'unknown',
+      };
 }
 
 /// 신선도 등급.
@@ -150,6 +158,16 @@ enum DateKind {
         'packed' => DateKind.packed,
         'check_reminder' => DateKind.checkReminder,
         _ => null,
+      };
+
+  /// 서버가 쓰는 값. `parse` 의 역방향이다.
+  String get wire => switch (this) {
+        DateKind.useBy => 'use_by',
+        DateKind.sellBy => 'sell_by',
+        DateKind.bestBefore => 'best_before',
+        DateKind.manufactured => 'manufactured',
+        DateKind.packed => 'packed',
+        DateKind.checkReminder => 'check_reminder',
       };
 }
 

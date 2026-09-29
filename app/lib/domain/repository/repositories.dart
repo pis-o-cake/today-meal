@@ -147,6 +147,69 @@ abstract interface class InventoryRepository {
 
   /// 냉장고 전체 컨디션. 등급 계산은 서버가 한다.
   Future<FridgeCondition> condition();
+
+  /// 묶음 하나를 화면에서 고친다.
+  ///
+  /// **보낸 칸만 바뀐다.** 서버가 기록도 함께 남기므로 기록 화면에 나타난다.
+  Future<IngredientBatch> editBatch(int batchId, BatchEdit edit);
+
+  /// 묶음을 버린다. 행을 지우지 않고 버린 것으로 표시한다.
+  Future<void> discardBatch(int batchId);
+}
+
+/// 화면에서 고친 재고.
+///
+/// 값을 비우는 것과 그대로 두는 것을 구분한다 — `null` 하나로는 "손대지 않았다" 와 "모르는
+/// 값으로 되돌려라" 를 구별할 수 없다.
+class BatchEdit {
+  const BatchEdit({
+    this.name,
+    this.quantity,
+    this.clearQuantity = false,
+    this.unit,
+    this.storage,
+    this.dateKind,
+    this.dateValue,
+    this.clearDate = false,
+  });
+
+  final String? name;
+  final String? quantity;
+
+  /// 잔량을 미확인으로 되돌린다. **0 과 다르다** — 0 은 "다 썼다" 는 사실이다.
+  final bool clearQuantity;
+
+  final String? unit;
+  final StorageLocation? storage;
+
+  /// 고칠 기한의 종류. 날짜만 보내고 종류를 비우면 서버가 무엇을 고칠지 알 수 없다.
+  final DateKind? dateKind;
+
+  final DateTime? dateValue;
+
+  /// [dateKind] 의 날짜를 미확인으로 되돌린다.
+  final bool clearDate;
+
+  /// 서버가 받는 형태. **값이 있는 칸만 담는다.**
+  Map<String, dynamic> toJson() => {
+        if (name != null) 'name': name,
+        if (quantity != null) 'quantity': quantity,
+        if (clearQuantity) 'clear_quantity': true,
+        if (unit != null) 'unit': unit,
+        if (storage != null) 'storage_location': storage!.wire,
+        if (dateKind != null) 'date_kind': dateKind!.wire,
+        if (dateValue != null) 'date_value': _ymd(dateValue!),
+        if (clearDate) 'clear_date': true,
+      };
+
+  /// `2026-10-03`. 시각을 붙이면 서버가 날짜로 읽지 못한다.
+  static String _ymd(DateTime value) =>
+      '${value.year.toString().padLeft(4, '0')}-'
+      '${value.month.toString().padLeft(2, '0')}-'
+      '${value.day.toString().padLeft(2, '0')}';
+
+  /// 바꿀 것이 하나라도 있는지. 없으면 서버를 부르지 않는다.
+  bool get isEmpty => toJson().isEmpty;
 }
 
 abstract interface class CommandRepository {
@@ -175,6 +238,52 @@ abstract interface class MenuRepository {
 
   /// 조리 확인. 같은 추천에 두 번 보내도 재고가 두 번 줄지 않는다.
   Future<CookedResult> markCooked(int suggestionId);
+}
+
+/// 영상 레시피.
+abstract interface class VideoRepository {
+  /// 유튜브 링크를 조리 단계로 정리한다.
+  ///
+  /// **재고를 바꾸지 않는다.** 정리만 하며, 차감은 조리를 마쳤을 때 일어난다.
+  ///
+  /// Throws:
+  ///   [VideoFailure] — 링크가 아니거나 읽을 글이 없거나 순서를 찾지 못했다. 세 경우에
+  ///   사용자가 할 수 있는 일이 달라 구분한다.
+  Future<VideoRecipe> analyze(String url);
+}
+
+/// 영상 정리 실패의 이유.
+///
+/// 원인마다 사용자가 할 일이 다르다 — 링크를 고치거나, 다른 영상을 고르거나, 잠시 뒤에 다시
+/// 하거나다. 하나로 뭉치면 무엇을 해야 하는지 알 수 없다.
+enum VideoFailure {
+  /// 유튜브 링크가 아니다.
+  badLink,
+
+  /// 그 영상을 찾을 수 없다.
+  notFound,
+
+  /// 읽을 수 있는 설명이나 자막이 없다. 영상을 바꿔야 한다.
+  noScript,
+
+  /// 요리 영상이 아니거나 순서를 찾지 못했다.
+  notRecipe,
+
+  /// 서버나 유튜브에 닿지 못했다. 잠시 뒤에 다시 한다.
+  unreachable,
+
+  /// 서버 주소가 없는 빌드다.
+  notConnected,
+}
+
+/// 영상 정리가 실패했다.
+class VideoException implements Exception {
+  const VideoException(this.failure);
+
+  final VideoFailure failure;
+
+  @override
+  String toString() => 'VideoException(${failure.name})';
 }
 
 /// 서버가 판정한 명령 결과.

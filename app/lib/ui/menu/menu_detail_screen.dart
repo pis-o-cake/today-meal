@@ -26,6 +26,7 @@ import '../../domain/model/inventory.dart';
 import '../../domain/model/menu.dart';
 import '../../domain/repository/repositories.dart';
 import '../widgets/glass.dart';
+import '../widgets/nav_icons.dart';
 import '../widgets/mascot.dart';
 
 class MenuDetailScreen extends StatefulWidget {
@@ -33,6 +34,7 @@ class MenuDetailScreen extends StatefulWidget {
     required this.recipeId,
     this.suggestionId,
     this.servings,
+    this.onStartCooking,
     super.key,
   });
 
@@ -42,6 +44,11 @@ class MenuDetailScreen extends StatefulWidget {
   final int? suggestionId;
 
   final int? servings;
+
+  /// 조리 진행 화면으로 넘긴다.
+  ///
+  /// 없으면 버튼이 화면을 켜 두는 조리 모드로만 동작한다 — 이 화면만 떼어 시험할 때다.
+  final void Function(MenuDetail detail)? onStartCooking;
 
   @override
   State<MenuDetailScreen> createState() => _MenuDetailScreenState();
@@ -107,6 +114,19 @@ class _MenuDetailScreenState extends State<MenuDetailScreen>
     unawaited(_load());
   }
 
+  /// 조리를 시작한다.
+  ///
+  /// 단계 화면이 화면을 켜 두고 호출어 없이 듣는다. 여기서 화면만 켜 두던 예전 조리 모드는
+  /// 그 화면이 대신하므로, 넘길 곳이 있으면 넘긴다.
+  void _start(MenuDetail detail) {
+    final go = widget.onStartCooking;
+    if (go == null) {
+      unawaited(_toggleCooking());
+      return;
+    }
+    go(detail);
+  }
+
   @override
   Widget build(BuildContext context) {
     final skin = context.skin;
@@ -160,7 +180,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen>
                     child: _CookBar(
                       cooking: _cooking,
                       skin: skin,
-                      onToggle: _toggleCooking,
+                      onToggle: () => _start(ready),
                     ),
                   ),
                 ],
@@ -187,7 +207,7 @@ class _Head extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(detail.name, style: text.displaySmall?.copyWith(fontWeight: FontWeight.w700)),
+        Text(detail.name, style: Tokens.hero(32)),
         if (minutes != null) ...[
           const SizedBox(height: 6),
           Text(
@@ -486,13 +506,13 @@ class _CookBar extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        cooking
-                            ? Icons.stop_circle_outlined
-                            : Icons.phone_iphone_rounded,
-                        size: 20,
-                        color: cooking ? skin.ink : skin.onStrong,
-                      ),
+                      cooking
+                          ? Icon(Icons.stop_circle_outlined,
+                              size: 20, color: skin.ink)
+                          : NavIcon(
+                              glyph: NavGlyph.cook,
+                              color: skin.onStrong,
+                              size: 20),
                       const SizedBox(width: 8),
                       Text(
                         cooking ? Strings.cookModeStop : Strings.cookModeStart,

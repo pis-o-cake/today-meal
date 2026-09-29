@@ -169,6 +169,13 @@ class RemoteInventoryRepository implements InventoryRepository {
   @override
   Future<FridgeCondition> condition() async =>
       conditionFromJson(await _api.condition());
+
+  @override
+  Future<IngredientBatch> editBatch(int batchId, BatchEdit edit) async =>
+      batchFromJson(await _api.editBatch(batchId, edit.toJson()));
+
+  @override
+  Future<void> discardBatch(int batchId) => _api.discardBatch(batchId);
 }
 
 class RemoteCommandRepository implements CommandRepository {
@@ -249,4 +256,44 @@ class RemoteMenuRepository implements MenuRepository {
   @override
   Future<CookedResult> markCooked(int suggestionId) async =>
       cookedFromJson(await _api.markCooked(suggestionId));
+}
+
+/// 영상 레시피.
+///
+/// 서버의 실패 응답을 [VideoFailure] 로 옮긴다. 메시지 문구로 갈래를 판정하지 않는다 —
+/// 서버가 문구를 고치면 조용히 깨진다. 판정은 `message_key` 로 한다.
+class RemoteVideoRepository implements VideoRepository {
+  RemoteVideoRepository(this._api, {required this.connected});
+
+  final ApiClient _api;
+
+  /// 서버 주소가 있는 빌드인지.
+  final bool connected;
+
+  /// 서버가 주는 실패 키와 갈래.
+  static const _failures = <String, VideoFailure>{
+    'error.video_bad_link': VideoFailure.badLink,
+    'error.video_not_found': VideoFailure.notFound,
+    'error.video_no_script': VideoFailure.noScript,
+    'error.video_not_recipe': VideoFailure.notRecipe,
+  };
+
+  @override
+  Future<VideoRecipe> analyze(String url) async {
+    if (!connected) throw const VideoException(VideoFailure.notConnected);
+    try {
+      return videoFromJson(await _api.analyzeVideo(url));
+    } on DioException catch (error) {
+      throw VideoException(_failureOf(error));
+    }
+  }
+
+  VideoFailure _failureOf(DioException error) {
+    final body = error.response?.data;
+    if (body is Map<String, dynamic>) {
+      final found = _failures[body['code']];
+      if (found != null) return found;
+    }
+    return VideoFailure.unreachable;
+  }
 }

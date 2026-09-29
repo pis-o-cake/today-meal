@@ -180,4 +180,36 @@ class ApiClient {
     );
     return response.data ?? const {};
   }
+
+  /// 재고 묶음을 고친다. **보낸 칸만 바뀐다.**
+  Future<Map<String, dynamic>> editBatch(
+    int batchId,
+    Map<String, dynamic> changes,
+  ) async {
+    final response = await _dio.patch<Map<String, dynamic>>(
+      'api/inventory/batches/$batchId',
+      data: changes,
+    );
+    return response.data ?? const {};
+  }
+
+  /// 재고 묶음을 버린다.
+  Future<void> discardBatch(int batchId) =>
+      _dio.delete<void>('api/inventory/batches/$batchId');
+
+  /// 유튜브 링크를 조리 단계로 정리한다.
+  ///
+  /// 서버가 유튜브에 물어보고 모델을 부르므로 다른 호출보다 오래 걸린다. 기본 타임아웃으로
+  /// 두면 정리에 성공한 요청이 앱에서 실패로 보인다.
+  Future<Map<String, dynamic>> analyzeVideo(String url) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      'api/video/analyze',
+      data: {'url': url},
+      options: Options(receiveTimeout: _videoTimeout),
+    );
+    return response.data ?? const {};
+  }
+
+  /// 영상 정리를 기다리는 한계.
+  static const _videoTimeout = Duration(seconds: 60);
 }

@@ -12,6 +12,7 @@ import 'core/settings/app_settings.dart';
 import 'domain/repository/repositories.dart';
 import 'ui/app_root.dart';
 import 'ui/conversation/conversation_view_model.dart';
+import 'ui/cook/cook_view_model.dart';
 import 'ui/fridge/fridge_view_model.dart';
 import 'ui/history/history_view_model.dart';
 import 'ui/home/home_view_model.dart';
@@ -42,6 +43,7 @@ class TodayMealApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: settings),
         ChangeNotifierProvider.value(value: di<HomeViewModel>()),
+        ChangeNotifierProvider.value(value: di<CookViewModel>()),
         ChangeNotifierProvider.value(value: di<FridgeViewModel>()),
         ChangeNotifierProvider.value(value: di<HistoryViewModel>()),
         ChangeNotifierProvider.value(value: di<ConversationViewModel>()),

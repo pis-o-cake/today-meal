@@ -4,6 +4,7 @@ import '../data/remote/social_sign_in.dart';
 import '../data/repository/repositories_impl.dart';
 import '../domain/repository/repositories.dart';
 import '../ui/conversation/conversation_view_model.dart';
+import '../ui/cook/cook_view_model.dart';
 import '../ui/fridge/fridge_view_model.dart';
 import '../ui/history/history_view_model.dart';
 import '../ui/home/home_view_model.dart';
@@ -47,6 +48,11 @@ Future<void> registerDependencies(AppConfig config) async {
     ..registerLazySingleton<MenuRepository>(
       () => RemoteMenuRepository(di<ApiClient>()),
     )
+    // 서버 주소가 없는 빌드에서는 정리하지 못한다. 실패를 "준비 중" 이 아니라
+    // 연결 없음으로 답한다 — 사용자가 링크를 고치려 애쓰지 않게 한다.
+    ..registerLazySingleton<VideoRepository>(
+      () => RemoteVideoRepository(di<ApiClient>(), connected: config.hasServer),
+    )
     // IMPORTANT: 호출어 감지와 전사가 같은 인식 플러그인을 쓴다. 엔진을 하나로 묶지
     // 않으면 initialize 콜백이 서로를 덮어써 인식 실패를 놓친다.
     ..registerLazySingleton<SpeechEngine>(SpeechEngine.new)
@@ -72,6 +78,12 @@ Future<void> registerDependencies(AppConfig config) async {
       () => HomeViewModel(
         inventory: di<InventoryRepository>(),
         menu: di<MenuRepository>(),
+      ),
+    )
+    ..registerLazySingleton<CookViewModel>(
+      () => CookViewModel(
+        menu: di<MenuRepository>(),
+        video: di<VideoRepository>(),
       ),
     )
     ..registerLazySingleton<FridgeViewModel>(

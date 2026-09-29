@@ -121,6 +121,34 @@ ChangeRecord recordFromJson(Map<String, dynamic> json) => ChangeRecord(
       spokenResponse: json['spoken_response'] as String?,
     );
 
+VideoRecipe videoFromJson(Map<String, dynamic> json) => VideoRecipe(
+      videoId: json['video_id'] as String,
+      url: json['url'] as String,
+      title: json['title'] as String?,
+      channel: json['channel'] as String?,
+      dishName: json['dish_name'] as String?,
+      baseServings: json['base_servings'] as int?,
+      estimatedMinutes: json['estimated_minutes'] as int?,
+      availability: MenuAvailability.parse(json['availability'] as String?),
+      ingredients: (json['ingredients'] as List<dynamic>? ?? const [])
+          .map((e) => _ingredientFromJson(e as Map<String, dynamic>))
+          .toList(growable: false),
+      steps: (json['steps'] as List<dynamic>? ?? const [])
+          .map((e) => _videoStepFromJson(e as Map<String, dynamic>))
+          .toList(growable: false),
+      missingIngredients: _strings(json['missing_ingredients']),
+      uncertainIngredients: _strings(json['uncertain_ingredients']),
+      unresolved: _strings(json['unresolved']),
+    );
+
+VideoStep _videoStepFromJson(Map<String, dynamic> json) => VideoStep(
+      order: json['order'] as int? ?? 0,
+      text: json['text'] as String? ?? '',
+      timerSeconds: json['timer_seconds'] as int?,
+      timerLabel: json['timer_label'] as String?,
+      ingredients: _strings(json['ingredients']),
+    );
+
 List<String> _strings(Object? raw) => (raw as List<dynamic>? ?? const [])
     .map((e) => e.toString())
     .toList(growable: false);
