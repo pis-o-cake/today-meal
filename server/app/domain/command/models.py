@@ -106,3 +106,6 @@ class ChangeEvent(Base, CreatedAtMixin):
 
     # 이력 화면이 재료명을 함께 보여주므로 묶음을 같이 읽는다.
     batch: Mapped["IngredientBatch"] = relationship(lazy="raise_on_sql")
+
+    # 이력 화면이 "말한 문장 → 바뀐 결과" 로 보여주므로 명령도 같이 읽는다.
+    command: Mapped["Command"] = relationship(lazy="raise_on_sql")

@@ -57,3 +57,9 @@ class HistoryRow(BaseModel):
     reverses_event_id: int | None = Field(
         default=None, description="되돌린 대상. 있으면 역산 이벤트다"
     )
+    utterance: str | None = Field(
+        default=None, description="이 변경을 일으킨 발화 원문"
+    )
+    spoken_response: str | None = Field(
+        default=None, description="그때 읽어준 응답"
+    )

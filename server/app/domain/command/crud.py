@@ -49,7 +49,8 @@ async def list_history(
         select(ChangeEvent)
         .join(Command, Command.command_id == ChangeEvent.command_id)
         .where(Command.household_id == household_id)
-        .options(selectinload(ChangeEvent.batch))
+        # 화면이 "말한 문장 → 바뀐 결과" 로 보여주므로 명령을 함께 읽는다.
+        .options(selectinload(ChangeEvent.batch), selectinload(ChangeEvent.command))
         .order_by(ChangeEvent.change_event_id.desc())
         .limit(limit)
     )

@@ -489,6 +489,8 @@ async def history(
                     occurred_at=event.created_at,
                     command_id=event.command_id,
                     reverses_event_id=event.reverses_event_id,
+                    utterance=event.command.utterance,
+                    spoken_response=event.command.spoken_response,
                 )
             )
             continue

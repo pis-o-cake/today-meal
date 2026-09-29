@@ -15,6 +15,8 @@ class ChangeRecord {
     this.isEstimated = false,
     this.commandId,
     this.reversesEventId,
+    this.utterance,
+    this.spokenResponse,
   });
 
   final HistoryKind kind;
@@ -36,6 +38,15 @@ class ChangeRecord {
 
   /// 되돌린 대상. 있으면 역산 이벤트다.
   final int? reversesEventId;
+
+  /// 이 변경을 일으킨 발화 원문.
+  ///
+  /// 기록 화면이 "말한 문장 → 바뀐 결과" 로 보여주는 근거다. 없으면 말풍선을 그리지
+  /// 않는다 — 문장을 지어내지 않는다.
+  final String? utterance;
+
+  /// 그때 읽어준 응답.
+  final String? spokenResponse;
 
   bool get changesQuantity => quantityAfter != null;
 }
