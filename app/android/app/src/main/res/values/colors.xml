@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  앱이 뜨는 동안 보이는 배경.
+
+  Flutter 가 첫 프레임을 그리기 전까지 이 색이 보인다. 기본값(흰색·검정)을 두면
+  스플래시의 파스텔 배경으로 넘어갈 때 한 번 번쩍인다. 값은 파스텔 테마의 hello
+  배경(`Skins.pastel.hello.bgMid`)과 같다.
+-->
+<resources>
+    <color name="launch_background">#F6F7FF</color>
+</resources>

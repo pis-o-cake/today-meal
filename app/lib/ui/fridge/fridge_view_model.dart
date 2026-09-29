@@ -57,6 +57,15 @@ class FridgeViewModel extends ChangeNotifier {
     ];
   }
 
+  /// 한 등급의 개수. 필터를 무시하고 냉장고 전체를 센다 — 머리말의 요약은 지금 보고
+  /// 있는 칸이 아니라 냉장고 전체를 말해야 한다.
+  int countOf(Freshness grade) =>
+      _all.where((b) => b.freshness == grade).length;
+
+  /// 한 보관 위치의 개수.
+  int countOfStorage(StorageLocation value) =>
+      _all.where((b) => b.storage == value).length;
+
   Future<void> load() async {
     _loading = true;
     _error = null;

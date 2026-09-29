@@ -87,16 +87,12 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 재료가 있는 등급 중 가장 급한 것. 하나도 없으면 여유로 둔다.
+  /// 재료가 있는 등급 중 처음 보여줄 것.
+  ///
+  /// 순서는 UI 계약이 정한 [Bands.priority] 다 — 늘어놓는 순서와 다르다. 하나도
+  /// 없으면 여유로 둔다.
   Freshness _mostUrgent() {
-    const priority = [
-      Freshness.urgent,
-      Freshness.expired,
-      Freshness.soon,
-      Freshness.unknown,
-      Freshness.fresh,
-    ];
-    for (final grade in priority) {
+    for (final grade in Bands.priority) {
       if (_batches.any((b) => b.freshness == grade)) return grade;
     }
     return Freshness.fresh;

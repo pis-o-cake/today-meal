@@ -1,90 +1,184 @@
 /// 목업의 반복 부품.
 ///
-/// 흰 반투명 판·알약 칩·진행 단계 표시. 화면마다 `BoxDecoration` 을 다시 쓰면 값이
-/// 흩어져 판끼리 미묘하게 달라진다.
+/// 반투명 판·알약 칩·입력칸. 화면마다 `BoxDecoration` 을 다시 쓰면 값이 흩어져 판끼리
+/// 미묘하게 달라진다.
+///
+/// 색은 [Skin] 이 정한다. **글래스 테마에서만** 흐림과 안쪽 광택을 켠다 —
+/// `BackdropFilter` 는 비싸서 모든 테마에 걸면 목록이 버벅인다.
 library;
+
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../../core/design/skin.dart';
 import '../../core/design/tokens.dart';
+import '../../domain/model/inventory.dart';
 
-/// 배경 그라데이션 위에 떠 있는 흰 반투명 판.
+/// 판의 두께. 테마가 실제 색을 정한다.
+enum GlassWeight {
+  /// 배경이 많이 비친다. 아래 타원 유리면.
+  thin,
+
+  /// 기본. 알약 칩·탭 바.
+  base,
+
+  /// 본문이 올라가는 카드.
+  thick;
+
+  /// 이 두께의 실제 채움.
+  ///
+  /// 두께를 [Skin] 이 아니라 여기서 푸는 이유는, 두께가 **화면이 고르는 표현**이고
+  /// 색이 테마가 정하는 값이라 둘의 방향이 반대이기 때문이다.
+  ///
+  /// 글래스 테마에서는 `null` 이다 — 광택 그라데이션이 면을 대신하며, 단색과 함께
+  /// 주면 `BoxDecoration` 이 거부한다([Skin.fillOf]).
+  Color? of(Skin skin) => skin.fillOf(switch (this) {
+        GlassWeight.thin => skin.glassThin,
+        GlassWeight.base => skin.glass,
+        GlassWeight.thick => skin.glassThick,
+      });
+}
+
+/// 배경 위에 떠 있는 반투명 판.
 class GlassPanel extends StatelessWidget {
   const GlassPanel({
     required this.child,
     this.padding = const EdgeInsets.all(16),
     this.radius = Tokens.radiusCard,
-    this.solid = false,
-    this.shadow = Tokens.shadowCard,
+    this.weight = GlassWeight.base,
+    this.shadow,
     super.key,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
   final double radius;
+  final GlassWeight weight;
 
-  /// 본문이 올라가는 판은 조금 더 불투명하게 한다.
-  final bool solid;
-
-  final List<BoxShadow> shadow;
+  /// 그림자를 직접 줄 때. 없으면 테마의 카드 그림자를 쓴다.
+  final List<BoxShadow>? shadow;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
+  Widget build(BuildContext context) {
+    final skin = context.skin;
+    return Frosted(
+      radius: radius,
+      skin: skin,
+      shadow: shadow ?? skin.shadowCard,
+      child: DecoratedBox(
         decoration: BoxDecoration(
-          color: solid ? Tokens.glassSolid : Tokens.glass,
+          color: weight.of(skin),
           borderRadius: BorderRadius.circular(radius),
-          border: Border.all(color: Tokens.glassEdge),
-          boxShadow: shadow,
+          border: Border.all(color: skin.edge),
+          gradient: skin.sheen,
         ),
         child: Padding(padding: padding, child: child),
-      );
+      ),
+    );
+  }
 }
 
-/// 알약 모양 글라스. 상태 표시줄·하단 탭처럼 완전히 둥근 판에 쓴다.
+/// 알약 모양 판. 상태 표시줄·버튼처럼 완전히 둥근 판에 쓴다.
 class GlassPill extends StatelessWidget {
   const GlassPill({
     required this.child,
     this.padding = const EdgeInsets.symmetric(horizontal: 14),
-    this.shadow = Tokens.shadowRaised,
+    this.weight = GlassWeight.base,
+    this.shadow,
     super.key,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
-  final List<BoxShadow> shadow;
+  final GlassWeight weight;
+  final List<BoxShadow>? shadow;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
+  Widget build(BuildContext context) {
+    final skin = context.skin;
+    return Frosted(
+      shape: const StadiumBorder(),
+      skin: skin,
+      shadow: shadow ?? skin.shadowRaised,
+      child: DecoratedBox(
         decoration: ShapeDecoration(
-          color: Tokens.glass,
-          shape: StadiumBorder(side: BorderSide(color: Tokens.glassEdge)),
-          shadows: shadow,
+          color: weight.of(skin),
+          shape: StadiumBorder(side: BorderSide(color: skin.edge)),
+          gradient: skin.sheen,
         ),
         child: Padding(padding: padding, child: child),
-      );
+      ),
+    );
+  }
+}
+
+/// 유리 흐림과 그림자를 판 뒤에 깐다.
+///
+/// 흐림은 글래스 테마에서만 켠다. 그림자는 흐림 밖에 있어야 한다 — `BackdropFilter`
+/// 안에 두면 자기 그림자까지 흐려 테두리가 번진다.
+class Frosted extends StatelessWidget {
+  const Frosted({
+    required this.child,
+    required this.skin,
+    required this.shadow,
+    this.radius,
+    this.shape,
+    super.key,
+  });
+
+  final Widget child;
+  final Skin skin;
+  final List<BoxShadow> shadow;
+  final double? radius;
+  final ShapeBorder? shape;
+
+  @override
+  Widget build(BuildContext context) {
+    final border = shape ?? RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius ?? Tokens.radiusCard));
+    final body = skin.frosted
+        ? ClipPath(
+            clipper: ShapeBorderClipper(shape: border),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: child,
+            ),
+          )
+        : child;
+
+    return DecoratedBox(
+      decoration: ShapeDecoration(shape: border, shadows: shadow),
+      child: body,
+    );
+  }
 }
 
 /// 작은 정보 칩. 기한·보관 위치처럼 짧은 값에 쓴다.
 class InfoChip extends StatelessWidget {
   const InfoChip({
     required this.label,
-    this.background = const Color(0xFFEEF0F3),
-    this.foreground = const Color(0xFF4E5661),
+    this.background,
+    this.foreground,
     this.icon,
     super.key,
   });
 
   final String label;
-  final Color background;
-  final Color foreground;
+
+  /// 없으면 테마의 중립 칩 색을 쓴다.
+  final Color? background;
+  final Color? foreground;
   final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
+    final skin = context.skin;
     final icon = this.icon;
+    final fg = foreground ?? skin.inkMuted;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: background,
+        color: background ?? skin.chipNeutral,
         borderRadius: BorderRadius.circular(Tokens.radiusChip),
       ),
       child: Padding(
@@ -93,15 +187,19 @@ class InfoChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 13, color: foreground),
+              Icon(icon, size: 13, color: fg),
               const SizedBox(width: 4),
             ],
-            Text(
-              label,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelMedium
-                  ?.copyWith(color: foreground, fontWeight: FontWeight.w700),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelMedium
+                    ?.copyWith(color: fg, fontWeight: FontWeight.w700),
+              ),
             ),
           ],
         ),
@@ -117,13 +215,17 @@ class FloatingChip extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
+  Widget build(BuildContext context) {
+    final skin = context.skin;
+    return Frosted(
+      shape: const StadiumBorder(),
+      skin: skin,
+      shadow: [skin.shade(0.05, 8, 2)],
+      child: DecoratedBox(
         decoration: ShapeDecoration(
-          color: const Color(0xB8FFFFFF),
-          shape: StadiumBorder(side: BorderSide(color: Tokens.glassEdge)),
-          shadows: const [
-            BoxShadow(color: Color(0x0D141923), blurRadius: 8, offset: Offset(0, 2)),
-          ],
+          color: GlassWeight.base.of(skin),
+          shape: StadiumBorder(side: BorderSide(color: skin.edge)),
+          gradient: skin.sheen,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
@@ -132,75 +234,111 @@ class FloatingChip extends StatelessWidget {
             style: Theme.of(context)
                 .textTheme
                 .bodyMedium
-                ?.copyWith(color: Tokens.inkMuted, fontWeight: FontWeight.w600),
+                ?.copyWith(color: skin.inkMuted, fontWeight: FontWeight.w600),
           ),
         ),
-      );
+      ),
+    );
+  }
 }
 
-/// 듣기 → 확인 → 반영 진행 표시.
+/// 계정 화면의 입력칸.
 ///
-/// 되묻기 흐름에서 지금 어디인지 알려준다. 음성만으로는 진행을 알 수 없어 화면에 남긴다.
-class StepTrail extends StatelessWidget {
-  const StepTrail({required this.labels, required this.current, super.key});
+/// 오류는 칸 **아래**가 아니라 옆에 붙는다 — UI 계약대로 어떤 칸이 틀렸는지 바로
+/// 보여야 한다. 비밀번호는 로그로 남기지 않는다.
+class GlassField extends StatelessWidget {
+  const GlassField({
+    required this.label,
+    required this.controller,
+    this.hint,
+    this.error,
+    this.obscure = false,
+    this.keyboardType,
+    this.autofillHints,
+    this.trailing,
+    this.onChanged,
+    this.onSubmitted,
+    super.key,
+  });
 
-  final List<String> labels;
-
-  /// 지금 단계의 인덱스. 앞 단계는 완료 표시가 붙는다.
-  final int current;
+  final String label;
+  final TextEditingController controller;
+  final String? hint;
+  final String? error;
+  final bool obscure;
+  final TextInputType? keyboardType;
+  final Iterable<String>? autofillHints;
+  final Widget? trailing;
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
 
   @override
   Widget build(BuildContext context) {
+    final skin = context.skin;
     final text = Theme.of(context).textTheme;
-    return GlassPill(
-      padding: const EdgeInsets.all(4),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final (index, label) in labels.indexed)
-            Padding(
-              padding: EdgeInsets.only(right: index == labels.length - 1 ? 0 : 4),
-              child: _step(text, label, index),
-            ),
-        ],
-      ),
-    );
-  }
+    final invalid = error != null && error!.isNotEmpty;
+    final danger = skin.band(Freshness.urgent).accent;
 
-  Widget _step(TextTheme text, String label, int index) {
-    final done = index < current;
-    final now = index == current;
-    return DecoratedBox(
-      decoration: ShapeDecoration(
-        color: now ? Tokens.ink : Colors.transparent,
-        shape: const StadiumBorder(),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: now ? 14 : 12),
-        child: SizedBox(
-          height: 34,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (done) ...[
-                const Icon(Icons.check_rounded, size: 14, color: Color(0xFF1B7F43)),
-                const SizedBox(width: 4),
-              ],
-              Text(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 2),
+              child: Text(
                 label,
-                style: text.labelMedium?.copyWith(
-                  color: now
-                      ? Colors.white
-                      : done
-                          ? const Color(0xFF1B7F43)
-                          : Tokens.inkFaint,
-                  fontWeight: now || done ? FontWeight.w700 : FontWeight.w600,
+                style: text.labelMedium
+                    ?.copyWith(color: skin.inkMuted, fontWeight: FontWeight.w700),
+              ),
+            ),
+            if (invalid) ...[
+              const Spacer(),
+              Flexible(
+                child: Text(
+                  error!,
+                  textAlign: TextAlign.right,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.labelMedium?.copyWith(color: danger),
                 ),
               ),
             ],
-          ),
+          ],
         ),
-      ),
+        const SizedBox(height: 6),
+        Stack(
+          children: [
+            TextField(
+              controller: controller,
+              obscureText: obscure,
+              keyboardType: keyboardType,
+              autofillHints: autofillHints,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              style: text.bodyLarge?.copyWith(fontSize: 16, color: skin.ink),
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: text.bodyLarge?.copyWith(fontSize: 16, color: skin.inkDim),
+                filled: true,
+                fillColor: skin.field,
+                isDense: true,
+                contentPadding: EdgeInsets.only(
+                    left: 16, right: trailing == null ? 16 : 52, top: 15, bottom: 15),
+                border: _border(skin.edge),
+                enabledBorder: _border(invalid ? danger : skin.edge),
+                focusedBorder: _border(invalid ? danger : skin.primary, width: 1.6),
+              ),
+            ),
+            if (trailing != null)
+              Positioned(right: 3, top: 3, bottom: 3, child: trailing!),
+          ],
+        ),
+      ],
     );
   }
+
+  OutlineInputBorder _border(Color color, {double width = 1}) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(Tokens.radiusField),
+        borderSide: BorderSide(color: color, width: width),
+      );
 }

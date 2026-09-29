@@ -10,6 +10,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../core/design/motion.dart';
+
 class BreathingDot extends StatefulWidget {
   const BreathingDot({
     required this.color,
@@ -39,15 +41,28 @@ class _BreathingDotState extends State<BreathingDot>
       vsync: this,
       duration: const Duration(milliseconds: 2600),
     );
-    if (widget.alive) _breath.repeat();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _sync();
   }
 
   @override
   void didUpdateWidget(BreathingDot old) {
     super.didUpdateWidget(old);
-    if (widget.alive && !_breath.isAnimating) {
+    _sync();
+  }
+
+  /// 숨쉬어야 하는지 다시 판정한다.
+  ///
+  /// 멈춘 상태와 모션 감소를 같게 다룬다 — 둘 다 **가만히 있는 점**으로 그린다.
+  void _sync() {
+    final move = widget.alive && !context.reduceMotion;
+    if (move && !_breath.isAnimating) {
       _breath.repeat();
-    } else if (!widget.alive && _breath.isAnimating) {
+    } else if (!move && _breath.isAnimating) {
       _breath.stop();
       _breath.value = 0;
     }
@@ -65,7 +80,7 @@ class _BreathingDotState extends State<BreathingDot>
         builder: (context, _) {
           // 들숨이 빠르고 날숨이 느리다. 정현파 하나만 쓰면 기계적인 박자가 된다.
           final t = _breath.value;
-          final wave = widget.alive
+          final wave = _breath.isAnimating
               ? (math.sin(t * math.pi * 2 - math.pi / 2) + 1) / 2
               : 0.4;
           final halo = 3 + 3.5 * wave;

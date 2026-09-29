@@ -32,9 +32,14 @@ dependencies:
 
   # 설정과 유틸
   flutter_dotenv: ^5.2.1
+  # 화면 테마·계정·음성 설정을 기기에 남긴다. 서버 설정 API 가 붙기 전까지의 정본이다.
+  shared_preferences: ^2.5.5
   uuid: ^4.5.1
   intl: ^0.20.2
   logger: ^2.5.0
+
+  # 기기에 저장하는 계정의 비밀번호를 해시로만 남긴다. 원문은 저장하지 않는다.
+  crypto: ^3.0.7
 
   # 화면을 켜 둔 상태로 유지한다. 조리 모드에서만 켠다.
   wakelock_plus: ^1.2.10

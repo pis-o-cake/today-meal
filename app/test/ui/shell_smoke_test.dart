@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:today_meal/core/design/skin.dart';
 import 'package:today_meal/core/design/tokens.dart';
 import 'package:today_meal/domain/model/change_record.dart';
 import 'package:today_meal/domain/model/inventory.dart';
@@ -36,13 +37,14 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        theme: buildTheme(),
+        theme: buildTheme(Skins.pastel),
         home: ChangeNotifierProvider.value(
           value: home,
           child: Scaffold(
             body: HomeScreen(
               onOpenFridge: () {},
               onOpenMenu: (_) {},
+              showVoiceBar: false,
             ),
           ),
         ),
@@ -52,10 +54,10 @@ void main() {
 
     // 고르지 않으면 가장 급한 등급이 잡힌다.
     expect(home.selected, Freshness.urgent);
-    expect(find.text('급함'), findsOneWidget);
-    expect(find.text('오늘 안에 쓰세요'), findsNothing,
+    expect(find.text('얼마 안 남았어요'), findsOneWidget);
+    expect(find.text('하루이틀 안에 쓰면 좋아요'), findsNothing,
         reason: '등급 힌트는 개수와 한 줄로 합쳐 나온다');
-    expect(find.textContaining('오늘 안에 쓰세요'), findsOneWidget);
+    expect(find.textContaining('하루이틀 안에 쓰면 좋아요'), findsOneWidget);
 
     // 고른 등급의 재료만 칩으로 나온다. 다른 등급은 아치의 배지로만 센다.
     // 단위는 한국어 표기로 나와야 한다 — 'mo' 가 그대로 보이면 안 된다.
@@ -72,11 +74,15 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        theme: buildTheme(),
+        theme: buildTheme(Skins.pastel),
         home: ChangeNotifierProvider.value(
           value: home,
           child: Scaffold(
-            body: HomeScreen(onOpenFridge: () {}, onOpenMenu: (_) {}),
+            body: HomeScreen(
+              onOpenFridge: () {},
+              onOpenMenu: (_) {},
+              showVoiceBar: false,
+            ),
           ),
         ),
       ),
@@ -86,7 +92,7 @@ void main() {
     home.select(Freshness.soon);
     await tester.pumpAndSettle();
 
-    expect(find.text('챙길 것'), findsOneWidget);
+    expect(find.text('며칠 남았어요'), findsOneWidget);
     expect(find.text('대파 · 1단 · D-2'), findsOneWidget);
     expect(find.text('두부 · 2모 · D-1'), findsNothing);
   });
@@ -98,11 +104,15 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        theme: buildTheme(),
+        theme: buildTheme(Skins.pastel),
         home: ChangeNotifierProvider.value(
           value: home,
           child: Scaffold(
-            body: HomeScreen(onOpenFridge: () {}, onOpenMenu: (_) {}),
+            body: HomeScreen(
+              onOpenFridge: () {},
+              onOpenMenu: (_) {},
+              showVoiceBar: false,
+            ),
           ),
         ),
       ),
@@ -110,7 +120,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('서버에 연결할 수 없어요'), findsOneWidget);
-    expect(find.text('여유'), findsNothing);
+    expect(find.text('넉넉해요'), findsNothing);
     expect(find.text('다시 시도'), findsOneWidget);
   });
 

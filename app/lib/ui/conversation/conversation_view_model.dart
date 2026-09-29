@@ -5,7 +5,6 @@ import '../../core/voice/voice_ports.dart';
 import '../../core/voice/voice_session_manager.dart';
 import '../../core/voice/voice_state.dart';
 import '../../domain/repository/repositories.dart';
-import '../widgets/ingredient_graph.dart';
 
 /// 대화 오버레이의 상태.
 ///
@@ -32,6 +31,7 @@ class ConversationViewModel extends ChangeNotifier {
   double _level = 0;
   CommandOutcome? _lastOutcome;
   String? _lastUtterance;
+  bool _undoing = false;
 
   VoiceState get state => _state;
 
@@ -40,27 +40,17 @@ class ConversationViewModel extends ChangeNotifier {
   CommandOutcome? get lastOutcome => _lastOutcome;
   String? get lastUtterance => _lastUtterance;
 
+  /// 되돌리는 중인지. 두 번 눌러 두 번 되돌리면 안 된다.
+  bool get undoing => _undoing;
+
   /// 되돌릴 것이 있는지. 조회에는 되돌릴 것이 없다.
   bool get canUndo => _lastOutcome?.undoToken != null;
 
-  /// 방금 말에서 알아들은 재료 이름.
+  /// 서버가 확인한 변경.
   ///
-  /// 듣는 중 화면에서 강조해 **무엇으로 들었는지** 보여준다. 잘못 들었으면 사용자가
-  /// 말을 끝내기 전에 안다.
-  ///
-  /// 서버가 재료를 가려낸 뒤에는 그 결과를 쓰고, 그 전에는 화면에 아는 재료 이름으로
-  /// 중간 전사를 훑는다. **없는 재료를 지어내지 않는다.**
-  List<String> get recognizedIngredients {
-    final applied = _lastOutcome?.changes.map((c) => c.name).toSet();
-    if (applied != null && applied.isNotEmpty) return applied.toList(growable: false);
-
-    final said = _lastUtterance;
-    if (said == null || said.isEmpty) return const [];
-    return [
-      for (final name in knownIngredientNames)
-        if (said.contains(name)) name,
-    ];
-  }
+  /// 결과 화면과 확인 질문 화면이 이 목록으로 "무엇이 바뀌었는지" 를 그린다. **서버가
+  /// 준 것만 담는다** — 비어 있으면 화면은 카드를 그리지 않는다.
+  List<CommandChange> get appliedChanges => _lastOutcome?.changes ?? const [];
 
   void _subscribe() {
     // 호출어 감지를 세션 시작으로 잇는다. 감지기는 세션 매니저가 다룬다.
@@ -91,6 +81,8 @@ class ConversationViewModel extends ChangeNotifier {
   /// 막을 수 없다.
   Future<VoiceTurnResult> _handle(String utterance) async {
     final commandId = _uuid.v4();
+    // 새 명령이 시작되면 앞 결과를 버린다. 남겨 두면 지난 변경이 이번 결과로 읽힌다.
+    _lastOutcome = null;
     try {
       final outcome = await _command.interpret(
         commandId: commandId,
@@ -109,15 +101,22 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   /// 직전 변경 묶음을 되돌린다.
+  ///
+  /// 되돌리기도 하나의 명령이라 새 결과가 온다. 실패하면 **기존 결과를 그대로 두고**
+  /// 성공으로 바꾸지 않는다.
   Future<void> undo() async {
     final token = _lastOutcome?.undoToken;
-    if (token == null) return;
+    if (token == null || _undoing) return;
+    _undoing = true;
+    notifyListeners();
     try {
       _lastOutcome = await _command.undo(token);
     } catch (error) {
       debugPrint('undo failed: $error');
+    } finally {
+      _undoing = false;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   /// 전경 복귀. 웨이크워드가 전경 한정이라 이 호출이 감지를 켠다.

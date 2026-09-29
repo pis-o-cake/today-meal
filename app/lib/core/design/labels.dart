@@ -2,14 +2,13 @@ import '../../domain/model/change_record.dart';
 import '../../domain/model/inventory.dart';
 import '../../domain/model/menu.dart';
 import '../l10n/strings.dart';
-import 'package:flutter/material.dart';
+import '../settings/app_settings.dart';
+import 'skin.dart';
 
-import 'band.dart';
-
-/// 도메인 값을 화면 문구와 색으로 옮긴다.
+/// 도메인 값을 화면 문구로 옮긴다.
 ///
-/// 위젯마다 `switch` 를 다시 쓰지 않도록 여기 한 번만 둔다. **색만으로 상태를 구분하지
-/// 않으므로** 색과 문구를 항상 함께 돌려준다.
+/// 위젯마다 `switch` 를 다시 쓰지 않도록 여기 한 번만 둔다. **색은 여기 없다** — 테마
+/// 4종이 같은 등급을 다른 색으로 그리므로 색은 [Skin] 이 갖는다.
 abstract final class Labels {
   static String freshness(Freshness grade) => switch (grade) {
         Freshness.expired => Strings.bandExpired,
@@ -27,17 +26,29 @@ abstract final class Labels {
         Freshness.unknown => Strings.bandUnknownHint,
       };
 
-  /// 등급의 강조색. [Bands] 가 정본이므로 여기서 값을 다시 적지 않는다.
-  static Color freshnessColor(Freshness grade) => Bands.of(grade).accent;
+  /// 메뉴 가용성이 기대는 등급.
+  ///
+  /// 색을 직접 돌려주지 않고 등급을 돌려준다 — 실제 색은 테마가 정한다.
+  static Freshness availabilityBand(MenuAvailability value) => switch (value) {
+        MenuAvailability.ready => Freshness.fresh,
+        MenuAvailability.needsCheck => Freshness.soon,
+        MenuAvailability.needsPurchase => Freshness.urgent,
+      };
 
-  /// 등급의 옅은 배경. 칩처럼 색 판이 필요한 곳에 쓴다.
-  static Color freshnessSurface(Freshness grade) => Bands.of(grade).bgEdge;
+  static String skinName(SkinName value) => switch (value) {
+        SkinName.pastel => Strings.myPageThemePastel,
+        SkinName.white => Strings.myPageThemeWhite,
+        SkinName.glass => Strings.myPageThemeGlass,
+        SkinName.dark => Strings.myPageThemeDark,
+      };
 
-  /// 메뉴 가용성 색. 바로 가능/확인 필요/재료 준비 순으로 신호를 낮춘다.
-  static Color availabilityColor(MenuAvailability value) => switch (value) {
-        MenuAvailability.ready => Bands.fresh.accent,
-        MenuAvailability.needsCheck => Bands.soon.accent,
-        MenuAvailability.needsPurchase => Bands.urgent.accent,
+  /// 계정을 만든 경로. 마이페이지가 **실제 경로**를 표시해야 한다.
+  static String provider(AccountProvider value) => switch (value) {
+        AccountProvider.email => Strings.myPageProviderEmail,
+        AccountProvider.kakao => Strings.myPageProviderKakao,
+        AccountProvider.google => Strings.myPageProviderGoogle,
+        AccountProvider.apple => Strings.myPageProviderApple,
+        AccountProvider.guest => Strings.myPageGuestKitchen,
       };
 
   /// 단위 기호를 한국어 표기로. 모르는 기호는 그대로 쓴다.
@@ -96,6 +107,19 @@ abstract final class Labels {
         MenuAvailability.ready => Strings.menuReady,
         MenuAvailability.needsCheck => Strings.menuNeedsCheck,
         MenuAvailability.needsPurchase => Strings.menuNeedsPurchase,
+      };
+
+  /// 명령이 만든 변경 한 줄의 동작. 이력과 같은 표를 쓴다.
+  static String changeAction(String action) => switch (action) {
+        'stock_in' || 'stocked_in' => Strings.historyStockIn,
+        'consume' => Strings.historyConsume,
+        'adjust' => Strings.historyAdjust,
+        'revert' => Strings.historyRevert,
+        'discard' => Strings.historyDiscard,
+        'move' || 'moved' => Strings.historyMove,
+        'split' || 'portioned' => Strings.historySplit,
+        'opened' => Strings.historyOpened,
+        _ => action,
       };
 
   static String historyAction(ChangeRecord record) => switch (record.action) {

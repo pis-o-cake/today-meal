@@ -13,9 +13,14 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../core/design/band.dart';
+import '../../core/design/skin.dart';
 import '../../core/design/tokens.dart';
+import '../../domain/model/inventory.dart';
 
 /// 캐릭터 한 마리.
+///
+/// 몸 색은 테마와 기분이 함께 정한다 — 같은 "얼마 안 남았어요" 가 파스텔에서는 살구색,
+/// 글래스에서는 탁한 주홍이다. 표정과 기울기·메모지는 기분만 따른다.
 class Mascot extends StatelessWidget {
   const Mascot({required this.mood, this.size = 164, this.energy = 0, super.key});
 
@@ -26,19 +31,41 @@ class Mascot extends StatelessWidget {
   final double energy;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        width: size,
-        height: size,
-        child: CustomPaint(painter: _MascotPainter(mood, energy)),
-      );
+  Widget build(BuildContext context) {
+    final palette = paletteOf(context.skin, mood);
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _MascotPainter(
+          mood: mood,
+          energy: energy,
+          body: palette.mascotBody,
+          deep: palette.mascotDeep,
+        ),
+      ),
+    );
+  }
+
+  /// 기분에 맞는 테마 배색.
+  ///
+  /// 신선도 다섯은 등급 색을, 음성 상태 셋과 인사는 그 상태의 색을 쓴다.
+  static BandPalette paletteOf(Skin skin, MascotMood mood) => switch (mood) {
+        MascotMood.expired => skin.band(Freshness.expired),
+        MascotMood.urgent => skin.band(Freshness.urgent),
+        MascotMood.soon => skin.band(Freshness.soon),
+        MascotMood.fresh => skin.band(Freshness.fresh),
+        MascotMood.unknown => skin.band(Freshness.unknown),
+        MascotMood.listening => skin.listening,
+        MascotMood.asking => skin.asking,
+        MascotMood.done => skin.done,
+        MascotMood.hello => skin.hello,
+      };
 }
 
-/// 기분별 몸 색과 기울기.
-class _Skin {
-  const _Skin(this.body, this.deep, this.cheek, {this.tilt = 0, this.note = ''});
-
-  final Color body;
-  final Color deep;
+/// 기분별 볼터치·기울기·메모지. 색과 달리 테마를 타지 않는다.
+class _Face {
+  const _Face(this.cheek, {this.tilt = 0, this.note = ''});
 
   /// 볼터치 불투명도. 0 이면 볼터치가 없다.
   final double cheek;
@@ -50,26 +77,30 @@ class _Skin {
   final String note;
 }
 
-const _skins = <MascotMood, _Skin>{
-  MascotMood.expired:
-      _Skin(Color(0xFFD5DAE1), Color(0xFF8C95A3), 0, tilt: -5),
-  MascotMood.urgent:
-      _Skin(Color(0xFFFFC2B2), Color(0xFFE8573A), 0.45, note: '!'),
-  MascotMood.soon: _Skin(Color(0xFFFFE0AA), Color(0xFFE39A2D), 0.45),
-  MascotMood.fresh: _Skin(Color(0xFFBDEBC9), Color(0xFF3FAE5E), 0.5),
-  MascotMood.done: _Skin(Color(0xFFBDEBC9), Color(0xFF3FAE5E), 0.55),
-  MascotMood.unknown:
-      _Skin(Color(0xFFD9DEE8), Color(0xFF8A94A8), 0.2, note: '?'),
-  MascotMood.listening: _Skin(Color(0xFFC7CFFF), Color(0xFF5A6BEA), 0.45),
-  MascotMood.asking:
-      _Skin(Color(0xFFFFE0AA), Color(0xFFE39A2D), 0.35, note: '?'),
+const _faces = <MascotMood, _Face>{
+  MascotMood.expired: _Face(0, tilt: -5),
+  MascotMood.urgent: _Face(0.45, note: '!'),
+  MascotMood.soon: _Face(0.45),
+  MascotMood.fresh: _Face(0.5),
+  MascotMood.done: _Face(0.55),
+  MascotMood.unknown: _Face(0.2, note: '?'),
+  MascotMood.listening: _Face(0.45),
+  MascotMood.asking: _Face(0.35, note: '?'),
+  MascotMood.hello: _Face(0.5),
 };
 
 class _MascotPainter extends CustomPainter {
-  _MascotPainter(this.mood, this.energy);
+  _MascotPainter({
+    required this.mood,
+    required this.energy,
+    required this.body,
+    required this.deep,
+  });
 
   final MascotMood mood;
   final double energy;
+  final Color body;
+  final Color deep;
 
   /// 목업의 좌표계. 이 값으로 그리고 마지막에 배율만 건다.
   static const _canvas = 200.0;
@@ -79,29 +110,29 @@ class _MascotPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.scale(size.width / _canvas);
-    final skin = _skins[mood] ?? _skins[MascotMood.urgent]!;
+    final face = _faces[mood] ?? _faces[MascotMood.urgent]!;
 
-    _shadow(canvas, skin);
+    _shadow(canvas);
     canvas.save();
     // 듣는 중에는 목소리에 맞춰 몸이 미세하게 기운다.
     final sway = mood == MascotMood.listening ? math.sin(energy * math.pi) * 2 : 0.0;
     canvas.translate(100, 184);
-    canvas.rotate((skin.tilt + sway) * math.pi / 180);
+    canvas.rotate((face.tilt + sway) * math.pi / 180);
     canvas.translate(-100, -184);
 
     _feet(canvas);
-    _body(canvas, skin);
+    _body(canvas);
     _gloss(canvas);
     _doors(canvas);
-    _memo(canvas, skin);
-    _cheeks(canvas, skin);
-    _face(canvas);
+    _memo(canvas, face);
+    _cheeks(canvas, face);
+    _expression(canvas);
     canvas.restore();
 
-    if (mood == MascotMood.listening) _waves(canvas, skin);
+    if (mood == MascotMood.listening) _waves(canvas);
   }
 
-  void _shadow(Canvas canvas, _Skin skin) {
+  void _shadow(Canvas canvas) {
     canvas.drawOval(
       Rect.fromCenter(center: const Offset(100, 190), width: 96, height: 12),
       Paint()..color = _outline.withValues(alpha: 0.12),
@@ -121,10 +152,10 @@ class _MascotPainter extends CustomPainter {
   }
 
   /// 냉장고 몸통.
-  void _body(Canvas canvas, _Skin skin) {
+  void _body(Canvas canvas) {
     final rect = RRect.fromRectAndRadius(
       Rect.fromLTWH(46, 24, 108, 156), const Radius.circular(32));
-    canvas.drawRRect(rect, Paint()..color = skin.body);
+    canvas.drawRRect(rect, Paint()..color = body);
     canvas.drawRRect(
       rect,
       Paint()
@@ -173,7 +204,7 @@ class _MascotPainter extends CustomPainter {
   }
 
   /// 문에 붙은 메모지. 급한 것과 되물을 것이 여기 적힌다.
-  void _memo(Canvas canvas, _Skin skin) {
+  void _memo(Canvas canvas, _Face face) {
     canvas.save();
     canvas.translate(80, 48);
     canvas.rotate(-8 * math.pi / 180);
@@ -190,7 +221,7 @@ class _MascotPainter extends CustomPainter {
         ..strokeWidth = 3,
     );
     // 자석 압정.
-    canvas.drawCircle(const Offset(80, 36), 3.5, Paint()..color = skin.deep);
+    canvas.drawCircle(const Offset(80, 36), 3.5, Paint()..color = deep);
     canvas.drawCircle(
       const Offset(80, 36),
       3.5,
@@ -200,7 +231,7 @@ class _MascotPainter extends CustomPainter {
         ..strokeWidth = 2,
     );
 
-    if (skin.note.isEmpty) {
+    if (face.note.isEmpty) {
       final line = Paint()
         ..color = _outline
         ..style = PaintingStyle.stroke
@@ -211,7 +242,7 @@ class _MascotPainter extends CustomPainter {
     } else {
       final painter = TextPainter(
         text: TextSpan(
-          text: skin.note,
+          text: face.note,
           style: const TextStyle(
             color: _outline,
             fontSize: 17,
@@ -226,15 +257,15 @@ class _MascotPainter extends CustomPainter {
     canvas.restore();
   }
 
-  void _cheeks(Canvas canvas, _Skin skin) {
-    if (skin.cheek <= 0) return;
+  void _cheeks(Canvas canvas, _Face face) {
+    if (face.cheek <= 0) return;
     final paint = Paint()
-      ..color = const Color(0xFFFF8A98).withValues(alpha: skin.cheek);
+      ..color = Tokens.blush.withValues(alpha: face.cheek);
     canvas.drawCircle(const Offset(72, 134), 7, paint);
     canvas.drawCircle(const Offset(124, 134), 7, paint);
   }
 
-  void _face(Canvas canvas) {
+  void _expression(Canvas canvas) {
     final fill = Paint()..color = _outline;
     final stroke = Paint()
       ..color = _outline
@@ -249,8 +280,10 @@ class _MascotPainter extends CustomPainter {
     final shine = Paint()..color = Colors.white;
 
     switch (mood) {
+      // 웃는 눈과 웃는 입. 여유·완료·인사가 같은 표정을 쓴다.
       case MascotMood.fresh:
       case MascotMood.done:
+      case MascotMood.hello:
         canvas.drawPath(_arc(77, 121, 91, 121, -9), stroke);
         canvas.drawPath(_arc(105, 121, 119, 121, -9), stroke);
         canvas.drawPath(_arc(91, 135, 105, 135, 8), stroke);
@@ -301,9 +334,9 @@ class _MascotPainter extends CustomPainter {
   }
 
   /// 듣는 중의 음파. 목소리가 크면 함께 커진다.
-  void _waves(Canvas canvas, _Skin skin) {
+  void _waves(Canvas canvas) {
     final paint = Paint()
-      ..color = skin.deep.withValues(alpha: 0.5 + 0.5 * energy)
+      ..color = deep.withValues(alpha: (0.5 + 0.5 * energy).clamp(0.0, 1.0))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4.5
       ..strokeCap = StrokeCap.round;
@@ -317,7 +350,7 @@ class _MascotPainter extends CustomPainter {
       Path()
         ..moveTo(173, 33)
         ..quadraticBezierTo(185, 49, 173, 65),
-      paint..color = skin.deep.withValues(alpha: 0.25 + 0.6 * energy),
+      paint..color = deep.withValues(alpha: (0.25 + 0.6 * energy).clamp(0.0, 1.0)),
     );
   }
 
@@ -335,5 +368,8 @@ class _MascotPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_MascotPainter old) =>
-      old.mood != mood || old.energy != energy;
+      old.mood != mood ||
+      old.energy != energy ||
+      old.body != body ||
+      old.deep != deep;
 }

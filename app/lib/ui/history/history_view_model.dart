@@ -17,10 +17,17 @@ class HistoryViewModel extends ChangeNotifier {
   List<ChangeRecord> _records = const [];
 
   bool _undoing = false;
+  Object? _undoError;
 
   bool get loading => _loading;
   Object? get error => _error;
   List<ChangeRecord> get records => _records;
+
+  /// 되돌리기가 실패한 이유. 한 번 보여주고 [clearUndoError] 로 지운다.
+  ///
+  /// 읽기 실패([error])와 구분한다 — 되돌리기가 실패해도 이미 읽은 목록은 그대로
+  /// 맞는 값이다. 목록을 지우면 사용자가 무엇을 잃었는지 알 수 없다.
+  Object? get undoError => _undoError;
 
   /// 되돌리는 중인지. 두 번 눌러 두 번 되돌리면 안 된다.
   bool get undoing => _undoing;
@@ -33,16 +40,24 @@ class HistoryViewModel extends ChangeNotifier {
     final token = record.commandId;
     if (token == null || _undoing) return;
     _undoing = true;
+    _undoError = null;
     notifyListeners();
     try {
       await _command.undo(token);
       await load();
     } catch (error) {
-      _error = error;
+      // 목록은 그대로 둔다. 성공으로 바꾸지도, 화면을 비우지도 않는다.
+      _undoError = error;
     } finally {
       _undoing = false;
       notifyListeners();
     }
+  }
+
+  void clearUndoError() {
+    if (_undoError == null) return;
+    _undoError = null;
+    notifyListeners();
   }
 
   Future<void> load() async {

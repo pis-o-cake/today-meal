@@ -1,3 +1,12 @@
+/// 탭 셸.
+///
+/// 목업의 탭 넷이다 — 뭐 먹지? · 냉장고 · 기록 · 마이페이지. 태블릿 폭에서는 하단 바 대신
+/// 좌측 레일을 쓴다. **화면을 두 벌 만들지 않고** 같은 화면을 다른 내비에 꽂는다.
+///
+/// 대화는 탭이 아니라 오버레이다. 호출어는 어느 탭에서나 받으므로 탭 하나를 차지하면
+/// 돌아갈 곳을 잃는다.
+library;
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -14,19 +23,19 @@ import 'history/history_screen.dart';
 import 'history/history_view_model.dart';
 import 'home/home_screen.dart';
 import 'home/home_view_model.dart';
-import 'home/voice_status_bar.dart';
 import 'menu/menu_detail_screen.dart';
+import 'mypage/mypage_screen.dart';
 import 'widgets/glass_nav.dart';
+import 'widgets/nav_icons.dart';
 
-/// 탭 셸.
-///
-/// 하단 탭 셋으로 나눈다 — 오늘 · 냉장고 · 기록. 태블릿 폭에서는 하단 바 대신 좌측 레일을
-/// 쓴다. **화면을 두 벌 만들지 않고** 같은 화면을 다른 내비에 꽂는다.
-///
-/// 대화는 탭이 아니라 오버레이다. 호출어는 어느 탭에서나 받으므로 탭 하나를 차지하면
-/// 돌아갈 곳을 잃는다.
 class AppShell extends StatefulWidget {
-  const AppShell({super.key});
+  const AppShell({required this.onSignIn, required this.onSignOut, super.key});
+
+  /// 게스트가 마이페이지에서 로그인으로 간다.
+  final VoidCallback onSignIn;
+
+  /// 로그아웃.
+  final VoidCallback onSignOut;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -34,6 +43,14 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   int _index = 0;
+
+  /// 탭 정의. 첫 탭 아이콘은 목업 TabIcons 의 A 수저다.
+  static const _items = [
+    NavItem(label: Strings.tabToday, glyph: NavGlyph.meal),
+    NavItem(label: Strings.tabFridge, glyph: NavGlyph.fridge),
+    NavItem(label: Strings.tabHistory, glyph: NavGlyph.history),
+    NavItem(label: Strings.tabMyPage, glyph: NavGlyph.profile),
+  ];
 
   @override
   void initState() {
@@ -69,7 +86,10 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
 
   void _select(int next) {
     setState(() => _index = next);
+    // 탭을 열 때 그 화면의 데이터를 다시 읽는다. 말로 바꾼 재고가 바로 보여야 한다.
     switch (next) {
+      case 0:
+        context.read<HomeViewModel>().load();
       case 1:
         context.read<FridgeViewModel>().load();
       case 2:
@@ -84,15 +104,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       HomeScreen(
         onOpenFridge: () => _select(1),
         onOpenMenu: _openMenu,
-        voiceBar: const VoiceStatusBar(),
+        // 오늘 화면은 아래 유리면이 탭을 품는다. 판을 두 겹 얹지 않는다.
+        tabs: useRail ? const [] : _items,
+        currentTab: _index,
+        onTab: _select,
       ),
-      const FridgeScreen(badge: VoiceBadgeSlot()),
-      const HistoryScreen(badge: VoiceBadgeSlot()),
-    ];
-    const items = [
-      NavItem(label: Strings.tabToday, icon: Icons.ramen_dining_rounded),
-      NavItem(label: Strings.tabFridge, icon: Icons.kitchen_rounded),
-      NavItem(label: Strings.tabHistory, icon: Icons.schedule_rounded),
+      const FridgeScreen(),
+      const HistoryScreen(),
+      MyPageScreen(onSignIn: widget.onSignIn, onSignOut: widget.onSignOut),
     ];
 
     // IMPORTANT: 오버레이가 Scaffold 밖에 있어야 하단 탭까지 덮는다. 안에 두면
@@ -106,7 +125,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               if (useRail)
                 SafeArea(
                   child: GlassNavRail(
-                    items: items,
+                    items: _items,
                     current: _index,
                     onSelect: _select,
                   ),
@@ -114,15 +133,13 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               Expanded(child: pages[_index]),
             ],
           ),
-          bottomNavigationBar: useRail
+          // 오늘 화면은 자기 유리면에 탭을 얹으므로 여기서 또 그리지 않는다.
+          bottomNavigationBar: useRail || _index == 0
               ? null
-              : SafeArea(
-                  top: false,
-                  child: GlassNavBar(
-                    items: items,
-                    current: _index,
-                    onSelect: _select,
-                  ),
+              : GlassNavBar(
+                  items: _items,
+                  current: _index,
+                  onSelect: _select,
                 ),
         ),
         // 호출어는 어느 탭에서나 받는다. 화면 전체를 덮는다.
@@ -139,5 +156,4 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       ),
     );
   }
-
 }

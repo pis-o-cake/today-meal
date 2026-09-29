@@ -4,47 +4,75 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'core/config.dart';
+import 'core/design/skin.dart';
 import 'core/design/tokens.dart';
 import 'core/di.dart';
 import 'core/l10n/strings.dart';
+import 'core/settings/app_settings.dart';
+import 'core/settings/local_accounts.dart';
+import 'ui/app_root.dart';
 import 'ui/conversation/conversation_view_model.dart';
 import 'ui/fridge/fridge_view_model.dart';
 import 'ui/history/history_view_model.dart';
 import 'ui/home/home_view_model.dart';
-import 'ui/shell.dart';
 
 /// 앱 진입점.
 ///
-/// UI 는 계속 바뀔 것을 전제로 구조만 잡았다. 데이터 흐름과 상태 전이가 확정된 자리에
-/// 화면을 갈아 끼운다.
+/// 화면 테마는 첫 프레임 전에 읽는다 — 나중에 읽으면 기본 테마로 한 번 그렸다가 바뀌어
+/// 화면이 번쩍인다.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // `.env` 가 없어도 앱이 떠야 한다. 없으면 설정이 비어 있다고 화면이 말한다.
   await dotenv.load(fileName: '.env', isOptional: true);
   await initializeDateFormatting('ko');
   await registerDependencies(AppConfig.fromEnv());
-  runApp(const TodayMealApp());
+
+  final settings = await AppSettings.load();
+  final accounts = await LocalAccounts.open();
+  runApp(TodayMealApp(settings: settings, accounts: accounts));
 }
 
 class TodayMealApp extends StatelessWidget {
-  const TodayMealApp({super.key});
+  const TodayMealApp({
+    required this.settings,
+    required this.accounts,
+    super.key,
+  });
+
+  final AppSettings settings;
+  final LocalAccounts accounts;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: settings),
         ChangeNotifierProvider.value(value: di<HomeViewModel>()),
         ChangeNotifierProvider.value(value: di<FridgeViewModel>()),
         ChangeNotifierProvider.value(value: di<HistoryViewModel>()),
         ChangeNotifierProvider.value(value: di<ConversationViewModel>()),
       ],
-      child: MaterialApp(
-        title: Strings.appName,
-        debugShowCheckedModeBanner: false,
-        theme: buildTheme(),
-        darkTheme: buildTheme(),
-        themeMode: ThemeMode.dark,
-        home: const AppShell(),
+      // 테마가 바뀌면 `MaterialApp` 까지 다시 만든다. 글자색과 배경이 한 프레임에
+      // 함께 바뀌어야 중간 상태가 보이지 않는다.
+      child: Consumer<AppSettings>(
+        builder: (context, settings, _) {
+          final skin = Skins.of(settings.skin);
+          return SkinScope(
+            skin: skin,
+            child: MaterialApp(
+              title: Strings.appName,
+              debugShowCheckedModeBanner: false,
+              theme: buildTheme(skin),
+              home: AppRoot(
+                accounts: accounts,
+                // 스플래시와 함께 재고만 미리 읽는다. 추천은 모델 호출이라 느려서
+                // 여기서 기다리면 스플래시가 몇 초씩 붙잡힌다 — 셸이 들어가며 읽는다.
+                prepare: () =>
+                    context.read<HomeViewModel>().load(withMenus: false),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

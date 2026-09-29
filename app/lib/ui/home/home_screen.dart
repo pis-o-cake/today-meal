@@ -1,7 +1,7 @@
-/// 오늘 화면.
+/// 오늘 화면 (UI-02).
 ///
-/// 목업 `mockup/canvas/Main.dc.html` 을 옮긴 것이다. 구조는 위에서 아래로
-/// 인사 → 대기 표시 → 캐릭터와 등급 → 주 행동 → 신선도 아치 순이다.
+/// 목업 `mockup/canvas/Main.dc.html` 을 옮긴 것이다. 위에서 아래로 날짜 → 인사 →
+/// 호출 상태 칩 → 캐릭터와 등급 → 주 행동 → 타원 유리면(얼굴 다섯 + 탭 넷) 순이다.
 ///
 /// **화면 배색이 고른 등급을 따라 바뀐다.** 목록을 훑는 화면이 아니라 색으로 상황을 읽는
 /// 화면이라서, 배경·강조색·캐릭터가 한 등급을 함께 가리킨다.
@@ -13,21 +13,26 @@ import 'package:provider/provider.dart';
 import '../../core/design/band.dart';
 import '../../core/design/breakpoints.dart';
 import '../../core/design/labels.dart';
-import '../../core/design/tokens.dart';
+import '../../core/design/skin.dart';
 import '../../core/l10n/strings.dart';
 import '../../domain/model/inventory.dart';
 import '../../domain/model/menu.dart';
-import '../widgets/freshness_arc.dart';
+import '../widgets/bottom_deck.dart';
 import '../widgets/glass.dart';
+import '../widgets/glass_nav.dart';
 import '../widgets/mascot.dart';
 import 'home_view_model.dart';
+import 'voice_status_bar.dart';
 
-/// 오늘 화면 본문. 하단 탭과 오버레이는 셸이 얹는다.
+/// 오늘 화면 본문. 대화 오버레이는 셸이 얹는다.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
     required this.onOpenFridge,
     required this.onOpenMenu,
-    this.voiceBar = const SizedBox.shrink(),
+    this.tabs = const [],
+    this.currentTab = 0,
+    this.onTab,
+    this.showVoiceBar = true,
     super.key,
   });
 
@@ -37,21 +42,28 @@ class HomeScreen extends StatefulWidget {
   /// 메뉴 상세를 연다.
   final void Function(MenuSuggestion suggestion) onOpenMenu;
 
-  /// 호출 대기 표시줄.
+  /// 아래 유리면에 함께 얹을 탭.
   ///
-  /// 음성 계층을 여기서 읽지 않고 셸이 [VoiceStatusBar] 를 꽂는다. 이 화면만 따로
-  /// 시험할 때 음성 스택을 세우지 않아도 되기 때문이다.
-  final Widget voiceBar;
+  /// 오늘 화면은 유리면 하나가 얼굴과 탭을 모두 품는다. 판을 두 겹 얹으면 화면 아래가
+  /// 두 층으로 나뉘어 답답하다.
+  final List<NavItem> tabs;
+  final int currentTab;
+  final ValueChanged<int>? onTab;
+
+  /// 호출 상태 칩을 그릴지.
+  ///
+  /// 음성 계층 없이 이 화면만 떼어 시험할 때 끈다. 앱에서는 늘 켜져 있다.
+  final bool showVoiceBar;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  /// 아치 궤도 위의 위치(칸 단위, 소수 포함).
+  /// 궤도 위의 위치(칸 단위, 소수 포함).
   ///
   /// 끄는 동안 화면 전체가 **손가락을 따라** 넘어가게 하는 값이다. 고른 등급만 보면
-  /// 손을 뗀 뒤에야 바뀌어 아치와 본문이 따로 논다.
+  /// 손을 뗀 뒤에야 바뀌어 유리면과 본문이 따로 논다.
   final _slide = ValueNotifier<double>(0);
   bool _primed = false;
 
@@ -76,6 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _body(BuildContext context, HomeViewModel home, double at) {
+    final skin = context.skin;
     final wide = !context.formFactor.isCompact;
 
     // 끄는 중이면 이웃 두 등급을 섞고, 아니면 고른 등급 그대로다.
@@ -83,39 +96,40 @@ class _HomeScreenState extends State<HomeScreen> {
     final high = at.ceil().clamp(0, Bands.ordered.length - 1);
     final blend = at - low;
     final palette = BandPalette.lerp(
-      Bands.of(Bands.ordered[low]),
-      Bands.of(Bands.ordered[high]),
+      skin.band(Bands.ordered[low]),
+      skin.band(Bands.ordered[high]),
       blend,
     );
     // 본문은 절반을 넘긴 쪽을 보여준다. 글자는 섞을 수 없다.
     final shown = Bands.ordered[blend < 0.5 ? low : high];
 
-    // 배경은 보간한 값을 바로 쓴다. 따로 애니메이션을 걸면 아치가 미끄러지는 동안
+    // 배경은 보간한 값을 바로 쓴다. 따로 애니메이션을 걸면 유리면이 미끄러지는 동안
     // 배경만 늦게 도착해 두 동작이 따로 논다.
     return DecoratedBox(
-      decoration: BoxDecoration(gradient: palette.background),
+      decoration: BoxDecoration(gradient: skin.background(palette)),
       child: SafeArea(
         child: Column(
           children: [
-            const _Greeting(),
-            const SizedBox(height: 10),
-            widget.voiceBar,
-            // IMPORTANT: 읽지 못한 상태를 "여유 0가지" 로 그리지 않는다. 그렇게 두면
+            _Greeting(skin: skin),
+            if (widget.showVoiceBar) ...[
+              const SizedBox(height: 10),
+              VoiceStatusBar(palette: palette),
+            ],
+            // IMPORTANT: 읽지 못한 상태를 "넉넉해요 0가지" 로 그리지 않는다. 그렇게 두면
             // 서버가 끊긴 것을 냉장고가 빈 것으로 읽는다.
             Expanded(
               child: switch ((home.loading, home.error)) {
                 (true, _) when home.counts.values.every((c) => c == 0) =>
-                  const _Pending(),
-                (_, final Object error?) => _Failed(
-                    error: error,
-                    onRetry: () => home.load(),
-                  ),
+                  _Pending(skin: skin),
+                (_, final Object error?) =>
+                  _Failed(error: error, skin: skin, onRetry: home.load),
                 _ => _Focus(
                     palette: palette,
                     grade: shown,
                     count: home.counts[shown] ?? 0,
                     batches: home.batchesOf(shown),
-                    maxMascot: wide ? 212 : 164,
+                    maxMascot: wide ? 212 : 172,
+                    skin: skin,
                   ),
               },
             ),
@@ -123,22 +137,19 @@ class _HomeScreenState extends State<HomeScreen> {
               _Action(
                 palette: palette,
                 grade: shown,
-                menu: home.menusFor(shown).firstOrNull,
-                otherCount: home.menusFor(shown).length <= 1
-                    ? 0
-                    : home.menusFor(shown).length - 1,
+                skin: skin,
+                menus: home.menusFor(shown),
                 onOpenFridge: widget.onOpenFridge,
                 onOpenMenu: widget.onOpenMenu,
               ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: FreshnessArc(
-                counts: home.counts,
-                selected: home.selected,
-                onSelect: home.select,
-                slide: _slide,
-                hint: Strings.arcHint,
-              ),
+            BottomDeck(
+              counts: home.counts,
+              selected: home.selected,
+              onSelect: home.select,
+              slide: _slide,
+              items: widget.tabs,
+              current: widget.currentTab,
+              onTab: widget.onTab ?? (_) {},
             ),
           ],
         ),
@@ -149,7 +160,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 /// 날짜와 인사.
 class _Greeting extends StatelessWidget {
-  const _Greeting();
+  const _Greeting({required this.skin});
+
+  final Skin skin;
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +174,7 @@ class _Greeting extends StatelessWidget {
           Text(
             _today(),
             style: text.bodyMedium
-                ?.copyWith(color: Tokens.inkFaint, fontWeight: FontWeight.w600),
+                ?.copyWith(color: skin.inkFaint, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           Text(Strings.todayGreeting, style: text.headlineMedium),
@@ -180,7 +193,9 @@ class _Greeting extends StatelessWidget {
 
 /// 아직 읽는 중. 캐릭터 자리를 비워두면 화면이 무너져 보인다.
 class _Pending extends StatelessWidget {
-  const _Pending();
+  const _Pending({required this.skin});
+
+  final Skin skin;
 
   @override
   Widget build(BuildContext context) => Center(
@@ -198,7 +213,7 @@ class _Pending extends StatelessWidget {
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge
-                  ?.copyWith(color: Tokens.inkFaint),
+                  ?.copyWith(color: skin.inkFaint),
             ),
           ],
         ),
@@ -207,9 +222,14 @@ class _Pending extends StatelessWidget {
 
 /// 읽지 못했다. **성공한 것처럼 그리지 않는다.**
 class _Failed extends StatelessWidget {
-  const _Failed({required this.error, required this.onRetry});
+  const _Failed({
+    required this.error,
+    required this.skin,
+    required this.onRetry,
+  });
 
   final Object error;
+  final Skin skin;
   final VoidCallback onRetry;
 
   @override
@@ -230,7 +250,7 @@ class _Failed extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: text.bodyMedium?.copyWith(color: Tokens.inkFaint),
+              style: text.bodyMedium?.copyWith(color: skin.inkFaint),
             ),
             const SizedBox(height: 16),
             FilledButton.tonal(onPressed: onRetry, child: const Text(Strings.retry)),
@@ -249,6 +269,7 @@ class _Focus extends StatelessWidget {
     required this.count,
     required this.batches,
     required this.maxMascot,
+    required this.skin,
   });
 
   final BandPalette palette;
@@ -258,69 +279,68 @@ class _Focus extends StatelessWidget {
 
   /// 캐릭터의 최대 크기. 남은 높이가 모자라면 이보다 작아진다.
   final double maxMascot;
+  final Skin skin;
 
   /// 칩으로 보여줄 재료 수. 넘치면 접는다 — 여기서 목록을 다 읽게 하지 않는다.
   static const _chipLimit = 3;
+
+  /// 이 길이를 넘는 등급 이름은 한 줄에 들어가지 않아 한 단계 줄인다.
+  static const _longName = 7;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final shown = batches.take(_chipLimit).toList(growable: false);
     final hidden = batches.length - shown.length;
+    final name = Labels.freshness(grade);
 
     return LayoutBuilder(
       builder: (context, constraints) {
         // WARNING: 가로 모드와 작은 태블릿에서는 남은 높이가 캐릭터보다 작다. 고정 크기로
         // 두면 넘쳐 아래가 잘린다. 등급 이름과 칩이 먼저 보여야 하므로 캐릭터를 줄인다.
-        final mascot =
-            (constraints.maxHeight * 0.42).clamp(72.0, maxMascot);
-        return _body(context, text, shown, hidden, mascot);
-      },
-    );
-  }
-
-  Widget _body(
-    BuildContext context,
-    TextTheme text,
-    List<IngredientBatch> shown,
-    int hidden,
-    double mascot,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Mascot(mood: palette.mood, size: mascot),
-          const SizedBox(height: 6),
-          Text(
-            Labels.freshness(grade),
-            style: text.displayLarge?.copyWith(color: palette.accent),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '${Strings.bandCount(count)} · ${Labels.freshnessHint(grade)}',
-            textAlign: TextAlign.center,
-            style: text.bodyLarge
-                ?.copyWith(color: Tokens.inkFaint, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 14),
-          // 칩이 여러 줄로 늘어나도 아래를 밀지 않는다. 잘릴 때는 위쪽 줄부터 남긴다.
-          Flexible(
-            child: SingleChildScrollView(
-              child: Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  for (final batch in shown) FloatingChip(label: _describe(batch)),
-                  if (hidden > 0) FloatingChip(label: '+$hidden'),
-                ],
+        final mascot = (constraints.maxHeight * 0.42).clamp(72.0, maxMascot);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Mascot(mood: palette.mood, size: mascot),
+              const SizedBox(height: 6),
+              Text(
+                name,
+                maxLines: 1,
+                style: (name.length > _longName
+                        ? text.displayMedium
+                        : text.displayLarge)
+                    ?.copyWith(color: palette.accent),
               ),
-            ),
+              const SizedBox(height: 6),
+              Text(
+                '${Strings.bandCount(count)} · ${Labels.freshnessHint(grade)}',
+                textAlign: TextAlign.center,
+                style: text.bodyLarge
+                    ?.copyWith(color: skin.inkFaint, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 14),
+              // 칩이 여러 줄로 늘어나도 아래를 밀지 않는다. 잘릴 때는 위쪽 줄부터 남긴다.
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final batch in shown)
+                        FloatingChip(label: _describe(batch)),
+                      if (hidden > 0) FloatingChip(label: '+$hidden'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -340,84 +360,96 @@ class _Action extends StatelessWidget {
   const _Action({
     required this.palette,
     required this.grade,
-    required this.menu,
-    required this.otherCount,
+    required this.skin,
+    required this.menus,
     required this.onOpenFridge,
     required this.onOpenMenu,
   });
 
   final BandPalette palette;
   final Freshness grade;
-  final MenuSuggestion? menu;
-  final int otherCount;
+  final Skin skin;
+  final List<MenuSuggestion> menus;
   final VoidCallback onOpenFridge;
   final void Function(MenuSuggestion suggestion) onOpenMenu;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final menu = this.menu;
+    final menu = menus.firstOrNull;
+    final others = menus.length <= 1 ? 0 : menus.length - 1;
 
     // 기한이 지난 등급에서는 요리를 권하지 않는다. 확인하러 가는 것이 다음 할 일이다.
-    final (label, meta, action) = menu == null
-        ? (
-            grade == Freshness.unknown ? Strings.dateTell : Strings.fridgeOpen,
-            '',
-            onOpenFridge,
-          )
-        : (
-            menu.name,
-            _meta(menu),
-            () => onOpenMenu(menu),
-          );
+    // 날짜를 모르는 등급에서는 기한을 말해달라고 한다.
+    final (label, meta, action) = switch (menu) {
+      final MenuSuggestion pick => (pick.name, _meta(pick), () => onOpenMenu(pick)),
+      null when grade == Freshness.unknown =>
+        (Strings.dateTell, Strings.dateTellExample, onOpenFridge),
+      null => (Strings.fridgeOpen, '', onOpenFridge),
+    };
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Column(
         children: [
           Material(
-            color: Colors.white,
+            color: skin.raised,
             shape: const StadiumBorder(),
-            child: InkWell(
-              onTap: action,
-              customBorder: const StadiumBorder(),
-              child: Container(
-                constraints: const BoxConstraints(minHeight: 56),
-                padding: const EdgeInsets.only(left: 22, right: 20),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(label,
-                          style: text.titleMedium, overflow: TextOverflow.ellipsis),
-                    ),
-                    if (meta.isNotEmpty) ...[
-                      const SizedBox(width: 10),
-                      Text(
-                        meta,
-                        style: text.bodyMedium?.copyWith(
-                            color: Tokens.inkFaint, fontWeight: FontWeight.w500),
+            // 목업의 두 겹 그림자. 화면에서 가장 앞에 있어야 한다.
+            elevation: 0,
+            child: DecoratedBox(
+              decoration: ShapeDecoration(
+                shape: const StadiumBorder(),
+                shadows: skin.shadowAction,
+              ),
+              child: InkWell(
+                onTap: action,
+                customBorder: const StadiumBorder(),
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 56),
+                  padding: const EdgeInsets.only(left: 22, right: 20),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(label,
+                            style: text.titleMedium,
+                            overflow: TextOverflow.ellipsis),
                       ),
+                      if (meta.isNotEmpty) ...[
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            meta,
+                            overflow: TextOverflow.ellipsis,
+                            style: text.bodyMedium?.copyWith(
+                                color: skin.inkFaint,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(width: 10),
+                      Icon(Icons.arrow_forward_rounded,
+                          size: 20, color: palette.accent),
                     ],
-                    const SizedBox(width: 10),
-                    Icon(Icons.arrow_forward_rounded, size: 20, color: palette.accent),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
+          // 자리는 늘 지킨다. 메뉴 수에 따라 화면이 위아래로 흔들리지 않는다.
           SizedBox(
             height: 40,
-            child: otherCount > 0
-                ? TextButton(
+            child: others == 0
+                ? null
+                : TextButton(
                     onPressed: onOpenFridge,
                     child: Text(
-                      Strings.menuOthers(otherCount),
+                      Strings.menuOthers(others),
                       style: text.bodyMedium?.copyWith(
-                          color: Tokens.inkFaint, fontWeight: FontWeight.w600),
+                          color: skin.inkFaint, fontWeight: FontWeight.w600),
                     ),
-                  )
-                : null,
+                  ),
           ),
         ],
       ),
