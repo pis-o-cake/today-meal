@@ -118,6 +118,16 @@ abstract final class Labels {
         MenuAvailability.needsPurchase => Strings.menuNeedsPurchase,
       };
 
+  /// 재료가 갖춰졌는지. 한 줄 안에 이어 쓸 때의 표현이다.
+  ///
+  /// [availability] 와 뜻이 같고 말만 다르다. 칩은 좁아서 "지금 가능" 이면 되지만,
+  /// "2인분 · 약 15분 · 지금 가능" 은 무엇이 가능하다는 것인지 읽히지 않는다.
+  static String stock(MenuAvailability value) => switch (value) {
+        MenuAvailability.ready => Strings.menuStockReady,
+        MenuAvailability.needsCheck => Strings.menuStockCheck,
+        MenuAvailability.needsPurchase => Strings.menuStockShort,
+      };
+
   /// 명령이 만든 변경 한 줄의 동작. 이력과 같은 표를 쓴다.
   static String changeAction(String action) => switch (action) {
         'stock_in' || 'stocked_in' => Strings.historyStockIn,

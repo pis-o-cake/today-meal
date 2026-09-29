@@ -8,12 +8,15 @@
 /// 화면이라서, 배경·강조색·캐릭터가 한 등급을 함께 가리킨다.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/design/band.dart';
 import '../../core/design/breakpoints.dart';
 import '../../core/design/labels.dart';
+import '../../core/design/motion.dart';
 import '../../core/design/skin.dart';
 import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
@@ -412,18 +415,27 @@ class _Focus extends StatelessWidget {
   }
 
   /// 칩 한 줄. 이름에 잔량이나 기한 중 **아는 것만** 붙인다.
+  ///
+  /// 이름과 잔량은 붙여 쓰고("두부 2모") 기한은 가운뎃점으로 뗀다. 셋을 모두 점으로
+  /// 이으면 잔량이 별개 항목으로 읽힌다.
+  ///
+  /// 기한에는 종류를 함께 적는다 — 소비기한과 점검 알림은 같은 `D-1` 이어도 뜻이 다르다.
   String _describe(IngredientBatch batch) {
-    final parts = <String>[batch.name];
     final amount = Labels.amount(batch);
-    if (amount.isNotEmpty) parts.add(amount);
+    final head = amount.isEmpty ? batch.name : '${batch.name} $amount';
+
     final days = batch.daysLeft;
-    if (days != null) parts.add(Strings.daysLeft(days));
-    return parts.join(' · ');
+    if (days == null) return head;
+    final kind = batch.expiryKind;
+    final tail = kind == null
+        ? Strings.daysLeft(days)
+        : '${Labels.dateKind(kind)} ${Strings.daysLeft(days)}';
+    return '$head · $tail';
   }
 }
 
 /// 주 행동 버튼. 등급마다 다음에 할 일이 다르다.
-class _Action extends StatelessWidget {
+class _Action extends StatefulWidget {
   const _Action({
     required this.palette,
     required this.grade,
@@ -441,9 +453,65 @@ class _Action extends StatelessWidget {
   final void Function(MenuSuggestion suggestion) onOpenMenu;
 
   @override
+  State<_Action> createState() => _ActionState();
+}
+
+class _ActionState extends State<_Action> {
+  /// 지금 보여주는 메뉴의 자리.
+  int _at = 0;
+
+  Timer? _turn;
+  bool _armed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // IMPORTANT: MediaQuery 는 initState 에서 읽을 수 없다.
+    if (_armed) return;
+    _armed = true;
+    _rearm();
+  }
+
+  @override
+  void didUpdateWidget(_Action old) {
+    super.didUpdateWidget(old);
+    // 등급이 바뀌면 메뉴 목록도 바뀐다. 자리를 처음으로 되돌린다.
+    if (old.grade != widget.grade || old.menus.length != widget.menus.length) {
+      _at = 0;
+      _rearm();
+    }
+  }
+
+  /// 메뉴가 둘 이상일 때만 돌린다.
+  ///
+  /// 모션 감소에서는 돌리지 않는다 — 스스로 바뀌는 글자는 움직임이며, 읽는 중에 바뀌면
+  /// 따라잡을 수 없다. 그때는 첫 메뉴만 보이고 "다른 메뉴 N개" 로 나머지를 알린다.
+  void _rearm() {
+    _turn?.cancel();
+    if (widget.menus.length < 2 || context.reduceMotion) return;
+    _turn = Timer.periodic(Motion.menuTurn, (_) {
+      if (!mounted) return;
+      setState(() => _at = (_at + 1) % widget.menus.length);
+    });
+  }
+
+  @override
+  void dispose() {
+    _turn?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final menu = menus.firstOrNull;
+    final menus = widget.menus;
+    final palette = widget.palette;
+    final grade = widget.grade;
+    final skin = widget.skin;
+    final onOpenFridge = widget.onOpenFridge;
+    final onOpenMenu = widget.onOpenMenu;
+
+    final menu = menus.isEmpty ? null : menus[_at % menus.length];
     final others = menus.length <= 1 ? 0 : menus.length - 1;
 
     // 기한이 지난 등급에서는 요리를 권하지 않는다. 확인하러 가는 것이 다음 할 일이다.
@@ -460,16 +528,17 @@ class _Action extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Column(
         children: [
-          Material(
-            color: skin.raised,
-            shape: const StadiumBorder(),
-            // 목업의 두 겹 그림자. 화면에서 가장 앞에 있어야 한다.
-            elevation: 0,
-            child: DecoratedBox(
-              decoration: ShapeDecoration(
-                shape: const StadiumBorder(),
-                shadows: skin.shadowAction,
-              ),
+          // WARNING: 그림자는 면 **바깥**에 있어야 한다. Material 안에 두면 그림자가 흰
+          // 면 위에 덧칠돼 알약이 회색으로 보인다 — 실기기에서 겪은 결함이다.
+          DecoratedBox(
+            decoration: ShapeDecoration(
+              shape: const StadiumBorder(),
+              shadows: skin.shadowAction,
+            ),
+            child: Material(
+              color: skin.raised,
+              shape: const StadiumBorder(),
+              clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: action,
                 customBorder: const StadiumBorder(),
@@ -481,30 +550,38 @@ class _Action extends StatelessWidget {
                     children: [
                       _Badge(palette: palette, glyph: glyph),
                       const SizedBox(width: 12),
-                      // 이름과 곁들이는 값을 두 줄로 쌓는다. 한 줄에 이으면 긴 이름에서
-                      // 인분·시간이 먼저 잘려 정작 필요한 정보가 사라진다.
+                      // 메뉴가 여럿이면 여기만 휙 넘어간다. 알약과 배지는 제자리에
+                      // 있어야 무엇이 바뀐 것인지 읽힌다.
                       Flexible(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: text.titleMedium?.copyWith(height: 1.3),
-                            ),
-                            if (meta.isNotEmpty)
+                        child: AnimatedSwitcher(
+                          duration: Motion.menuFlip,
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          transitionBuilder: _flip,
+                          // 같은 메뉴를 다시 그릴 때는 넘기지 않는다.
+                          child: Column(
+                            key: ValueKey(label),
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
                               Text(
-                                meta,
+                                label,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: text.labelMedium?.copyWith(
-                                    height: 1.3,
-                                    color: skin.inkFaint,
-                                    fontWeight: FontWeight.w500),
+                                style: text.titleMedium?.copyWith(height: 1.3),
                               ),
-                          ],
+                              if (meta.isNotEmpty)
+                                Text(
+                                  meta,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: text.labelMedium?.copyWith(
+                                      height: 1.3,
+                                      color: skin.inkFaint,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -535,11 +612,29 @@ class _Action extends StatelessWidget {
     );
   }
 
-  /// 인분과 시간. 모르는 값은 빼고 아는 것만 잇는다.
+  /// 다음 메뉴가 아래에서 올라오고 이전 것은 위로 빠진다.
+  ///
+  /// 가로로 밀면 아치의 좌우 스와이프와 방향이 겹쳐 무엇이 움직이는지 헷갈린다.
+  static Widget _flip(Widget child, Animation<double> t) => ClipRect(
+        child: SlideTransition(
+          // 들어올 때는 아래(+)에서, 나갈 때는 위(-)로. `AnimatedSwitcher` 가 나가는
+          // 쪽에는 되감는 애니메이션을 주므로 같은 Tween 이 양쪽을 다 만든다.
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.35),
+            end: Offset.zero,
+          ).animate(t),
+          child: FadeTransition(opacity: t, child: child),
+        ),
+      );
+
+  /// 인분·시간·재료 상태. 모르는 값은 빼고 아는 것만 잇는다.
+  ///
+  /// 가용성을 끝에 붙이는 것은 **누르기 전에 만들 수 있는지 알아야** 하기 때문이다.
   String _meta(MenuSuggestion menu) {
     final parts = <String>[Strings.menuServings(menu.servings)];
     final minutes = menu.estimatedMinutes;
     if (minutes != null) parts.add(Strings.menuMinutes(minutes));
+    parts.add(Labels.stock(menu.availability));
     return parts.join(' · ');
   }
 }

@@ -144,13 +144,32 @@ class ApiClient {
   }
 
   /// 변경 이력.
-  Future<List<dynamic>> history({int limit = 50}) async {
+  Future<List<dynamic>> history({int limit = 50, DateTime? on}) async {
     final response = await _dio.get<List<dynamic>>(
       'api/command/history',
+      queryParameters: <String, dynamic>{
+        'limit': limit,
+        if (on != null) 'on': _ymd(on),
+      },
+    );
+    return response.data ?? const [];
+  }
+
+  /// 기록이 남은 날짜. 달력이 고를 수 있는 날을 정한다.
+  Future<List<dynamic>> historyDays({int limit = 60}) async {
+    final response = await _dio.get<List<dynamic>>(
+      'api/command/history/days',
       queryParameters: {'limit': limit},
     );
     return response.data ?? const [];
   }
+
+  /// `2026-10-03`. 시각을 붙이면 서버가 날짜로 읽지 못한다.
+  static String _ymd(DateTime value) =>
+      '${value.year.toString().padLeft(4, '0')}-'
+      '${value.month.toString().padLeft(2, '0')}-'
+      '${value.day.toString().padLeft(2, '0')}';
+
 
   /// 메뉴 추천을 새로 받는다.
   Future<List<dynamic>> createSuggestions({int? servings, int? maxMinutes}) async {

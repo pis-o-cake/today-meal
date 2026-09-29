@@ -38,6 +38,14 @@ abstract final class Motion {
   /// 조리 단계 타이머의 눈금이 한 번 도는 시간. 실제 남은 시간은 타이머가 정한다.
   static const cookTick = Duration(seconds: 1);
 
+  /// 주 행동이 다음 메뉴로 넘어가는 간격.
+  ///
+  /// 읽을 시간을 줘야 한다. 이보다 짧으면 이름을 다 읽기 전에 바뀐다.
+  static const menuTurn = Duration(milliseconds: 3600);
+
+  /// 그 한 번의 넘김.
+  static const menuFlip = Duration(milliseconds: 420);
+
   /// 등급을 넘길 때의 스프링.
   static const bandSpring = Duration(milliseconds: 460);
 

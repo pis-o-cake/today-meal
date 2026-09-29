@@ -124,6 +124,12 @@ class Strings {
   static const menuReady = '지금 가능';
   static const menuNeedsCheck = '확인 필요';
   static const menuNeedsPurchase = '재료 준비 후';
+
+  /// 재료가 갖춰졌는지를 **한 줄 안에서** 말할 때. 칩의 짧은 말과 다르다 —
+  /// "2인분 · 약 15분 · 지금 가능" 은 무엇이 가능하다는 것인지 읽히지 않는다.
+  static const menuStockReady = '재료 다 있어요';
+  static const menuStockCheck = '재료 확인 필요';
+  static const menuStockShort = '재료 준비 후';
   static String menuMinutes(int n) => '약 $n분';
 
   /// 추정 시간이라는 사실. 숫자만 두면 보장으로 읽힌다.
@@ -207,6 +213,9 @@ class Strings {
   static const historyUndoHint = '말한 대로 바뀐 내역이에요. 잘못되면 되돌릴 수 있어요';
   static const historyToday = '오늘';
   static const historyUndoFailed = '되돌리지 못했어요';
+  static const historyOlderDay = '이전 기록';
+  static const historyNewerDay = '다음 기록';
+  static const historyEmptyDay = '이 날은 기록이 없어요';
   static const historyStockIn = '입고';
   static const historyConsume = '사용';
   static const historyAdjust = '보정';
