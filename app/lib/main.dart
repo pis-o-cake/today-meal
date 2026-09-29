@@ -9,7 +9,7 @@ import 'core/design/tokens.dart';
 import 'core/di.dart';
 import 'core/l10n/strings.dart';
 import 'core/settings/app_settings.dart';
-import 'core/settings/local_accounts.dart';
+import 'domain/repository/repositories.dart';
 import 'ui/app_root.dart';
 import 'ui/conversation/conversation_view_model.dart';
 import 'ui/fridge/fridge_view_model.dart';
@@ -28,19 +28,13 @@ Future<void> main() async {
   await registerDependencies(AppConfig.fromEnv());
 
   final settings = await AppSettings.load();
-  final accounts = await LocalAccounts.open();
-  runApp(TodayMealApp(settings: settings, accounts: accounts));
+  runApp(TodayMealApp(settings: settings));
 }
 
 class TodayMealApp extends StatelessWidget {
-  const TodayMealApp({
-    required this.settings,
-    required this.accounts,
-    super.key,
-  });
+  const TodayMealApp({required this.settings, super.key});
 
   final AppSettings settings;
-  final LocalAccounts accounts;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +58,7 @@ class TodayMealApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               theme: buildTheme(skin),
               home: AppRoot(
-                accounts: accounts,
+                auth: di<AuthRepository>(),
                 // 스플래시와 함께 재고만 미리 읽는다. 추천은 모델 호출이라 느려서
                 // 여기서 기다리면 스플래시가 몇 초씩 붙잡힌다 — 셸이 들어가며 읽는다.
                 prepare: () =>

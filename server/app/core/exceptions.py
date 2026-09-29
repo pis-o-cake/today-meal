@@ -64,6 +64,23 @@ class UpstreamError(DomainError):
     status_code = status.HTTP_502_BAD_GATEWAY
 
 
+class ConflictError(DomainError):
+    """이미 있는 것을 다시 만들려 했다. 가입의 중복 이메일이 여기 온다."""
+
+    message_key = "error.conflict"
+    status_code = status.HTTP_409_CONFLICT
+
+
+class UnauthorizedError(DomainError):
+    """로그인하지 않았거나 자격이 맞지 않는다.
+
+    CAUTION: 이 예외의 `detail` 에 비밀번호나 토큰을 넣지 않는다. 핸들러가 로그로 남긴다.
+    """
+
+    message_key = "error.unauthorized"
+    status_code = status.HTTP_401_UNAUTHORIZED
+
+
 def register_exception_handlers(app: FastAPI) -> None:
     """도메인 예외를 사용자 문구가 담긴 JSON 응답으로 바꾼다."""
     from app.core.locale import translate

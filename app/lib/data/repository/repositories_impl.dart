@@ -1,9 +1,103 @@
+import 'package:dio/dio.dart';
+
 import '../../core/network/api_client.dart';
 import '../../domain/model/change_record.dart';
 import '../../domain/model/inventory.dart';
 import '../../domain/model/menu.dart';
 import '../../domain/repository/repositories.dart';
 import '../remote/mappers.dart';
+
+/// 서버 인증.
+///
+/// 토큰을 [ApiClient] 에 걸어 이후 모든 호출이 그 계정의 가구를 보게 한다. 토큰 자체의
+/// 저장은 설정 계층이 한다 — 저장소는 서버와 말하는 일만 맡는다.
+///
+/// CAUTION: 비밀번호와 토큰을 로그에 남기지 않는다.
+class RemoteAuthRepository implements AuthRepository {
+  RemoteAuthRepository(this._api);
+
+  final ApiClient _api;
+
+  @override
+  Future<AuthResult> signUp({
+    required String email,
+    required String password,
+    required String nickname,
+  }) =>
+      _open(() => _api.signUp(
+            email: email,
+            password: password,
+            nickname: nickname,
+          ));
+
+  @override
+  Future<AuthResult> signIn({
+    required String email,
+    required String password,
+  }) =>
+      _open(() => _api.signIn(email: email, password: password));
+
+  @override
+  Future<void> signOut() async {
+    try {
+      await _api.signOut();
+    } on DioException {
+      // 서버에 닿지 못해도 이 기기에서는 로그아웃한다. 남은 세션은 만료로 사라진다.
+    } finally {
+      _api.setToken(null);
+    }
+  }
+
+  @override
+  Future<AuthAccount?> restore(String token) async {
+    _api.setToken(token);
+    try {
+      return _accountFrom(await _api.me());
+    } on DioException {
+      // 만료·폐기된 토큰이거나 서버에 닿지 못했다. 둘 다 게스트로 떨어뜨린다 —
+      // 자기 냉장고를 보고 있다고 믿으면서 남의 데이터를 보게 두지 않는다.
+      _api.setToken(null);
+      return null;
+    }
+  }
+
+  /// 세션을 여는 두 경로가 같은 응답을 준다. 실패 해석도 한곳에 둔다.
+  Future<AuthResult> _open(
+      Future<Map<String, dynamic>> Function() call) async {
+    try {
+      final body = await call();
+      final token = body['access_token'] as String?;
+      if (token == null || token.isEmpty) {
+        return const AuthResult.failed(AuthFailure.unreachable);
+      }
+      _api.setToken(token);
+      return AuthResult.success(
+        token: token,
+        account: _accountFrom(body['user'] as Map<String, dynamic>),
+      );
+    } on DioException catch (error) {
+      return AuthResult.failed(_failureOf(error));
+    }
+  }
+
+  AuthAccount _accountFrom(Map<String, dynamic> json) => AuthAccount(
+        userId: json['user_id'] as int,
+        householdId: json['household_id'] as int,
+        provider: json['provider'] as String? ?? 'email',
+        email: json['email'] as String?,
+        nickname: json['display_name'] as String?,
+      );
+
+  /// 서버 응답을 사용자가 고칠 수 있는 상태로 옮긴다.
+  ///
+  /// 상태 코드가 정본이다 — 본문 문구는 로케일에 따라 바뀌므로 분기의 근거로 쓰지 않는다.
+  AuthFailure _failureOf(DioException error) => switch (error.response?.statusCode) {
+        409 => AuthFailure.emailTaken,
+        401 => AuthFailure.wrongCredentials,
+        422 || 400 => AuthFailure.invalidInput,
+        _ => AuthFailure.unreachable,
+      };
+}
 
 /// 원격 구현. 로컬 DB 를 두지 않는다.
 ///

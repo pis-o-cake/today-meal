@@ -1,12 +1,13 @@
-/// 기기에 남기는 설정과 계정.
+/// 기기에 남기는 설정과 세션.
 ///
-/// 화면 테마·음성 응답·기본 인분·로그인 상태를 담는다. 앱을 다시 켰을 때 고른 것이
-/// 그대로 있어야 하므로 메모리에만 두지 않는다.
+/// 화면 테마·음성 응답·기본 인분과 **서버 세션 토큰**을 담는다. 앱을 다시 켰을 때
+/// 고른 것이 그대로 있고 로그인이 풀리지 않아야 하므로 메모리에만 두지 않는다.
 ///
-/// CAUTION: **서버 인증이 아니다.** `/api/auth/sign-in` 은 아직 구현되지 않았고
-/// (`S-15`·`F-22`), 여기 저장하는 계정은 이 기기 안에서만 유효하다. 비밀번호는
-/// 저장하지 않으며 다른 기기와 공유되지 않는다. 서버 세션이 붙으면 이 계층이
-/// 그 캐시로 바뀐다.
+/// 계정 정보는 서버가 정본이다. 여기 있는 것은 화면에 바로 쓰기 위한 사본이며,
+/// 앱을 열 때마다 `/api/auth/me` 로 토큰이 아직 유효한지 확인한다.
+///
+/// CAUTION: 비밀번호는 저장하지 않는다. 토큰은 저장하되 **로그에 남기지 않는다** —
+/// 이 값 하나로 계정에 들어갈 수 있다.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -40,7 +41,19 @@ class Account {
 ///
 /// 소셜 제공자는 아직 연동하지 않았다. 목록에 두는 것은 마이페이지가 **실제 경로**를
 /// 표시해야 하기 때문이며, 연동 전에 이 값을 쓰지 않는다.
-enum AccountProvider { guest, email, kakao, google, apple }
+enum AccountProvider {
+  guest,
+  email,
+  kakao,
+  google,
+  apple;
+
+  /// 서버가 준 `provider` 문자열을 옮긴다. 모르는 값은 게스트로 낮춘다.
+  static AccountProvider parse(String? raw) => AccountProvider.values.firstWhere(
+        (value) => value.name == raw,
+        orElse: () => AccountProvider.guest,
+      );
+}
 
 /// 기기에 남는 설정.
 class AppSettings extends ChangeNotifier {
@@ -63,6 +76,7 @@ class AppSettings extends ChangeNotifier {
   int _defaultServings = 2;
   bool _onboarded = false;
   Account? _account;
+  String? _token;
 
   /// 고른 화면 테마.
   SkinName get skin => _skin;
@@ -89,6 +103,11 @@ class AppSettings extends ChangeNotifier {
 
   bool get hasChosenEntry => _account != null;
 
+  /// 저장해 둔 서버 세션 토큰. 게스트면 `null` 이다.
+  ///
+  /// CAUTION: 로그에 남기지 않는다.
+  String? get token => _token;
+
   void _read() {
     final store = _store;
     if (store == null) return;
@@ -101,15 +120,14 @@ class AppSettings extends ChangeNotifier {
     _defaultServings = store.getInt(_keyServings) ?? 2;
     _onboarded = store.getBool(_keyOnboarded) ?? false;
 
+    _token = store.getString(_keyToken);
+
     final provider = store.getString(_keyProvider);
     if (provider == null) return;
     _account = Account(
       nickname: store.getString(_keyNickname) ?? '',
       email: store.getString(_keyEmail) ?? '',
-      provider: AccountProvider.values.firstWhere(
-        (value) => value.name == provider,
-        orElse: () => AccountProvider.guest,
-      ),
+      provider: AccountProvider.parse(provider),
     );
   }
 
@@ -149,16 +167,31 @@ class AppSettings extends ChangeNotifier {
     await _store?.setBool(_keyOnboarded, true);
   }
 
-  /// 계정을 기기에 남긴다. 비밀번호는 받지 않는다.
-  Future<void> signIn(Account next) async {
+  /// 세션을 기기에 남긴다.
+  ///
+  /// [token] 이 `null` 이면 게스트다 — 게스트도 "고른 상태"이므로 계정을 저장한다.
+  /// 비밀번호는 받지도 저장하지도 않는다.
+  Future<void> signIn(Account next, {String? token}) async {
     _account = next;
+    _token = token;
     notifyListeners();
     final store = _store;
     if (store == null) return;
     await store.setString(_keyProvider, next.provider.name);
     await store.setString(_keyNickname, next.nickname);
     await store.setString(_keyEmail, next.email);
+    if (token == null) {
+      await store.remove(_keyToken);
+    } else {
+      await store.setString(_keyToken, token);
+    }
   }
+
+  /// 토큰이 더는 유효하지 않다. 계정을 지우고 게스트로 떨어뜨린다.
+  ///
+  /// 로그아웃과 다르다 — 사용자가 끝낸 것이 아니라 서버가 거절한 것이다. 화면은 이때
+  /// 로그인을 다시 요구한다.
+  Future<void> sessionExpired() => signOut();
 
   /// 세션을 끝내고 계정 화면의 값을 지운다.
   ///
@@ -166,12 +199,14 @@ class AppSettings extends ChangeNotifier {
   /// 지우는 것은 이 기기의 계정 정보뿐이다.
   Future<void> signOut() async {
     _account = null;
+    _token = null;
     notifyListeners();
     final store = _store;
     if (store == null) return;
     await store.remove(_keyProvider);
     await store.remove(_keyNickname);
     await store.remove(_keyEmail);
+    await store.remove(_keyToken);
   }
 
   static const _keySkin = 'skin';
@@ -182,4 +217,5 @@ class AppSettings extends ChangeNotifier {
   static const _keyProvider = 'account.provider';
   static const _keyNickname = 'account.nickname';
   static const _keyEmail = 'account.email';
+  static const _keyToken = 'account.token';
 }

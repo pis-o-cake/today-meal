@@ -4,6 +4,10 @@
 /// 다루는 것은 사용자에게 보이는 문구뿐이다.
 ///
 /// 지금은 한국어만 있다. 언어가 늘면 이 클래스를 인터페이스로 바꾸고 언어별 구현을 둔다.
+library;
+
+import 'particles.dart';
+
 class Strings {
   const Strings._();
 
@@ -57,7 +61,8 @@ class Strings {
 
   /// 모르는 값을 억지로 채우지 않는다는 제품 규칙.
   static const clarifyKeepUnknown = '모르면 그대로 둘게요. 없는 값을 채우지 않아요';
-  static String clarifyAppliedFirst(String name) => '$name은(는) 먼저 반영했어요';
+  static String clarifyAppliedFirst(String name) =>
+      '$name${Particles.neun(name)} 먼저 반영했어요';
 
   /// 반영 결과. 초는 [VoiceSessionManager.resultMinimum] 에서 받는다.
   static String resultReturnHint(int seconds) => '$seconds초 뒤 호출 대기로 돌아가요';
@@ -235,16 +240,20 @@ class Strings {
   static const loginGuest = '로그인 없이 둘러보기';
   static const loginShowPassword = '비밀번호 보기';
   static const loginHidePassword = '비밀번호 숨기기';
-  static const loginNoAccount = '이 기기에 없는 계정이에요';
-  static const loginWrongPassword = '비밀번호가 맞지 않아요';
+  static const loginPasswordEmpty = '비밀번호를 입력해 주세요';
+
+  /// 로그인 실패.
+  ///
+  /// IMPORTANT: 이메일이 없는 것과 비밀번호가 틀린 것을 **한 문구로** 말한다. 서버가
+  /// 구분해 주지 않으며, 구분해 보여주면 아무나 가입된 이메일인지 확인할 수 있다.
+  static const loginWrongCredentials = '이메일이나 비밀번호가 맞지 않아요';
 
   /// 아직 연동하지 않은 경로.
   ///
-  /// IMPORTANT: 서버 인증(`S-15`·`F-22`)이 붙기 전에는 소셜 로그인을 성공으로
-  /// 처리하지 않는다. 버튼을 감추지 않고 **왜 안 되는지** 말한다.
+  /// IMPORTANT: 제공자 토큰을 검증할 수단이 없어 소셜 로그인을 성공으로 처리하지
+  /// 않는다. 버튼을 감추지 않고 **왜 안 되는지** 말한다.
   static const loginProviderPending = '아직 연결하지 않은 로그인이에요';
   static const loginProviderPendingHint = '지금은 이메일 가입이나 둘러보기로 시작할 수 있어요';
-  static const loginLocalOnlyNotice = '이 기기에만 저장되는 계정이에요';
 
   // UI-10 회원가입
   static const signUpTitle = '회원가입';
@@ -284,7 +293,8 @@ class Strings {
   static const myPageGuestKitchen = '게스트로 둘러보는 중';
   static const myPageGuestHint = '로그인하면 이 기기의 설정을 계정에 남겨요';
   static const myPageSignIn = '로그인하기';
-  static String myPageSignedInWith(String provider) => '$provider(으)로 로그인했어요';
+  static String myPageSignedInWith(String provider) =>
+      '$provider${Particles.ro(provider)} 로그인했어요';
   static const myPageProviderEmail = '이메일';
   static const myPageProviderKakao = '카카오 계정';
   static const myPageProviderGoogle = 'Google 계정';

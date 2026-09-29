@@ -9,8 +9,8 @@
 ///          → 홈
 /// ```
 ///
-/// 유효한 세션이나 이미 고른 게스트 상태가 있으면 로그인을 건너뛴다. 로그아웃하면 다시
-/// 로그인으로 돌아간다.
+/// 저장해 둔 세션 토큰이 있으면 스플래시에서 **서버에 확인**하고 들어간다. 만료·폐기된
+/// 토큰으로 그냥 들어가면 사용자는 자기 냉장고를 보고 있다고 믿으면서 기본 가구를 본다.
 ///
 /// 라우터를 두지 않고 상태 하나로 가른다. 화면 다섯이고 뒤로 가기가 가입에서만 의미를
 /// 가지므로, 경로 표를 만들면 얻는 것보다 잃는 것이 많다.
@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/settings/app_settings.dart';
-import '../core/settings/local_accounts.dart';
+import '../domain/repository/repositories.dart';
 import 'account/login_screen.dart';
 import 'account/signup_screen.dart';
 import 'permission/permission_screen.dart';
@@ -31,9 +31,9 @@ import 'splash/splash_screen.dart';
 enum _Step { splash, login, signUp, permission, home }
 
 class AppRoot extends StatefulWidget {
-  const AppRoot({required this.accounts, this.prepare, super.key});
+  const AppRoot({required this.auth, this.prepare, super.key});
 
-  final LocalAccounts accounts;
+  final AuthRepository auth;
 
   /// 첫 데이터 읽기. 스플래시 연출과 함께 돌린다.
   final Future<void> Function()? prepare;
@@ -47,6 +47,31 @@ class _AppRootState extends State<AppRoot> {
 
   AppSettings get _settings => context.read<AppSettings>();
 
+  /// 저장해 둔 토큰을 확인하고 데이터를 읽는다.
+  ///
+  /// 토큰 확인을 데이터 읽기보다 **먼저** 한다. 순서가 바뀌면 남의 가구 데이터를 읽어
+  /// 화면에 잠깐 보여주게 된다.
+  Future<void> _prepare() async {
+    final token = _settings.token;
+    if (token != null) {
+      final account = await widget.auth.restore(token);
+      if (account == null) {
+        // 서버가 거절했다. 조용히 게스트로 두지 않고 로그인을 다시 요구한다.
+        await _settings.sessionExpired();
+      } else {
+        await _settings.signIn(
+          Account(
+            nickname: account.nickname ?? '',
+            email: account.email ?? '',
+            provider: AccountProvider.parse(account.provider),
+          ),
+          token: token,
+        );
+      }
+    }
+    await widget.prepare?.call();
+  }
+
   /// 스플래시가 끝났다. 저장된 상태에 따라 갈 곳을 정한다.
   void _afterSplash() => setState(() => _step = _next());
 
@@ -56,8 +81,8 @@ class _AppRootState extends State<AppRoot> {
     return _Step.home;
   }
 
-  Future<void> _enter(Account account) async {
-    await _settings.signIn(account);
+  Future<void> _enter(Account account, {String? token}) async {
+    await _settings.signIn(account, token: token);
     if (!mounted) return;
     setState(() => _step = _settings.onboarded ? _Step.home : _Step.permission);
   }
@@ -69,6 +94,8 @@ class _AppRootState extends State<AppRoot> {
   }
 
   Future<void> _signOut() async {
+    // 서버 세션을 먼저 끝낸다. 기기만 지우면 토큰이 만료까지 살아 있다.
+    await widget.auth.signOut();
     await _settings.signOut();
     if (!mounted) return;
     setState(() => _step = _Step.login);
@@ -77,18 +104,18 @@ class _AppRootState extends State<AppRoot> {
   @override
   Widget build(BuildContext context) => switch (_step) {
         _Step.splash => SplashScreen(
-            prepare: widget.prepare,
+            prepare: _prepare,
             onReady: _afterSplash,
           ),
         _Step.login => LoginScreen(
-            accounts: widget.accounts,
-            onSignedIn: _enter,
+            auth: widget.auth,
+            onSignedIn: (account, token) => _enter(account, token: token),
             onGuest: () => _enter(const Account.guest()),
             onSignUp: () => setState(() => _step = _Step.signUp),
           ),
         _Step.signUp => SignUpScreen(
-            accounts: widget.accounts,
-            onSignedUp: _enter,
+            auth: widget.auth,
+            onSignedUp: (account, token) => _enter(account, token: token),
             onBack: () => setState(() => _step = _Step.login),
           ),
         _Step.permission => PermissionScreen(onDone: _finishOnboarding),

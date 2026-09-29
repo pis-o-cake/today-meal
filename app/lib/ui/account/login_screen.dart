@@ -2,8 +2,8 @@
 ///
 /// 목업 `Login.dc.html` 이다 — 이메일·비밀번호, 간편 로그인, 로그인 없이 둘러보기.
 ///
-/// CAUTION: 이메일 로그인은 **이 기기에 저장된 계정**만 확인한다([LocalAccounts]).
-/// 서버 인증(`S-15`·`F-22`)이 붙기 전까지의 임시 계층이며 화면에 그 사실을 적는다.
+/// 서버가 이메일과 비밀번호를 확인한다. 성공하면 세션 토큰을 받아 이후 모든 호출이
+/// 그 계정의 가구를 본다.
 ///
 /// 카카오·Google·Apple 은 연동 전이다. 버튼을 감추지 않고 **왜 안 되는지** 말한다 —
 /// 목업의 `href` 를 따라 성공으로 넘기면 인증한 것처럼 보인다.
@@ -20,22 +20,23 @@ import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/settings/app_settings.dart';
 import '../../core/settings/local_accounts.dart';
+import '../../domain/repository/repositories.dart';
 import '../widgets/glass.dart';
 import '../widgets/mascot.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
-    required this.accounts,
+    required this.auth,
     required this.onSignedIn,
     required this.onGuest,
     required this.onSignUp,
     super.key,
   });
 
-  final LocalAccounts accounts;
+  final AuthRepository auth;
 
-  /// 이 기기의 계정으로 로그인했다.
-  final void Function(Account account) onSignedIn;
+  /// 서버가 확인한 계정으로 로그인했다. 토큰은 호출자가 저장한다.
+  final void Function(Account account, String token) onSignedIn;
 
   /// 로그인 없이 둘러본다.
   final VoidCallback onGuest;
@@ -51,6 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _shown = false;
+  bool _busy = false;
   String? _emailError;
   String? _passwordError;
 
@@ -61,29 +63,46 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
+    if (_busy) return;
     final email = _email.text.trim();
     final password = _password.text;
 
     setState(() {
       _emailError = Credentials.isEmail(email) ? null : Strings.signUpErrorEmail;
-      _passwordError = password.isEmpty ? Strings.loginPasswordHint : null;
+      _passwordError = password.isEmpty ? Strings.loginPasswordEmpty : null;
     });
     if (_emailError != null || _passwordError != null) return;
 
+    setState(() => _busy = true);
+    final result = await widget.auth.signIn(email: email, password: password);
+    if (!mounted) return;
+    setState(() => _busy = false);
+
     // 입력은 화면에 남긴다. 실패했을 때 처음부터 다시 치게 하지 않는다.
-    switch (widget.accounts.verify(email: email, password: password)) {
-      case SignInResult.ok:
-        widget.onSignedIn(Account(
-          nickname: widget.accounts.nicknameOf(email),
-          email: email,
-          provider: AccountProvider.email,
-        ));
-      case SignInResult.unknownEmail:
-        setState(() => _emailError = Strings.loginNoAccount);
-      case SignInResult.wrongPassword:
-        setState(() => _passwordError = Strings.loginWrongPassword);
+    if (result.ok) {
+      final account = result.account!;
+      widget.onSignedIn(
+        Account(
+          nickname: account.nickname ?? '',
+          email: account.email ?? email,
+          provider: AccountProvider.parse(account.provider),
+        ),
+        result.token!,
+      );
+      return;
     }
+
+    setState(() {
+      // 서버는 이메일이 없는 것과 비밀번호가 틀린 것을 구분해 주지 않는다. 구분해
+      // 보여주면 가입된 이메일인지 알 수 있게 되므로 앱도 구분하지 않는다.
+      _passwordError = switch (result.failure!) {
+        AuthFailure.wrongCredentials => Strings.loginWrongCredentials,
+        AuthFailure.invalidInput => Strings.signUpErrorPassword,
+        AuthFailure.unreachable => Strings.serverFailed,
+        AuthFailure.emailTaken => Strings.signUpErrorTaken,
+      };
+    });
   }
 
   /// 연동하지 않은 제공자. 성공으로 넘기지 않고 사실을 알린다.
@@ -149,7 +168,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       _Primary(
                         label: Strings.loginSubmit,
                         skin: skin,
-                        onPressed: _submit,
+                        busy: _busy,
+                        onPressed: _busy ? null : _submit,
                       ),
                       const SizedBox(height: 4),
                       _Links(
@@ -157,12 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           onForgot: _pending,
                           onSignUp: widget.onSignUp),
                       const SizedBox(height: 2),
-                      Text(
-                        Strings.loginLocalOnlyNotice,
-                        textAlign: TextAlign.center,
-                        style: text.labelMedium?.copyWith(color: skin.inkDim),
-                      ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 14),
                       _Divider(skin: skin),
                       const SizedBox(height: 14),
                       _Social(skin: skin, isIos: isIos, onPressed: _pending),
@@ -248,13 +263,17 @@ class _Primary extends StatelessWidget {
     required this.label,
     required this.skin,
     required this.onPressed,
+    this.busy = false,
   });
 
   final String label;
   final Skin skin;
 
-  /// `null` 이면 조건이 덜 찼다는 뜻이다. 색을 빼서 그것을 보여준다.
+  /// `null` 이면 조건이 덜 찼거나 보내는 중이다. 색을 빼서 그것을 보여준다.
   final VoidCallback? onPressed;
+
+  /// 서버 응답을 기다리는 중. 두 번 눌러 두 번 가입·로그인하지 않게 막는다.
+  final bool busy;
 
   @override
   Widget build(BuildContext context) {
@@ -273,11 +292,18 @@ class _Primary extends StatelessWidget {
           onTap: onPressed,
           customBorder: shape,
           child: Center(
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 16, color: on ? skin.onPrimary : skin.inkDim),
-            ),
+            child: busy
+                ? SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2.5, color: skin.onPrimary),
+                  )
+                : Text(
+                    label,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 16, color: on ? skin.onPrimary : skin.inkDim),
+                  ),
           ),
         ),
       ),

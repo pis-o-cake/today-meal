@@ -33,6 +33,9 @@ Future<void> registerDependencies(AppConfig config) async {
     ..registerLazySingleton<CommandRepository>(
       () => RemoteCommandRepository(di<ApiClient>()),
     )
+    ..registerLazySingleton<AuthRepository>(
+      () => RemoteAuthRepository(di<ApiClient>()),
+    )
     ..registerLazySingleton<MenuRepository>(
       () => RemoteMenuRepository(di<ApiClient>()),
     )

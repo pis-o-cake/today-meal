@@ -11,6 +11,84 @@ import '../model/inventory.dart';
 import '../model/menu.dart';
 
 
+/// 가입·로그인·로그아웃.
+///
+/// 실패를 예외가 아니라 [AuthFailure] 로 돌려준다 — 이메일이 이미 있는 것과 비밀번호가
+/// 틀린 것은 **사용자가 고칠 수 있는 상태**이지 서버 결함이 아니다. 통신 자체가 실패한
+/// 경우에만 예외가 오른다.
+abstract interface class AuthRepository {
+  /// 이메일 가입. 성공하면 바로 로그인된다.
+  Future<AuthResult> signUp({
+    required String email,
+    required String password,
+    required String nickname,
+  });
+
+  /// 이메일 로그인.
+  Future<AuthResult> signIn({required String email, required String password});
+
+  /// 서버 세션을 끝낸다.
+  Future<void> signOut();
+
+  /// 저장해 둔 토큰이 아직 유효한지 확인하고 계정을 읽는다.
+  ///
+  /// 유효하지 않으면 `null`. 앱은 그때 게스트로 떨어뜨리고 로그인을 다시 요구한다.
+  Future<AuthAccount?> restore(String token);
+}
+
+/// 서버가 확인한 계정.
+class AuthAccount {
+  const AuthAccount({
+    required this.userId,
+    required this.householdId,
+    required this.provider,
+    this.email,
+    this.nickname,
+  });
+
+  final int userId;
+  final int householdId;
+  final String provider;
+  final String? email;
+  final String? nickname;
+}
+
+/// 가입·로그인의 결과.
+///
+/// 성공이면 [token] 과 [account] 가 있고, 실패면 [failure] 가 있다. 둘 다 있는 상태는
+/// 만들지 않는다.
+class AuthResult {
+  const AuthResult.success({required this.token, required this.account})
+      : failure = null;
+
+  const AuthResult.failed(this.failure)
+      : token = null,
+        account = null;
+
+  /// 세션 토큰. **서버가 다시 알려주지 않으므로** 앱이 저장한다.
+  final String? token;
+  final AuthAccount? account;
+  final AuthFailure? failure;
+
+  bool get ok => failure == null;
+}
+
+/// 사용자가 고칠 수 있는 실패.
+enum AuthFailure {
+  /// 이미 가입된 이메일이다. 가입에만 나온다.
+  emailTaken,
+
+  /// 이메일이나 비밀번호가 맞지 않는다. **둘을 구분하지 않는다** — 서버가 구분해
+  /// 주지 않으며, 구분하면 가입된 이메일인지 확인할 수 있게 된다.
+  wrongCredentials,
+
+  /// 형식이 서버 검사를 통과하지 못했다.
+  invalidInput,
+
+  /// 서버에 닿지 못했다.
+  unreachable,
+}
+
 abstract interface class InventoryRepository {
   /// 가구의 현재 재고.
   Future<List<IngredientBatch>> listBatches();

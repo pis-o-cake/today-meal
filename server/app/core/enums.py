@@ -177,6 +177,8 @@ class HistoryKind(StrEnum):
 
 
 class AuthProvider(StrEnum):
+    # 이메일·비밀번호. 지금 구현된 유일한 경로다.
+    EMAIL = "email"
     KAKAO = "kakao"
     GOOGLE = "google"
     APPLE = "apple"

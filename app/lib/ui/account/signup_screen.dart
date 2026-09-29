@@ -5,8 +5,8 @@
 /// 목업의 가입 버튼은 **동의만** 검사한다. UI 계약대로 입력 검증을 보완해, 형식이 맞고
 /// 필수 동의가 끝났을 때만 버튼이 켜진다. 선택 동의 없이도 가입할 수 있다.
 ///
-/// CAUTION: 계정은 이 기기에만 저장된다([LocalAccounts]). 서버 인증(`S-15`·`F-22`)이
-/// 붙기 전까지의 임시 계층이다.
+/// 서버가 계정을 만들고 바로 로그인시킨다. **가입하면 자기 가구로 시작하므로 냉장고가
+/// 비어 있다** — 게스트로 둘러보던 재고는 기본 가구의 것이며 옮겨오지 않는다.
 library;
 
 import 'package:flutter/material.dart';
@@ -16,18 +16,21 @@ import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/settings/app_settings.dart';
 import '../../core/settings/local_accounts.dart';
+import '../../domain/repository/repositories.dart';
 import '../widgets/glass.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({
-    required this.accounts,
+    required this.auth,
     required this.onSignedUp,
     required this.onBack,
     super.key,
   });
 
-  final LocalAccounts accounts;
-  final void Function(Account account) onSignedUp;
+  final AuthRepository auth;
+
+  /// 서버가 만든 계정과 그 세션 토큰.
+  final void Function(Account account, String token) onSignedUp;
   final VoidCallback onBack;
 
   @override
@@ -41,6 +44,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _confirm = TextEditingController();
 
   bool _shown = false;
+  bool _busy = false;
   String? _emailError;
   String? _confirmError;
 
@@ -94,29 +98,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool get _canSubmit => _inputsValid && _requiredAgreed;
 
   Future<void> _submit() async {
+    if (_busy) return;
     final email = _email.text.trim();
+    final nickname = _nickname.text.trim();
     if (_confirm.text != _password.text) {
       setState(() => _confirmError = Strings.signUpErrorConfirm);
       return;
     }
 
-    final result = await widget.accounts.signUp(
-      nickname: _nickname.text.trim(),
+    setState(() => _busy = true);
+    final result = await widget.auth.signUp(
+      nickname: nickname,
       email: email,
       password: _password.text,
     );
     if (!mounted) return;
+    setState(() => _busy = false);
 
-    switch (result) {
-      case SignUpResult.emailTaken:
-        setState(() => _emailError = Strings.signUpErrorTaken);
-      case SignUpResult.ok:
-        widget.onSignedUp(Account(
-          nickname: _nickname.text.trim(),
-          email: email,
-          provider: AccountProvider.email,
-        ));
+    if (result.ok) {
+      final account = result.account!;
+      widget.onSignedUp(
+        Account(
+          nickname: account.nickname ?? nickname,
+          email: account.email ?? email,
+          provider: AccountProvider.parse(account.provider),
+        ),
+        result.token!,
+      );
+      return;
     }
+
+    setState(() {
+      switch (result.failure!) {
+        case AuthFailure.emailTaken:
+          _emailError = Strings.signUpErrorTaken;
+        case AuthFailure.invalidInput:
+          _confirmError = Strings.signUpErrorPassword;
+        case AuthFailure.wrongCredentials:
+        case AuthFailure.unreachable:
+          _confirmError = Strings.serverFailed;
+      }
+    });
   }
 
   void _toggleAll() {
@@ -229,7 +251,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       const SizedBox(height: 22),
                       _Submit(
                         skin: skin,
-                        enabled: _canSubmit,
+                        enabled: _canSubmit && !_busy,
+                        busy: _busy,
                         onPressed: _submit,
                       ),
                       SizedBox(
@@ -542,11 +565,15 @@ class _Submit extends StatelessWidget {
     required this.skin,
     required this.enabled,
     required this.onPressed,
+    this.busy = false,
   });
 
   final Skin skin;
   final bool enabled;
   final VoidCallback onPressed;
+
+  /// 서버 응답을 기다리는 중. 두 번 눌러 두 계정을 만들지 않게 막는다.
+  final bool busy;
 
   @override
   Widget build(BuildContext context) {
@@ -567,12 +594,19 @@ class _Submit extends StatelessWidget {
             onTap: enabled ? onPressed : null,
             customBorder: shape,
             child: Center(
-              child: Text(
-                Strings.signUpSubmit,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 16,
-                    color: enabled ? skin.onPrimary : skin.inkDim),
-              ),
+              child: busy
+                  ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2.5, color: skin.onPrimary),
+                    )
+                  : Text(
+                      Strings.signUpSubmit,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontSize: 16,
+                          color: enabled ? skin.onPrimary : skin.inkDim),
+                    ),
             ),
           ),
         ),

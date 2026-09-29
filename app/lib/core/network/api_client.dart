@@ -6,8 +6,11 @@ import '../config.dart';
 ///
 /// 엔드포인트의 정본은 서버의 Swagger UI(`/docs`)다. 여기서는 그 계약을 옮기기만 한다.
 ///
-/// 호출자 식별은 `X-User-Id` 헤더로 보낸다. **보안 기능이 아니다** — 서버가 이 값을
-/// 검증하지 않으며, 헤더가 없으면 기본 가구로 처리해 로그인 없이도 전 기능이 동작한다.
+/// 로그인하면 [setToken] 으로 세션 토큰을 걸고 이후 모든 호출이 그 계정의 가구를 본다.
+/// 토큰이 없으면 게스트이며 서버가 기본 가구로 처리한다 — 로그인 없이 둘러보는 경로다.
+///
+/// WARNING: 이전 판본은 `X-User-Id`·`X-Household-Id` 헤더로 가구를 지정했다. 서버가
+/// 더는 그 헤더를 읽지 않는다. 가구를 고르는 유일한 방법은 로그인이다.
 class ApiClient {
   ApiClient(AppConfig config, {Dio? dio})
       : _dio = dio ??
@@ -23,15 +26,49 @@ class ApiClient {
 
   final Dio _dio;
 
-  /// 식별 헤더를 설정한다. 로그인 전에는 부르지 않는다.
-  void setCaller({int? userId, int? householdId}) {
-    final headers = _dio.options.headers;
-    if (userId != null) {
-      headers['X-User-Id'] = userId;
+  /// 세션 토큰을 건다. `null` 이면 게스트로 돌아간다.
+  ///
+  /// CAUTION: 토큰을 로그에 남기지 않는다. 이 값 하나로 계정에 들어갈 수 있다.
+  void setToken(String? token) {
+    if (token == null || token.isEmpty) {
+      _dio.options.headers.remove('Authorization');
+      return;
     }
-    if (householdId != null) {
-      headers['X-Household-Id'] = householdId;
-    }
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+  }
+
+  /// 이메일 가입. 성공하면 바로 로그인된 세션을 돌려준다.
+  Future<Map<String, dynamic>> signUp({
+    required String email,
+    required String password,
+    required String nickname,
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      'api/auth/sign-up',
+      data: {'email': email, 'password': password, 'nickname': nickname},
+    );
+    return response.data ?? const {};
+  }
+
+  /// 이메일 로그인.
+  Future<Map<String, dynamic>> signIn({
+    required String email,
+    required String password,
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      'api/auth/sign-in',
+      data: {'email': email, 'password': password},
+    );
+    return response.data ?? const {};
+  }
+
+  /// 로그아웃. 서버의 세션을 끝낸다.
+  Future<void> signOut() => _dio.post<void>('api/auth/sign-out');
+
+  /// 저장해 둔 토큰이 아직 유효한지. 유효하지 않으면 401 이 온다.
+  Future<Map<String, dynamic>> me() async {
+    final response = await _dio.get<Map<String, dynamic>>('api/auth/me');
+    return response.data ?? const {};
   }
 
   /// 서버와 설정 상태. 태블릿·핸드폰의 왕복 확인에 쓴다.

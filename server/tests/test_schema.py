@@ -22,6 +22,7 @@ EXPECTED_TABLES = {
     "video_recipe",
     "shopping_item",
     "app_user",
+    "user_session",
 }
 
 
@@ -89,11 +90,25 @@ def test_timestamps_are_timezone_aware(metadata):
     assert metadata.tables["command"].c.created_at.type.timezone is True
 
 
-def test_app_user_has_no_credentials(metadata):
-    """보안을 배제했다는 것이 스키마로도 드러나야 한다."""
+def test_app_user_stores_no_plaintext_secret(metadata):
+    """비밀번호 원문을 담는 칸이 **없어야 한다.**
+
+    해시는 있다. 이전 판본은 자격 증명을 아예 두지 않는 것이 설계였고, 계정마다 다른
+    가구를 갖게 되면서 검증하는 로그인을 두었다 — 근거는 `docs/adr/0001` 에 있다.
+    """
     columns = set(metadata.tables["app_user"].c.keys())
-    forbidden = {"password", "password_hash", "salt", "token", "refresh_token", "session_id"}
-    assert columns & forbidden == set()
+    assert "password" not in columns, "원문 비밀번호 칸을 두지 않는다"
+    assert "password_hash" in columns
+
+
+def test_session_stores_token_hash_not_token(metadata):
+    """토큰 원문을 담지 않는다. DB 가 새도 그 값으로 로그인할 수 없어야 한다."""
+    columns = set(metadata.tables["user_session"].c.keys())
+    assert "token" not in columns
+    assert "token_hash" in columns
+    # 되돌릴 수 있어야 로그아웃이 실제로 세션을 끝낸다.
+    assert "revoked_at" in columns
+    assert "expires_at" in columns
 
 
 def test_only_batch_has_soft_delete(metadata):

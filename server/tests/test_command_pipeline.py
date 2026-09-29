@@ -9,12 +9,15 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from typing import Annotated
 from uuid import uuid4
 
 import pytest
+from fastapi import Header
 from sqlalchemy import create_engine, text
 
 from app.core.config import get_settings
+from app.core.identity import Caller, get_caller
 
 
 def _database_ready() -> bool:
@@ -42,9 +45,18 @@ pytestmark = pytest.mark.skipif(
 def client(monkeypatch):
     """가짜 게이트웨이를 쓰는 테스트 클라이언트.
 
-    **테스트가 토큰을 쓰면 안 된다.** 두 곳을 모두 막아야 한다 — 라우트는 import 시점에
-    원본 함수를 바인딩하므로 `dependency_overrides` 의 키가 원본이어야 하고, `/health` 의
-    `is_fake()` 는 모듈 전역을 부르므로 그쪽도 갈아야 한다.
+    **테스트가 모델 토큰을 쓰면 안 된다.** 두 곳을 모두 막아야 한다 — 라우트는 import
+    시점에 원본 함수를 바인딩하므로 `dependency_overrides` 의 키가 원본이어야 하고,
+    `/health` 의 `is_fake()` 는 모듈 전역을 부르므로 그쪽도 갈아야 한다.
+
+    호출자도 갈아 끼운다. 운영에서는 `X-Household-Id` 를 **읽지 않는다** — 그 헤더로
+    남의 가구를 지정할 수 있었던 것이 이번에 막은 구멍이다. 이 파일이 확인하는 것은
+    재고 무결성이지 신원 확인이 아니므로, 가구만 헤더로 고르게 하고 로그인은 건너뛴다.
+    신원 확인 자체는 `tests/test_auth.py` 가 본다.
+
+    WARNING: `Annotated`·`Header` 를 **모듈 전역에서** 임포트해야 한다. 이 파일은
+    `from __future__ import annotations` 를 쓰므로 주석이 문자열이고, FastAPI 가 이름을
+    모듈 전역에서 찾는다. 함수 안에서 임포트하면 해석하지 못해 헤더가 조용히 None 이 된다.
     """
     from fastapi.testclient import TestClient
 
@@ -60,6 +72,17 @@ def client(monkeypatch):
 
     app = create_app()
     app.dependency_overrides[original] = lambda: fake
+
+    def caller_from_header(
+        x_household_id: Annotated[int | None, Header(alias="X-Household-Id")] = None,
+    ) -> Caller:
+        return Caller(
+            household_id=x_household_id or get_settings().default_household_id,
+            user_id=None,
+        )
+
+    app.dependency_overrides[get_caller] = caller_from_header
+
     with TestClient(app) as test_client:
         test_client.fake = fake
         yield test_client

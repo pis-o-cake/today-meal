@@ -123,6 +123,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   _Pending(skin: skin),
                 (_, final Object error?) =>
                   _Failed(error: error, skin: skin, onRetry: home.load),
+                // 재고가 하나도 없으면 등급을 말하지 않는다. "넉넉해요 0가지" 는
+                // 여유가 있다는 뜻으로 읽히지만 사실은 빈 냉장고다.
+                _ when home.counts.values.every((c) => c == 0) =>
+                  _Empty(skin: skin),
                 _ => _Focus(
                     palette: palette,
                     grade: shown,
@@ -133,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
               },
             ),
-            if (home.error == null)
+            if (home.error == null && home.counts.values.any((c) => c > 0))
               _Action(
                 palette: palette,
                 grade: shown,
@@ -188,6 +192,47 @@ class _Greeting extends StatelessWidget {
     const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
     final now = DateTime.now();
     return '${now.month}월 ${now.day}일 ${weekdays[now.weekday - 1]}요일';
+  }
+}
+
+/// 냉장고가 비어 있다. 가입 직후에 늘 보는 화면이다.
+class _Empty extends StatelessWidget {
+  const _Empty({required this.skin});
+
+  final Skin skin;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) => Mascot(
+                mood: MascotMood.hello,
+                size: (constraints.maxHeight * 0.36).clamp(96.0, 172.0),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              Strings.empty,
+              textAlign: TextAlign.center,
+              style: text.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              Strings.emptyHint,
+              textAlign: TextAlign.center,
+              style: text.bodyLarge
+                  ?.copyWith(color: skin.inkFaint, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -1,10 +1,11 @@
-"""사용자 식별. 추가 범위.
+"""사용자와 세션.
 
-**보안은 전부 배제했다.** 이 테이블에 **없는 것이 설계의 요점이다** — 비밀번호·해시·솔트·토큰·
-세션·만료·역할·권한이 전부 없다. 근거는 `docs/design/0001-mvp-technical-design.md` 의
-「인증 — 하지 않는다」에 있다.
+이메일·비밀번호 로그인과 세션 토큰을 담는다. 이전 판본은 `X-User-Id` 헤더를 그대로
+믿었고 이 테이블에 비밀번호도 세션도 없었다. 계정마다 다른 가구를 갖게 되면서 헤더
+하나로 남의 냉장고를 읽을 수 있게 되므로, 검증하는 세션을 둔다.
 
-CAUTION: 이 상태로 공개 배포하지 않는다.
+비밀번호 원문은 저장하지 않는다. 세션 토큰도 원문이 아니라 해시를 둔다 — 근거는
+`app/core/security.py` 에 있다.
 """
 
 from datetime import datetime
@@ -20,14 +21,17 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.enums import AuthProvider
-from app.core.models import Base, TimestampMixin, enum_check
+from app.core.models import Base, CreatedAtMixin, TimestampMixin, enum_check
 
 
 class AppUser(Base, TimestampMixin):
-    """간편 로그인으로 식별된 사용자.
+    """계정 하나.
 
-    세션 테이블이 없는 이유는 세션이 없기 때문이다. 요청마다 `X-User-Id` 헤더로 식별하고,
-    헤더가 없으면 기본 가구로 처리한다.
+    한 사용자는 가구 하나에 속한다. 가입하면 그 사용자만의 가구를 만든다 — 기본 가구에
+    묶으면 가입한 사람들이 같은 냉장고를 보게 된다.
+
+    `provider` 가 `email` 이면 [email] 과 [password_hash] 가 있고 `provider_user_id` 는
+    이메일과 같다. 소셜 제공자는 아직 연동하지 않았다.
     """
 
     __tablename__ = "app_user"
@@ -35,6 +39,7 @@ class AppUser(Base, TimestampMixin):
         UniqueConstraint(
             "provider", "provider_user_id", name="uq_app_user_provider_provider_user_id"
         ),
+        UniqueConstraint("email", name="uq_app_user_email"),
         enum_check("provider", AuthProvider, "provider"),
     )
 
@@ -43,7 +48,38 @@ class AppUser(Base, TimestampMixin):
         BigInteger, ForeignKey("household.household_id", ondelete="CASCADE"), nullable=False
     )
     provider: Mapped[str] = mapped_column(String(20), nullable=False)
-    # WARNING: 이 값을 검증하지 않는다. 서명도 만료도 확인하지 않고 그대로 신뢰한다.
     provider_user_id: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    # 이메일 가입에만 있다. 소셜 계정은 제공자가 이메일을 주기 전까지 비어 있다.
+    email: Mapped[str | None] = mapped_column(String(320))
+
+    # WARNING: 해시만 담는다. 원문은 어디에도 남기지 않는다.
+    password_hash: Mapped[str | None] = mapped_column(String(100))
+
     display_name: Mapped[str | None] = mapped_column(String(50))
     last_signed_in_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class UserSession(Base, CreatedAtMixin):
+    """로그인 한 번.
+
+    토큰을 되돌릴 수 있어야 로그아웃이 실제로 세션을 끝낸다. JWT 처럼 상태 없는 토큰을
+    쓰면 로그아웃해도 만료 전까지 유효하므로, 서버가 가진 행으로 판정한다.
+    """
+
+    __tablename__ = "user_session"
+
+    session_id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("app_user.user_id", ondelete="CASCADE"), nullable=False
+    )
+
+    # 토큰 원문이 아니라 SHA-256 해시다. 조회 키이므로 유일하다.
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    # 로그아웃한 시각. 있으면 만료 전이라도 쓸 수 없다.
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

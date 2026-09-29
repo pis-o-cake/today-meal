@@ -244,8 +244,11 @@ class FloatingChip extends StatelessWidget {
 
 /// 계정 화면의 입력칸.
 ///
-/// 오류는 칸 **아래**가 아니라 옆에 붙는다 — UI 계약대로 어떤 칸이 틀렸는지 바로
-/// 보여야 한다. 비밀번호는 로그로 남기지 않는다.
+/// 오류는 **그 칸에 붙여** 보여준다 — UI 계약대로 어떤 칸이 틀렸는지 바로 보여야 한다.
+/// 이름 옆이 아니라 칸 아래에 두는 이유는, 옆에 두면 "이메일이나 비밀번호가 맞지
+/// 않아요" 같은 문장이 잘리기 때문이다. 잘린 오류는 없는 것보다 나쁘다.
+///
+/// 비밀번호는 로그로 남기지 않는다.
 class GlassField extends StatelessWidget {
   const GlassField({
     required this.label,
@@ -282,28 +285,13 @@ class GlassField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 2),
-              child: Text(
-                label,
-                style: text.labelMedium
-                    ?.copyWith(color: skin.inkMuted, fontWeight: FontWeight.w700),
-              ),
-            ),
-            if (invalid) ...[
-              const Spacer(),
-              Flexible(
-                child: Text(
-                  error!,
-                  textAlign: TextAlign.right,
-                  overflow: TextOverflow.ellipsis,
-                  style: text.labelMedium?.copyWith(color: danger),
-                ),
-              ),
-            ],
-          ],
+        Padding(
+          padding: const EdgeInsets.only(left: 2),
+          child: Text(
+            label,
+            style: text.labelMedium
+                ?.copyWith(color: skin.inkMuted, fontWeight: FontWeight.w700),
+          ),
         ),
         const SizedBox(height: 6),
         Stack(
@@ -333,6 +321,15 @@ class GlassField extends StatelessWidget {
               Positioned(right: 3, top: 3, bottom: 3, child: trailing!),
           ],
         ),
+        // 잘리지 않게 폭을 다 쓰고 줄을 넘긴다.
+        if (invalid)
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 4),
+            child: Text(
+              error!,
+              style: text.labelMedium?.copyWith(color: danger),
+            ),
+          ),
       ],
     );
   }
