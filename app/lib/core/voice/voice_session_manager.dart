@@ -38,7 +38,10 @@ class VoiceSessionManager {
   static const commandTimeout = Duration(seconds: 20);
 
   /// 재질문 후속 응답 창.
-  static const clarifyWindow = Duration(seconds: 10);
+  ///
+  /// UI 계약(UI-04)이 정한 값이다. 질문 낭독이 끝난 뒤부터 센다. 이 시간 안에 답을
+  /// 시작하면 인식 서비스가 발화 끝까지 기다리므로 **말하는 중간에 끊기지 않는다.**
+  static const clarifyWindow = Duration(seconds: 8);
 
   /// 낭독 한 번의 한계.
   ///
@@ -54,8 +57,11 @@ class VoiceSessionManager {
   /// 본다.
   static const sessionTimeout = Duration(seconds: 75);
 
-  /// 결과를 읽고 나서 화면에 남겨두는 시간. 낭독이 실패해도 눈으로 읽을 틈을 준다.
-  static const resultLinger = Duration(milliseconds: 1200);
+  /// 반영 결과를 화면에 남겨두는 최소 시간.
+  ///
+  /// UI 계약(UI-05)이 정한 값이다. **낭독 시간을 포함해** 이만큼은 보여준다 — TTS 가
+  /// 바로 끝나거나 실패해도 결과가 스치고 지나가지 않아야 한다.
+  static const resultMinimum = Duration(seconds: 4);
 
   final WakeWordDetector _detector;
   final SpeechTranscriber _transcriber;
@@ -210,21 +216,28 @@ class VoiceSessionManager {
     }
   }
 
-  Future<String?> _transcribe(Duration limit) async {
+  /// 한 번 전사한다.
+  ///
+  /// [followUpTo] 가 있으면 답하고 있는 질문이다. 부분 전사를 흘리는 동안에도 이 값을
+  /// 유지해야 화면에서 질문이 사라지지 않는다.
+  Future<String?> _transcribe(Duration limit, {String? followUpTo}) async {
     try {
       // 부분 전사와 음량을 함께 흘린다. 마지막 값을 들고 있어야 한쪽만 와도 다른 쪽을
       // 잃지 않는다.
       var partial = '';
       var level = 0.0;
+      void emit() => _emit(
+            Listening(partialText: partial, level: level, followUpTo: followUpTo),
+          );
       return await _transcriber
           .transcribeOnce(
             onPartial: (value) {
               partial = value;
-              _emit(Listening(partialText: partial, level: level));
+              emit();
             },
             onLevel: (value) {
               level = value;
-              _emit(Listening(partialText: partial, level: level));
+              emit();
             },
           )
           .timeout(limit);
@@ -244,9 +257,11 @@ class VoiceSessionManager {
     _emit(Clarifying(result.question));
     await _speak(result.question);
 
-    // 호출어를 반복하지 않아도 답할 수 있게 짧은 창을 연다.
-    _emit(const Listening());
-    final followUp = await _transcribe(clarifyWindow);
+    // 호출어를 반복하지 않아도 답할 수 있게 짧은 창을 연다. 화면은 이 동안에도
+    // 질문을 계속 보여준다 — 질문이 사라지면 무엇에 답하는지 알 수 없다.
+    _emit(Listening(followUpTo: result.question));
+    final followUp =
+        await _transcribe(clarifyWindow, followUpTo: result.question);
     if (followUp == null || followUp.trim().isEmpty) {
       // 확인되지 않은 임시 변경은 적용하지 않는다.
       _logger.i('Clarification timed out; pending change discarded');
@@ -264,14 +279,16 @@ class VoiceSessionManager {
   }
 
   Future<void> _speakAndFinish(String text) async {
+    final shown = Stopwatch()..start();
     _emit(Speaking(text));
     final spoken = await _speak(text);
     if (!spoken) {
       // 낭독이 실패해도 결과는 화면에 남는다. 대기 복귀는 finally 가 보장한다.
       _logger.w('TTS did not complete; result remains on screen only');
     }
-    // 읽을 틈을 준다. 낭독이 바로 끝나면 결과가 스치고 지나간다.
-    await Future<void>.delayed(resultLinger);
+    // 낭독 시간까지 포함해 최소 표시 시간을 채운다. 낭독이 길었으면 더 기다리지 않는다.
+    final left = resultMinimum - shown.elapsed;
+    if (left > Duration.zero) await Future<void>.delayed(left);
   }
 
   /// 낭독 한 번. 막히면 멈추고 넘어간다.

@@ -220,7 +220,7 @@ void main() {
 
     final session = manager.startSession((_) async => const TurnAnswered('반영했어요.'));
     await tester.pump(VoiceSessionManager.speakTimeout + const Duration(seconds: 1));
-    await tester.pump(VoiceSessionManager.resultLinger + const Duration(seconds: 1));
+    await tester.pump(VoiceSessionManager.resultMinimum + const Duration(seconds: 1));
     await session;
 
     expect(manager.state, isA<Waiting>(), reason: '낭독이 막혀도 대기로 돌아와야 한다');

@@ -19,9 +19,15 @@ final class Waiting extends VoiceState {
 
 /// 호출을 감지해 명령을 전사하는 중. 전사기가 마이크를 갖고 있다.
 final class Listening extends VoiceState {
-  const Listening({this.partialText, this.level = 0});
+  const Listening({this.partialText, this.level = 0, this.followUpTo});
 
   final String? partialText;
+
+  /// 답하고 있는 확인 질문. 처음 호출로 시작한 듣기에서는 `null` 이다.
+  ///
+  /// 후속 응답 창에서도 화면에 질문이 남아야 한다. 질문이 사라지면 사용자는 무엇에
+  /// 답하는지 알 수 없고, 새 명령을 말해도 되는 것으로 오해한다.
+  final String? followUpTo;
 
   /// 마이크 입력 크기(0~1).
   ///
