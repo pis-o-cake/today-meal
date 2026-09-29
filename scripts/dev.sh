@@ -6,6 +6,11 @@
 set -e
 root=$(cd "$(dirname "$0")/.." && pwd)
 
+if [ ! -f "$root/server/.env" ]; then
+  echo "dev: server/.env is missing; copy server/.env.example and configure it first" >&2
+  exit 1
+fi
+
 # LAN 주소를 찾는다. 실기기가 붙어야 하므로 localhost 로는 안 된다.
 lan=""
 if command -v ipconfig >/dev/null 2>&1 && ipconfig getifaddr en0 >/dev/null 2>&1; then
@@ -29,14 +34,22 @@ fi
 
 echo "== PostgreSQL =="
 ( cd "$root/server" && docker compose up -d db )
+db_ready=false
 for i in $(seq 1 30); do
-  ( cd "$root/server" && docker compose exec -T db pg_isready -U today_meal >/dev/null 2>&1 ) && break
+  if ( cd "$root/server" && docker compose exec -T db sh -c 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"' >/dev/null 2>&1 ); then
+    db_ready=true
+    break
+  fi
   sleep 1
 done
+if [ "$db_ready" != true ]; then
+  echo "dev: database did not become ready within 30 seconds; inspect docker compose logs db" >&2
+  exit 1
+fi
 
 echo "== 마이그레이션과 시드 =="
 ( cd "$root/server" && poetry run alembic upgrade head >/dev/null )
-( cd "$root/server" && poetry run python -m app.core.seed 2>&1 | grep -E "Seed complete" || true )
+( cd "$root/server" && poetry run python -m app.core.seed )
 
 echo "== 앱 설정 =="
 # 실기기가 붙을 주소로 맞춘다. 매번 손으로 고치면 빠뜨린다.
