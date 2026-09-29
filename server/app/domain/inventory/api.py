@@ -1,22 +1,50 @@
 """재고 API. `/api/inventory` 에 마운트된다."""
 
 from datetime import date
+from decimal import Decimal
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Body, Depends, Query, Response, status
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import dates as date_utils
 from app.core.database import get_session
-from app.core.enums import QuantityCertainty
+from app.core.enums import DateKind, QuantityCertainty, StorageLocation
 from app.core.identity import CallerDep
 from app.domain.household import service as household_service
+from app.domain.inventory import edit as edit_service
 from app.domain.inventory import service
 from app.domain.inventory.schemas import BatchRead, ConditionRead, PriorityBatchRead
 
 router = APIRouter()
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
+
+
+class BatchEditRequest(BaseModel):
+    """화면에서 고친 재고.
+
+    **보낸 칸만 바뀐다.** 값을 지우려면 `clear_quantity`·`clear_date` 를 쓴다 — `null` 만으로는
+    "그대로 둬라" 와 "비워라" 를 구별할 수 없다.
+
+    IMPORTANT: 기한 종류는 서로 변환되지 않는다. 고른 종류로 그대로 저장한다.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+    quantity: Decimal | None = Field(default=None, ge=0, le=100_000)
+    clear_quantity: bool = Field(
+        default=False, description="잔량을 미확인으로 되돌린다. 0 과 다르다"
+    )
+    unit: str | None = Field(default=None, max_length=20)
+    storage_location: StorageLocation | None = None
+    date_kind: DateKind | None = None
+    date_value: date | None = None
+    clear_date: bool = Field(
+        default=False, description="`date_kind` 의 날짜를 미확인으로 되돌린다"
+    )
 
 
 @router.get("/batches", response_model=list[BatchRead], summary="현재 재고 묶음")
@@ -107,3 +135,67 @@ def _to_batch_read(batch: object, *, today: date) -> BatchRead:
             in {QuantityCertainty.UNKNOWN.value, QuantityCertainty.ESTIMATED.value},
         }
     )
+
+
+@router.patch(
+    "/batches/{batch_id}",
+    response_model=BatchRead,
+    summary="재고 묶음 고치기",
+)
+async def edit_batch(
+    batch_id: int,
+    caller: CallerDep,
+    session: SessionDep,
+    body: Annotated[BatchEditRequest, Body()],
+) -> BatchRead:
+    """화면에서 고친 내용을 저장한다.
+
+    말로 고치는 경로와 **같은 자리에 기록을 남긴다** — 기록 화면에서 재고가 저절로 바뀐 것처럼
+    보이면 안 되고, 되돌릴 수도 있어야 한다.
+
+    Raises:
+        404: 그 묶음이 없거나 다른 가구의 것이다.
+    """
+    household = await household_service.get_household(session, caller.household_id)
+    updated = await edit_service.edit_batch(
+        session,
+        household_id=caller.household_id,
+        batch_id=batch_id,
+        edit=edit_service.BatchEdit(
+            name=body.name,
+            quantity=body.quantity,
+            clear_quantity=body.clear_quantity,
+            unit=body.unit,
+            storage_location=body.storage_location,
+            date_kind=body.date_kind,
+            date_value=body.date_value,
+            clear_date=body.clear_date,
+        ),
+    )
+    return _to_batch_read(
+        updated, today=date_utils.today_in(household.timezone)
+    )
+
+
+@router.delete(
+    "/batches/{batch_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="재고 묶음 버리기",
+)
+async def discard_batch(
+    batch_id: int,
+    caller: CallerDep,
+    session: SessionDep,
+) -> Response:
+    """묶음을 버린다.
+
+    행을 지우지 않고 버린 것으로 표시한다 — 기록이 그 이름을 참조한다. 이미 버린 묶음에
+    보내도 실패로 다루지 않는다.
+
+    Raises:
+        404: 그 묶음이 없거나 다른 가구의 것이다.
+    """
+    await edit_service.discard_batch(
+        session, household_id=caller.household_id, batch_id=batch_id
+    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
