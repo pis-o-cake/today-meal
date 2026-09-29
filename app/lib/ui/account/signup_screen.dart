@@ -650,11 +650,12 @@ class _Box extends StatelessWidget {
               color: on ? skin.primary : skin.trackDashed, width: 1.5),
         ),
         alignment: Alignment.center,
-        child: Icon(
-          Icons.check_rounded,
-          size: size * 0.6,
-          color: on ? skin.onPrimary : skin.inkDim,
-        ),
+        // IMPORTANT: 끈 상태에는 체크 표시를 그리지 않는다. 옅게라도 그리면 이미 동의한
+        // 것으로 읽혀, 필수 동의를 하지 않고 넘어가려다 막히는 이유를 알 수 없게 된다.
+        child: on
+            ? Icon(Icons.check_rounded,
+                size: size * 0.6, color: skin.onPrimary)
+            : null,
       );
 }
 

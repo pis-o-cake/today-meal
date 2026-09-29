@@ -18,6 +18,7 @@ import '../../core/l10n/strings.dart';
 import '../../core/settings/app_settings.dart';
 import '../../core/settings/local_accounts.dart';
 import '../../domain/repository/repositories.dart';
+import '../widgets/brand_marks.dart';
 import '../widgets/glass.dart';
 import '../widgets/mascot.dart';
 
@@ -430,17 +431,18 @@ class _Social extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         children: [
           _button(context, SocialProvider.kakao, Strings.loginKakao, _kakao,
-              _kakaoInk, null),
+              _kakaoInk, null, const KakaoMark()),
           const SizedBox(height: 8),
           _button(context, SocialProvider.google, Strings.loginGoogle,
-              skin.raised, skin.ink, BorderSide(color: skin.edge)),
+              skin.raised, skin.ink, BorderSide(color: skin.edge),
+              const GoogleMark()),
           // Apple 로그인은 목업에서 빠졌다. 붙이려면 개발자 계정과 자산 규정이 필요하고,
           // 지금은 눌러도 "준비 중" 만 답하는 버튼이라 자리만 차지한다.
         ],
       );
 
   Widget _button(BuildContext context, SocialProvider provider, String label,
-      Color background, Color ink, BorderSide? border) {
+      Color background, Color ink, BorderSide? border, Widget mark) {
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(Tokens.radiusField),
       side: border ?? BorderSide.none,
@@ -452,14 +454,17 @@ class _Social extends StatelessWidget {
         child: InkWell(
           onTap: busy ? null : () => onPressed(provider),
           customBorder: shape,
-          child: Center(
-            child: Text(
-              label,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(fontSize: 15, color: ink, fontWeight: FontWeight.w600),
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              mark,
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontSize: 15, color: ink, fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
         ),
       ),
