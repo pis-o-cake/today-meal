@@ -8,7 +8,15 @@ import 'package:today_meal/domain/model/change_record.dart';
 import 'package:today_meal/domain/model/inventory.dart';
 import 'package:today_meal/domain/model/menu.dart';
 import 'package:today_meal/domain/repository/repositories.dart';
+import 'package:today_meal/ui/cook/cook_done_screen.dart';
+import 'package:today_meal/ui/cook/cook_home_screen.dart';
+import 'package:today_meal/ui/cook/cook_session.dart';
+import 'package:today_meal/ui/cook/cook_view_model.dart';
+import 'package:today_meal/ui/cook/cooking_screen.dart';
+import 'package:today_meal/ui/cook/cooking_view_model.dart';
 import 'package:today_meal/ui/fridge/fridge_screen.dart';
+import 'package:today_meal/ui/fridge/item_detail_screen.dart';
+import 'package:today_meal/ui/fridge/item_detail_view_model.dart';
 import 'package:today_meal/ui/fridge/fridge_view_model.dart';
 import 'package:today_meal/ui/history/history_screen.dart';
 import 'package:today_meal/ui/history/history_view_model.dart';
@@ -74,6 +82,65 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
+      testWidgets('조리 탭이 뜬다', (tester) async {
+        final cook = CookViewModel(menu: _Menu(), video: _Video());
+        await cook.loadPicks();
+        await _pump(
+          tester,
+          name,
+          ChangeNotifierProvider.value(
+            value: cook,
+            child: CookHomeScreen(onStart: (_) {}),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('조리 진행이 뜬다', (tester) async {
+        final cooking = CookingViewModel(plan: _plan, menu: _Menu());
+        addTearDown(cooking.dispose);
+        await _pump(
+          tester,
+          name,
+          ChangeNotifierProvider.value(
+            value: cooking,
+            child: CookingScreen(onDone: () {}),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('조리 완료가 뜬다', (tester) async {
+        await _pump(
+          tester,
+          name,
+          CookDoneScreen(
+            plan: _plan,
+            result: const CookedResult(suggestionId: 1, alreadyApplied: false),
+            minutes: 17,
+            onClose: () {},
+            onCookAgain: () {},
+          ),
+        );
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('재료 상세가 뜬다', (tester) async {
+        final batches = await _Inventory().listBatches();
+        await _pump(
+          tester,
+          name,
+          ChangeNotifierProvider.value(
+            value: ItemDetailViewModel(
+              batch: batches.first,
+              inventory: _Inventory(),
+            ),
+            child: ItemDetailScreen(onClosed: () {}),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+      });
+
       testWidgets('마이페이지가 뜬다', (tester) async {
         await _pump(
           tester,
@@ -96,7 +163,9 @@ void main() {
       SplashScreen(onReady: () => ready = true),
     );
     expect(tester.takeException(), isNull);
-    await tester.pumpAndSettle(const Duration(seconds: 3));
+    // WARNING: `pumpAndSettle` 은 캐릭터의 끝없는 움직임 때문에 영원히 기다린다.
+    // 스플래시 연출(1.8초)보다 넉넉히 흘려 보낸다.
+    await tester.pump(const Duration(seconds: 3));
     expect(ready, isTrue, reason: '연출이 끝나면 다음 화면으로 넘어가야 한다');
   });
 
@@ -187,6 +256,14 @@ class _Inventory implements InventoryRepository {
         unknownQuantityCount: 0,
         totalCount: 2,
       );
+
+  /// 이 시험은 고치기를 쓰지 않는다. 불리면 시험이 잘못된 것이다.
+  @override
+  Future<IngredientBatch> editBatch(int batchId, BatchEdit edit) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> discardBatch(int batchId) async => throw UnimplementedError();
 }
 
 class _Menu implements MenuRepository {
@@ -242,4 +319,24 @@ class _Command implements CommandRepository {
           spokenResponse: '계란 10개 등록했어요.',
         ),
       ];
+}
+
+/// 조리 한 판. 타이머가 있는 단계와 없는 단계를 섞는다 — 둘의 그림이 다르다.
+final _plan = CookPlan(
+  name: '두부계란전',
+  servings: 2,
+  suggestionId: 1,
+  steps: const [
+    CookStep(text: '두부를 1cm 두께로 썰어요', ingredients: ['두부 1모']),
+    CookStep(
+        text: '키친타월에 올려 물기를 빼요',
+        timerSeconds: 180,
+        timerLabel: '물기 빼기'),
+  ],
+);
+
+class _Video implements VideoRepository {
+  @override
+  Future<VideoRecipe> analyze(String url) async =>
+      throw const VideoException(VideoFailure.unreachable);
 }

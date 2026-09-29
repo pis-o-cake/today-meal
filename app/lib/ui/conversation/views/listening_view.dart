@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import '../../../core/design/band.dart';
 import '../../../core/design/motion.dart';
 import '../../../core/design/skin.dart';
+import '../../../core/design/tokens.dart';
 import '../../../core/l10n/strings.dart';
 import '../../../core/voice/voice_session_manager.dart';
 import '../../../domain/model/inventory.dart';
@@ -71,7 +72,7 @@ class ListeningView extends StatelessWidget {
         ),
         Text(
           processing ? Strings.voiceProcessing : Strings.voiceListening,
-          style: text.displayMedium?.copyWith(color: palette.accent),
+          style: Tokens.hero(38, height: 1.15).copyWith(color: palette.accent),
         ),
         const SizedBox(height: 8),
         Text(

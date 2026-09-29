@@ -11,16 +11,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/design/band.dart';
+import '../../core/di.dart';
 import '../../core/design/breakpoints.dart';
 import '../../core/design/labels.dart';
 import '../../core/design/skin.dart';
 import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../domain/model/inventory.dart';
+import '../../domain/repository/repositories.dart';
 import '../widgets/glass.dart';
+import '../widgets/line_face.dart';
 import '../widgets/mascot.dart';
 import '../widgets/screen_scaffold.dart';
 import 'fridge_view_model.dart';
+import 'item_detail_screen.dart';
+import 'item_detail_view_model.dart';
 
 class FridgeScreen extends StatefulWidget {
   const FridgeScreen({super.key});
@@ -53,6 +58,22 @@ class _FridgeScreenState extends State<FridgeScreen> {
     context.read<FridgeViewModel>().search('');
   }
 
+  /// 재료 상세를 연다. 탭을 바꾸지 않고 위에 쌓는다 — 돌아올 곳을 잃지 않는다.
+  ///
+  /// 상세가 닫히면 목록을 다시 읽는다. 저장했을 수도, 버렸을 수도 있다.
+  void _openItem(IngredientBatch batch) {
+    final fridge = context.read<FridgeViewModel>();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) =>
+              ItemDetailViewModel(batch: batch, inventory: di<InventoryRepository>()),
+          child: ItemDetailScreen(onClosed: fridge.load),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final fridge = context.watch<FridgeViewModel>();
@@ -67,15 +88,17 @@ class _FridgeScreenState extends State<FridgeScreen> {
         onQuery: fridge.search,
       ),
       child: switch ((fridge.loading, fridge.error)) {
-        (true, _) when fridge.totalCount == 0 =>
-          const Center(child: CircularProgressIndicator(strokeWidth: 3)),
+        (true, _) when fridge.totalCount == 0 => const Center(
+          child: CircularProgressIndicator(strokeWidth: 3),
+        ),
         (_, final Object error?) => _Failed(error: error, onRetry: fridge.load),
         // 재고가 0개인 것과 검색 결과가 0건인 것은 다른 상황이다. 같은 빈 화면으로
         // 처리하면 사용자가 무엇을 해야 하는지 알 수 없다.
-        _ when fridge.visible.isEmpty && fridge.totalCount > 0 =>
-          _NoMatch(onClear: _closeSearch),
+        _ when fridge.visible.isEmpty && fridge.totalCount > 0 => _NoMatch(
+          onClear: _closeSearch,
+        ),
         _ when fridge.visible.isEmpty => const _Empty(),
-        _ => _Tiles(items: fridge.visible),
+        _ => _Tiles(items: fridge.visible, onOpen: _openItem),
       },
     );
   }
@@ -106,8 +129,7 @@ class _Header extends StatelessWidget {
     final skin = context.skin;
     final text = Theme.of(context).textTheme;
     // 가장 급한 등급을 캐릭터가 얼굴로 말한다. 숫자보다 먼저 읽힌다.
-    final urgent =
-        fridge.countOf(Freshness.urgent) + fridge.countOf(Freshness.expired);
+    final urgent = fridge.countOf(Freshness.urgent) + fridge.countOf(Freshness.expired);
     final mood = urgent > 0 ? MascotMood.urgent : MascotMood.fresh;
 
     return Column(
@@ -129,17 +151,20 @@ class _Header extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      Strings.tabFridge,
-                      style: text.headlineMedium,
-                    ),
+                    Text(Strings.tabFridge, style: Tokens.hero(30)),
                     const SizedBox(height: 2),
                     Text(
-                      Strings.fridgeSummary(fridge.totalCount, urgent),
+                      Strings.fridgeSummary(
+                        fridge.totalCount,
+                        fridge.countOf(Freshness.urgent),
+                        fridge.countOf(Freshness.expired),
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: text.bodyMedium?.copyWith(
-                          color: skin.inkFaint, fontWeight: FontWeight.w500),
+                        color: skin.inkFaint,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -153,7 +178,91 @@ class _Header extends StatelessWidget {
           ),
         const SizedBox(height: 14),
         _Segments(fridge: fridge),
+        const SizedBox(height: 8),
+        _StatusChips(fridge: fridge),
       ],
+    );
+  }
+}
+
+/// 기한 상태로 거르는 칩 행.
+///
+/// 보관 위치 세그먼트와 **따로 둔다** — 축이 다르다. 하나로 합치면 "냉동의 기한 코앞" 을
+/// 고를 수 없다.
+///
+/// 고른 칩을 다시 누르면 전체로 돌아간다. 고른 것을 해제할 방법이 없으면 사용자가 갇힌다.
+class _StatusChips extends StatelessWidget {
+  const _StatusChips({required this.fridge});
+
+  final FridgeViewModel fridge;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: Strings.fridgeStatusFilter,
+    child: SizedBox(
+      height: 36,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _chip(context, null),
+          for (final grade in Bands.ordered) _chip(context, grade),
+        ],
+      ),
+    ),
+  );
+
+  Widget _chip(BuildContext context, Freshness? grade) {
+    final skin = context.skin;
+    final text = Theme.of(context).textTheme;
+    final on = fridge.grade == grade;
+    final count = fridge.countInScope(grade);
+    final palette = grade == null ? null : skin.band(grade);
+    final label = grade == null ? Strings.bandShortAll : Labels.freshnessShort(grade);
+    final fg = on ? (palette?.accent ?? skin.ink) : skin.inkFaint;
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: Semantics(
+        button: true,
+        selected: on,
+        label: '$label $count',
+        child: GestureDetector(
+          onTap: () => fridge.filterGrade(grade),
+          child: Container(
+            height: 36,
+            padding: EdgeInsets.fromLTRB(grade == null ? 12 : 8, 0, 12, 0),
+            decoration: ShapeDecoration(
+              color: on ? (palette?.accentSoft ?? skin.raised) : skin.chipNeutral,
+              shape: StadiumBorder(
+                side: BorderSide(color: on ? Colors.transparent : skin.hairline),
+              ),
+            ),
+            child: Row(
+              children: [
+                if (grade != null) ...[
+                  LineFace(grade: grade, color: fg, size: 18),
+                  const SizedBox(width: 4),
+                ],
+                Text(
+                  label,
+                  style: text.labelMedium?.copyWith(
+                    color: fg,
+                    fontWeight: on ? FontWeight.w700 : FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  '$count',
+                  style: text.labelSmall?.copyWith(
+                    color: fg.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -192,17 +301,13 @@ class _SearchField extends StatelessWidget {
                       focusNode: focus,
                       onChanged: onQuery,
                       textInputAction: TextInputAction.search,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
+                      style: Theme.of(context).textTheme.bodyLarge
                           ?.copyWith(fontSize: 16, color: skin.ink),
                       decoration: InputDecoration(
                         isDense: true,
                         border: InputBorder.none,
                         hintText: Strings.fridgeSearchHint,
-                        hintStyle: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
+                        hintStyle: Theme.of(context).textTheme.bodyLarge
                             ?.copyWith(fontSize: 16, color: skin.inkDim),
                       ),
                     ),
@@ -257,22 +362,17 @@ class _Segments extends StatelessWidget {
           children: [
             Expanded(child: _segment(context, skin, Strings.fridgeAll, null)),
             for (final storage in _shown)
-              Expanded(
-                child: _segment(
-                    context, skin, Labels.storage(storage), storage),
-              ),
+              Expanded(child: _segment(context, skin, Labels.storage(storage), storage)),
           ],
         ),
       ),
     );
   }
 
-  Widget _segment(
-      BuildContext context, Skin skin, String label, StorageLocation? value) {
+  Widget _segment(BuildContext context, Skin skin, String label, StorageLocation? value) {
     final on = fridge.storage == value;
     final text = Theme.of(context).textTheme;
-    final count =
-        value == null ? fridge.totalCount : fridge.countOfStorage(value);
+    final count = value == null ? fridge.totalCount : fridge.countOfStorage(value);
 
     return Semantics(
       button: true,
@@ -302,8 +402,10 @@ class _Segments extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 '$count',
-                style: text.labelSmall
-                    ?.copyWith(color: skin.inkDim, fontWeight: FontWeight.w500),
+                style: text.labelSmall?.copyWith(
+                  color: skin.inkDim,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -315,9 +417,12 @@ class _Segments extends StatelessWidget {
 
 /// 2열 타일.
 class _Tiles extends StatelessWidget {
-  const _Tiles({required this.items});
+  const _Tiles({required this.items, required this.onOpen});
 
   final List<IngredientBatch> items;
+
+  /// 재료 상세로 보낸다.
+  final void Function(IngredientBatch batch) onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -335,7 +440,8 @@ class _Tiles extends StatelessWidget {
             mainAxisExtent: 186,
           ),
           itemCount: items.length,
-          itemBuilder: (context, index) => _Tile(batch: items[index]),
+          itemBuilder: (context, index) =>
+              _Tile(batch: items[index], onTap: () => onOpen(items[index])),
         ),
         const Positioned(left: 0, right: 0, bottom: 0, child: ListFade()),
       ],
@@ -345,9 +451,10 @@ class _Tiles extends StatelessWidget {
 
 /// 재료 한 칸.
 class _Tile extends StatelessWidget {
-  const _Tile({required this.batch});
+  const _Tile({required this.batch, required this.onTap});
 
   final IngredientBatch batch;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -356,63 +463,79 @@ class _Tile extends StatelessWidget {
     final palette = skin.band(batch.freshness);
     final expired = batch.freshness == Freshness.expired;
 
-    return GlassPanel(
-      radius: Tokens.radiusCard,
-      weight: GlassWeight.thick,
-      padding: const EdgeInsets.all(14),
-      shadow: [skin.shade(0.06, 24, 8)],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // WARNING: 여기에 Spacer 를 쓰지 않는다. Flexible 과 남은 폭을 반씩 나눠
-          // 상태 이름이 눌린다 — 긴 이름("얼마 안 남았어요")에서 가로로 넘친다.
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Semantics(
+      button: true,
+      label: '${batch.name} ${Labels.freshness(batch.freshness)}',
+      child: GestureDetector(
+        onTap: onTap,
+        child: GlassPanel(
+          radius: Tokens.radiusCard,
+          weight: GlassWeight.thick,
+          padding: const EdgeInsets.all(14),
+          shadow: [skin.shade(0.06, 24, 8)],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Flexible(
-                child: InfoChip(
-                  label: Labels.freshness(batch.freshness),
-                  background: palette.bgEdge,
-                  foreground: palette.accent,
+              // WARNING: 여기에 Spacer 를 쓰지 않는다. Flexible 과 남은 폭을 반씩 나눠
+              // 상태 이름이 눌린다 — 긴 이름("얼마 안 남았어요")에서 가로로 넘친다.
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: InfoChip(
+                      label: Labels.freshnessShort(batch.freshness),
+                      background: palette.bgEdge,
+                      foreground: palette.accent,
+                      leading: LineFace(
+                        grade: batch.freshness,
+                        color: palette.accent,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    Labels.storage(batch.storage),
+                    style: text.labelSmall?.copyWith(
+                      color: skin.inkDim,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                batch.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.titleMedium,
+              ),
+              const SizedBox(height: 2),
+              _Amount(batch: batch, skin: skin, style: text),
+              _Remaining(batch: batch, palette: palette, skin: skin),
+              const SizedBox(height: 7),
+              Text(
+                _meta(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.labelSmall?.copyWith(
+                  color: skin.inkFaint,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(width: 6),
+              // 아랫줄은 한 마디 요약이다. 기한이 지난 것은 남은 날 대신 경고를 적는다.
               Text(
-                Labels.storage(batch.storage),
-                style: text.labelSmall
-                    ?.copyWith(color: skin.inkDim, fontWeight: FontWeight.w500),
+                _sub(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.labelSmall?.copyWith(
+                  color: expired ? skin.band(Freshness.urgent).accent : palette.accent,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            batch.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: text.titleMedium,
-          ),
-          const SizedBox(height: 2),
-          _Amount(batch: batch, skin: skin, style: text),
-          _Remaining(batch: batch, palette: palette, skin: skin),
-          const SizedBox(height: 7),
-          Text(
-            _meta(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: text.labelSmall?.copyWith(
-                color: skin.inkFaint, fontWeight: FontWeight.w500),
-          ),
-          // 아랫줄은 한 마디 요약이다. 기한이 지난 것은 남은 날 대신 경고를 적는다.
-          Text(
-            _sub(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: text.labelSmall?.copyWith(
-              color: expired ? skin.band(Freshness.urgent).accent : palette.accent,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -476,8 +599,10 @@ class _Amount extends StatelessWidget {
         if (unit.isNotEmpty)
           Text(
             unit,
-            style: style.bodyLarge
-                ?.copyWith(color: skin.inkMuted, fontWeight: FontWeight.w600),
+            style: style.bodyLarge?.copyWith(
+              color: skin.inkMuted,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         if (batch.quantityUncertain) ...[
           const SizedBox(width: 6),
@@ -496,11 +621,7 @@ class _Amount extends StatelessWidget {
 ///
 /// 기한을 모르면 채우지 않고 점선만 둔다. 0% 로 채우면 다 썼다는 뜻이 되어 거짓이다.
 class _Remaining extends StatelessWidget {
-  const _Remaining({
-    required this.batch,
-    required this.palette,
-    required this.skin,
-  });
+  const _Remaining({required this.batch, required this.palette, required this.skin});
 
   final IngredientBatch batch;
   final BandPalette palette;

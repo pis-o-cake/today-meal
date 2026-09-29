@@ -40,12 +40,11 @@ class MyPageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
     final skin = context.skin;
-    final text = Theme.of(context).textTheme;
 
     return ListScreen(
       header: Padding(
         padding: const EdgeInsets.only(top: 2),
-        child: Text(Strings.myPageTitle, style: text.headlineMedium),
+        child: Text(Strings.myPageTitle, style: Tokens.hero(30)),
       ),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 108),

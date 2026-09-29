@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import '../../../core/design/band.dart';
 import '../../../core/design/labels.dart';
 import '../../../core/design/skin.dart';
+import '../../../core/design/tokens.dart';
 import '../../../core/l10n/strings.dart';
 import '../../../core/voice/voice_session_manager.dart';
 import '../../../domain/repository/repositories.dart';
@@ -64,7 +65,7 @@ class ResultView extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   Strings.voiceDone,
-                  style: text.displayMedium?.copyWith(color: palette.accent),
+                  style: Tokens.hero(46, height: 1.15).copyWith(color: palette.accent),
                 ),
                 if (spoken.isNotEmpty) ...[
                   const SizedBox(height: 12),

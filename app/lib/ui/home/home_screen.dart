@@ -1,7 +1,8 @@
 /// 오늘 화면 (UI-02).
 ///
-/// 목업 `mockup/canvas/Main.dc.html` 을 옮긴 것이다. 위에서 아래로 날짜 → 인사 →
-/// 호출 상태 칩 → 캐릭터와 등급 → 주 행동 → 타원 유리면(얼굴 다섯 + 탭 넷) 순이다.
+/// 목업 `mockup/canvas/Main.dc.html` 을 옮긴 것이다. 위에서 아래로 인사(오른쪽 위에
+/// 날짜 칩) → 호출 상태 칩 → 캐릭터와 등급 → 주 행동 → 타원 유리면(얼굴 다섯 + 탭
+/// 다섯) 순이다.
 ///
 /// **화면 배색이 고른 등급을 따라 바뀐다.** 목록을 훑는 화면이 아니라 색으로 상황을 읽는
 /// 화면이라서, 배경·강조색·캐릭터가 한 등급을 함께 가리킨다.
@@ -14,6 +15,7 @@ import '../../core/design/band.dart';
 import '../../core/design/breakpoints.dart';
 import '../../core/design/labels.dart';
 import '../../core/design/skin.dart';
+import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../domain/model/inventory.dart';
 import '../../domain/model/menu.dart';
@@ -21,6 +23,7 @@ import '../widgets/bottom_deck.dart';
 import '../widgets/glass.dart';
 import '../widgets/glass_nav.dart';
 import '../widgets/mascot.dart';
+import '../widgets/nav_icons.dart';
 import 'home_view_model.dart';
 import 'voice_status_bar.dart';
 
@@ -162,36 +165,49 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// 날짜와 인사.
+/// 인사와 날짜 칩.
+///
+/// 날짜는 인사 **위 오른쪽 구석**이다 — 인사가 화면의 첫 줄이어야 하고, 날짜는 확인용이라
+/// 시선의 중심에서 비켜 있어야 한다.
+///
+/// WARNING: 칩을 제목과 같은 줄에 겹쳐 놓지 않는다. 제목은 글꼴과 글자 수에 따라 폭이
+/// 달라져서, 겹쳐 두면 긴 제목에서 날짜 위로 글자가 올라탄다 — 실기기에서 겪었다.
 class _Greeting extends StatelessWidget {
   const _Greeting({required this.skin});
 
   final Skin skin;
 
   @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-      child: Column(
-        children: [
-          Text(
-            _today(),
-            style: text.bodyMedium
-                ?.copyWith(color: skin.inkFaint, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 4),
-          Text(Strings.todayGreeting, style: text.headlineMedium),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 10, 18, 0),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 20,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(Icons.calendar_today_rounded,
+                      size: 13, color: skin.inkFaint),
+                  const SizedBox(width: 4),
+                  Text(
+                    _today(),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: skin.inkFaint, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            Text(Strings.todayGreeting, style: Tokens.hero(30)),
+          ],
+        ),
+      );
 
-  /// 오늘 날짜. 요일까지 붙여 "지금"임을 분명히 한다.
+  /// 오늘 날짜. 목업의 `10.2 금` 꼴이다 — 칩에 들어가야 해서 짧게 쓴다.
   String _today() {
     const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
     final now = DateTime.now();
-    return '${now.month}월 ${now.day}일 ${weekdays[now.weekday - 1]}요일';
+    return '${now.month}.${now.day} ${weekdays[now.weekday - 1]}';
   }
 }
 
@@ -329,8 +345,9 @@ class _Focus extends StatelessWidget {
   /// 칩으로 보여줄 재료 수. 넘치면 접는다 — 여기서 목록을 다 읽게 하지 않는다.
   static const _chipLimit = 3;
 
-  /// 이 길이를 넘는 등급 이름은 한 줄에 들어가지 않아 한 단계 줄인다.
-  static const _longName = 7;
+  /// 등급 이름이 한 줄에 들어가는 글자 크기의 경계. 목업의 값이다.
+  static const _longName = 9;
+  static const _veryLongName = 12;
 
   @override
   Widget build(BuildContext context) {
@@ -354,10 +371,8 @@ class _Focus extends StatelessWidget {
               Text(
                 name,
                 maxLines: 1,
-                style: (name.length > _longName
-                        ? text.displayMedium
-                        : text.displayLarge)
-                    ?.copyWith(color: palette.accent),
+                style: Tokens.hero(_wordSize(name), height: 1.15)
+                    .copyWith(color: palette.accent),
               ),
               const SizedBox(height: 6),
               Text(
@@ -387,6 +402,13 @@ class _Focus extends StatelessWidget {
         );
       },
     );
+  }
+
+  /// 등급 이름의 글자 크기. 긴 문구가 줄바꿈 없이 한 줄에 들어가야 한다.
+  static double _wordSize(String name) {
+    if (name.length >= _veryLongName) return 36;
+    if (name.length >= _longName) return 38;
+    return 44;
   }
 
   /// 칩 한 줄. 이름에 잔량이나 기한 중 **아는 것만** 붙인다.
@@ -426,11 +448,12 @@ class _Action extends StatelessWidget {
 
     // 기한이 지난 등급에서는 요리를 권하지 않는다. 확인하러 가는 것이 다음 할 일이다.
     // 날짜를 모르는 등급에서는 기한을 말해달라고 한다.
-    final (label, meta, action) = switch (menu) {
-      final MenuSuggestion pick => (pick.name, _meta(pick), () => onOpenMenu(pick)),
+    final (label, meta, glyph, action) = switch (menu) {
+      final MenuSuggestion pick =>
+        (pick.name, _meta(pick), _Badge.pot, () => onOpenMenu(pick)),
       null when grade == Freshness.unknown =>
-        (Strings.dateTell, Strings.dateTellExample, onOpenFridge),
-      null => (Strings.fridgeOpen, '', onOpenFridge),
+        (Strings.dateTell, Strings.dateTellExample, _Badge.mic, onOpenFridge),
+      null => (Strings.fridgeOpen, '', _Badge.fridge, onOpenFridge),
     };
 
     return Padding(
@@ -451,29 +474,40 @@ class _Action extends StatelessWidget {
                 onTap: action,
                 customBorder: const StadiumBorder(),
                 child: Container(
-                  constraints: const BoxConstraints(minHeight: 56),
-                  padding: const EdgeInsets.only(left: 22, right: 20),
+                  constraints: const BoxConstraints(minHeight: 62),
+                  padding: const EdgeInsets.fromLTRB(8, 8, 18, 8),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      _Badge(palette: palette, glyph: glyph),
+                      const SizedBox(width: 12),
+                      // 이름과 곁들이는 값을 두 줄로 쌓는다. 한 줄에 이으면 긴 이름에서
+                      // 인분·시간이 먼저 잘려 정작 필요한 정보가 사라진다.
                       Flexible(
-                        child: Text(label,
-                            style: text.titleMedium,
-                            overflow: TextOverflow.ellipsis),
-                      ),
-                      if (meta.isNotEmpty) ...[
-                        const SizedBox(width: 10),
-                        Flexible(
-                          child: Text(
-                            meta,
-                            overflow: TextOverflow.ellipsis,
-                            style: text.bodyMedium?.copyWith(
-                                color: skin.inkFaint,
-                                fontWeight: FontWeight.w500),
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: text.titleMedium?.copyWith(height: 1.3),
+                            ),
+                            if (meta.isNotEmpty)
+                              Text(
+                                meta,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: text.labelMedium?.copyWith(
+                                    height: 1.3,
+                                    color: skin.inkFaint,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                          ],
                         ),
-                      ],
-                      const SizedBox(width: 10),
+                      ),
+                      const SizedBox(width: 16),
                       Icon(Icons.arrow_forward_rounded,
                           size: 20, color: palette.accent),
                     ],
@@ -508,4 +542,44 @@ class _Action extends StatelessWidget {
     if (minutes != null) parts.add(Strings.menuMinutes(minutes));
     return parts.join(' · ');
   }
+}
+
+/// 주 행동 앞의 둥근 아이콘 배지.
+///
+/// 아이콘은 등급이 아니라 **버튼이 무엇을 하는지**를 말한다 — 메뉴를 열면 냄비, 냉장고로
+/// 가면 냉장고, 말하게 하면 마이크다. 등급으로 고르면 "냉장고에서 확인하기" 옆에 냄비가
+/// 붙는 일이 생긴다.
+///
+/// 탭 아이콘과 같은 그림을 쓰는 것이 의도다: 누르면 그 탭으로 가기 때문이다.
+class _Badge extends StatelessWidget {
+  const _Badge({required this.palette, required this.glyph});
+
+  final BandPalette palette;
+
+  /// 어떤 그림을 둘지. [pot]·[fridge]·[mic] 중 하나다.
+  final int glyph;
+
+  static const pot = 0;
+  static const fridge = 1;
+  static const mic = 2;
+
+  static const _size = 46.0;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: _size,
+        height: _size,
+        decoration: BoxDecoration(
+          color: palette.accentSoft,
+          shape: BoxShape.circle,
+        ),
+        child: Center(child: _drawn()),
+      );
+
+  Widget _drawn() => switch (glyph) {
+        fridge => NavIcon(
+            glyph: NavGlyph.fridge, color: palette.accent, size: 24),
+        mic => Icon(Icons.mic_none_rounded, size: 24, color: palette.accent),
+        _ => NavIcon(glyph: NavGlyph.cook, color: palette.accent, size: 24),
+      };
 }

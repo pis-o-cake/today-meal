@@ -9,9 +9,6 @@
 /// 목업의 `href` 를 따라 성공으로 넘기면 인증한 것처럼 보인다.
 library;
 
-import 'dart:io' show Platform;
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/design/band.dart';
@@ -157,7 +154,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final skin = context.skin;
     final text = Theme.of(context).textTheme;
-    final isIos = !kIsWeb && Platform.isIOS;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -216,7 +212,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 14),
                       _Social(
                         skin: skin,
-                        isIos: isIos,
                         busy: _busy,
                         onPressed: _social,
                       ),
@@ -261,7 +256,7 @@ class _Brand extends StatelessWidget {
         children: [
           const Mascot(mood: MascotMood.hello, size: 104),
           const SizedBox(height: 6),
-          Text(Strings.appName, style: text.headlineMedium),
+          Text(Strings.appName, style: Tokens.hero(32)),
           const SizedBox(height: 4),
           Text(
             Strings.appTagline,
@@ -416,15 +411,12 @@ class _Divider extends StatelessWidget {
 class _Social extends StatelessWidget {
   const _Social({
     required this.skin,
-    required this.isIos,
     required this.onPressed,
     this.busy = false,
   });
 
   final Skin skin;
 
-  /// Apple 은 iOS 에만 표시한다.
-  final bool isIos;
   final void Function(SocialProvider provider) onPressed;
 
   /// 다른 로그인이 진행 중. 두 경로가 겹치지 않게 막는다.
@@ -442,11 +434,8 @@ class _Social extends StatelessWidget {
           const SizedBox(height: 8),
           _button(context, SocialProvider.google, Strings.loginGoogle,
               skin.raised, skin.ink, BorderSide(color: skin.edge)),
-          if (isIos) ...[
-            const SizedBox(height: 8),
-            _button(context, SocialProvider.apple, Strings.loginApple,
-                Colors.black, Colors.white, null),
-          ],
+          // Apple 로그인은 목업에서 빠졌다. 붙이려면 개발자 계정과 자산 규정이 필요하고,
+          // 지금은 눌러도 "준비 중" 만 답하는 버튼이라 자리만 차지한다.
         ],
       );
 

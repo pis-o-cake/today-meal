@@ -18,6 +18,7 @@ import 'package:provider/provider.dart';
 import '../../core/design/band.dart';
 import '../../core/design/motion.dart';
 import '../../core/design/skin.dart';
+import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/voice/voice_state.dart';
 import '../widgets/step_bar.dart';
@@ -194,7 +195,7 @@ class _Unavailable extends StatelessWidget {
           Text(
             Strings.voiceUnavailable,
             textAlign: TextAlign.center,
-            style: text.displaySmall?.copyWith(color: skin.inkMuted),
+            style: Tokens.hero(34, height: 1.15).copyWith(color: skin.inkMuted),
           ),
           const SizedBox(height: 12),
           Text(

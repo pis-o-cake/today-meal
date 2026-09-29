@@ -15,6 +15,9 @@ import 'package:today_meal/ui/account/signup_screen.dart';
 ///
 /// 지키는 것은 넷이다.
 ///
+/// WARNING: `pumpAndSettle` 을 쓰지 않는다. 캐릭터가 기분에 맞춰 끝없이 움직이므로 영원히
+/// 기다린다. 대신 배치가 끝날 만큼만 흘린다([_settle]).
+///
 /// 1. 서버가 거절하면 **성공으로 넘어가지 않는다.**
 /// 2. 로그인 실패는 이메일의 존재 여부를 **알려주지 않는다.**
 /// 3. 필수 동의와 입력 조건이 다 차야 가입 버튼이 켜진다.
@@ -80,7 +83,7 @@ void main() {
     await tester.enterText(find.byType(TextField).first, 'cheol@example.com');
     await tester.enterText(find.byType(TextField).last, 'kitchen123');
     await tester.tap(find.text(Strings.loginSubmit));
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     expect(entered?.email, 'cheol@example.com');
     expect(entered?.provider, AccountProvider.email);
@@ -103,7 +106,7 @@ void main() {
     await tester.enterText(find.byType(TextField).first, 'cheol@example.com');
     await tester.enterText(find.byType(TextField).last, 'kitchen123');
     await tester.tap(find.text(Strings.loginSubmit));
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     expect(entered, isNull);
     expect(find.text(Strings.serverFailed), findsOneWidget);
@@ -210,7 +213,7 @@ void main() {
     await tester.enterText(fields.at(1), 'cheol@example.com');
     await tester.enterText(fields.at(2), 'kitchen123');
     await tester.enterText(fields.at(3), 'kitchen123');
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     await _press(tester, find.text(Strings.signUpSubmit));
     expect(made, isNull, reason: '필수 동의 전에는 가입되지 않는다');
@@ -219,7 +222,7 @@ void main() {
     // 모두 동의하면 켜진다. 선택 동의까지 켜지지만 필수만으로도 충분하다.
     await _press(tester, find.text(Strings.signUpAgreeAll));
     await tester.pump(const Duration(milliseconds: 600));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     await _press(tester, find.text(Strings.signUpSubmit));
 
     expect(made?.nickname, '철');
@@ -246,7 +249,7 @@ void main() {
     await _press(tester, find.text(Strings.signUpAgreeAll));
     // 타이핑이 멈춘 뒤에 확인한다.
     await tester.pump(const Duration(milliseconds: 600));
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     expect(auth.calls, contains('checkEmail'));
     expect(find.text(Strings.signUpErrorTaken), findsOneWidget);
@@ -276,7 +279,7 @@ void main() {
     await tester.enterText(fields.at(3), 'kitchen123');
     await _press(tester, find.text(Strings.signUpAgreeAll));
     await tester.pump(const Duration(milliseconds: 600));
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     await _press(tester, find.text(Strings.signUpSubmit));
     expect(made?.nickname, '철');
@@ -302,7 +305,7 @@ void main() {
     await tester.enterText(fields.at(3), 'kitchen123');
     await _press(tester, find.text(Strings.signUpAgreeAll));
     await tester.pump(const Duration(milliseconds: 600));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     await _press(tester, find.text(Strings.signUpSubmit));
 
     expect(made, isNull);
@@ -323,10 +326,10 @@ void main() {
     await tester.enterText(fields.at(3), 'kitchen123');
     await _press(tester, find.text(Strings.signUpAgreeAll));
     await tester.pump(const Duration(milliseconds: 600));
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     await tester.ensureVisible(find.text(Strings.signUpSubmit));
-    await tester.pumpAndSettle();
+    await _settle(tester);
     await tester.tap(find.text(Strings.signUpSubmit));
     await tester.pump();
     // 두 번째 탭은 버튼이 이미 꺼져 있어 닿지 않는다.
@@ -335,7 +338,7 @@ void main() {
 
     expect(auth.signUpCount, 1, reason: '한 번만 보내야 계정이 하나 만들어진다');
     auth.release();
-    await tester.pumpAndSettle();
+    await _settle(tester);
   });
 }
 
@@ -355,15 +358,23 @@ Future<void> _pump(WidgetTester tester, Widget child) async {
       child: MaterialApp(theme: buildTheme(skin), home: child),
     ),
   );
-  await tester.pumpAndSettle();
+  await _settle(tester);
 }
 
 /// 화면 밖이면 스크롤해 올리고 누른다.
 Future<void> _press(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
-  await tester.pumpAndSettle();
+  await _settle(tester);
   await tester.tap(finder);
-  await tester.pumpAndSettle();
+  await _settle(tester);
+}
+
+/// 배치가 끝날 만큼만 흘린다.
+///
+/// 화면에 끝나지 않는 애니메이션이 있어 `pumpAndSettle` 을 쓸 수 없다.
+Future<void> _settle(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 600));
 }
 
 /// 서버 대신 미리 정한 답을 준다.

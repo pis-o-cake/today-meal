@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/design/band.dart';
 import '../../../core/design/skin.dart';
+import '../../../core/design/tokens.dart';
 import '../../../core/l10n/strings.dart';
 import '../../../core/voice/voice_session_manager.dart';
 import '../../../domain/repository/repositories.dart';
@@ -86,7 +87,7 @@ class ClarifyView extends StatelessWidget {
                 Text(
                   Strings.voiceClarifying,
                   textAlign: TextAlign.center,
-                  style: text.displaySmall?.copyWith(color: palette.accent),
+                  style: Tokens.hero(34, height: 1.15).copyWith(color: palette.accent),
                 ),
                 const SizedBox(height: 12),
                 // 질문은 서버 문장 그대로다. 줄여 쓰거나 바꿔 쓰지 않는다.
@@ -147,19 +148,21 @@ class _AppliedRow extends StatelessWidget {
 
     return GlassPanel(
       radius: 18,
-      padding: const EdgeInsets.fromLTRB(14, 4, 6, 4),
+      padding: const EdgeInsets.all(6),
       shadow: [skin.shade(0.06, 18, 6)],
       child: Row(
         children: [
+          // 체크 표시 대신 캐릭터가 웃는다. 이미 반영된 것과 되묻는 것을 사람으로 가른다.
           Container(
-            width: 24,
-            height: 24,
+            width: 40,
+            height: 40,
+            clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(
-              color: skin.done.accent,
-              shape: BoxShape.circle,
+              color: skin.done.accentSoft,
+              borderRadius: BorderRadius.circular(14),
             ),
             alignment: Alignment.center,
-            child: Icon(Icons.check_rounded, size: 14, color: skin.done.bgMid),
+            child: const Mascot(mood: MascotMood.done, size: 38),
           ),
           const SizedBox(width: 10),
           Expanded(

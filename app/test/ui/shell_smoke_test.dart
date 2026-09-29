@@ -17,6 +17,9 @@ import 'package:today_meal/ui/home/home_view_model.dart';
 /// UI 는 계속 바뀌므로 시각 디테일을 고정하지 않는다. **구조가 무너지지 않는지**만 본다 —
 /// 신선도 밴드로 묶이는가, 잔량 미확인이 별도로 드러나는가, 필수 재료가 없는 메뉴가
 /// '지금 가능' 으로 표시되지 않는가.
+///
+/// WARNING: `pumpAndSettle` 을 쓰지 않는다. 오늘 화면에는 끝없이 도는 애니메이션(고른 얼굴
+/// 뒤의 갈기)이 있어 영원히 기다린다. 대신 한 프레임을 흘려 배치를 끝낸다([_settle]).
 void main() {
   testWidgets('신선도 밴드가 급한 것부터 쌓인다', (tester) async {
     final vm = HomeViewModel(
@@ -50,11 +53,11 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     // 고르지 않으면 가장 급한 등급이 잡힌다.
     expect(home.selected, Freshness.urgent);
-    expect(find.text('얼마 안 남았어요'), findsOneWidget);
+    expect(find.text('기한이 코앞이에요!'), findsOneWidget);
     expect(find.text('하루이틀 안에 쓰면 좋아요'), findsNothing,
         reason: '등급 힌트는 개수와 한 줄로 합쳐 나온다');
     expect(find.textContaining('하루이틀 안에 쓰면 좋아요'), findsOneWidget);
@@ -87,12 +90,12 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     home.select(Freshness.soon);
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
-    expect(find.text('며칠 남았어요'), findsOneWidget);
+    expect(find.text('기한이 며칠 안 남았어요'), findsOneWidget);
     expect(find.text('대파 · 1단 · D-2'), findsOneWidget);
     expect(find.text('두부 · 2모 · D-1'), findsNothing);
   });
@@ -117,10 +120,10 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await _settle(tester);
 
     expect(find.text('서버에 연결할 수 없어요'), findsOneWidget);
-    expect(find.text('넉넉해요'), findsNothing);
+    expect(find.text('기한 넉넉해요~'), findsNothing);
     expect(find.text('다시 시도'), findsOneWidget);
   });
 
@@ -242,6 +245,14 @@ class _FakeInventory implements InventoryRepository {
         unknownQuantityCount: 1,
         totalCount: 3,
       );
+
+  /// 이 시험은 고치기를 쓰지 않는다. 불리면 시험이 잘못된 것이다.
+  @override
+  Future<IngredientBatch> editBatch(int batchId, BatchEdit edit) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> discardBatch(int batchId) async => throw UnimplementedError();
 }
 
 /// 서버가 끊긴 상황.
@@ -257,6 +268,14 @@ class _BrokenInventory implements InventoryRepository {
   @override
   Future<FridgeCondition> condition() async =>
       throw Exception('connection refused');
+
+  /// 이 시험은 고치기를 쓰지 않는다. 불리면 시험이 잘못된 것이다.
+  @override
+  Future<IngredientBatch> editBatch(int batchId, BatchEdit edit) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> discardBatch(int batchId) async => throw UnimplementedError();
 }
 
 class _FakeMenu implements MenuRepository {
@@ -336,4 +355,13 @@ class _FakeCommand implements CommandRepository {
           occurredAt: DateTime(2026, 9, 28, 19, 5),
         ),
       ];
+}
+
+/// 배치가 끝날 만큼만 흘린다.
+///
+/// 화면에 끝나지 않는 애니메이션이 있으므로 `pumpAndSettle` 을 쓸 수 없다. 한 번의 `pump` 로
+/// 첫 배치가 끝나고, 스프링이 자리를 잡을 시간까지 준다.
+Future<void> _settle(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 600));
 }

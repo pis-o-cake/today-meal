@@ -17,11 +17,15 @@ class FridgeViewModel extends ChangeNotifier {
   List<IngredientBatch> _all = const [];
   String _query = '';
   StorageLocation? _storage;
+  Freshness? _grade;
 
   bool get loading => _loading;
   Object? get error => _error;
   String get query => _query;
   StorageLocation? get storage => _storage;
+
+  /// 고른 기한 상태. `null` 이면 전체다.
+  Freshness? get grade => _grade;
   int get totalCount => _all.length;
 
   /// 검색과 필터를 적용한 목록.
@@ -29,6 +33,7 @@ class FridgeViewModel extends ChangeNotifier {
     final needle = _query.trim();
     return _all.where((batch) {
       if (_storage != null && batch.storage != _storage) return false;
+      if (_grade != null && batch.freshness != _grade) return false;
       if (needle.isEmpty) return true;
       return batch.name.contains(needle);
     }).toList(growable: false);
@@ -66,6 +71,17 @@ class FridgeViewModel extends ChangeNotifier {
   int countOfStorage(StorageLocation value) =>
       _all.where((b) => b.storage == value).length;
 
+  /// 상태 칩에 붙일 개수.
+  ///
+  /// **보관 위치 필터는 반영하고 기한 상태 필터는 무시한다.** 칩의 수는 "그 칩을 누르면 몇
+  /// 개가 남는가" 여야 하며, 자기 자신으로 걸러진 수를 보여주면 다른 칩이 모두 0 이 된다.
+  int countInScope(Freshness? value) {
+    final scoped = _all.where((batch) =>
+        _storage == null || batch.storage == _storage);
+    if (value == null) return scoped.length;
+    return scoped.where((batch) => batch.freshness == value).length;
+  }
+
   Future<void> load() async {
     _loading = true;
     _error = null;
@@ -87,6 +103,14 @@ class FridgeViewModel extends ChangeNotifier {
 
   void filterStorage(StorageLocation? value) {
     _storage = value;
+    notifyListeners();
+  }
+
+  /// 기한 상태를 고른다. 이미 고른 것을 다시 누르면 전체로 돌아간다.
+  void filterGrade(Freshness? value) {
+    final next = _grade == value ? null : value;
+    if (_grade == next) return;
+    _grade = next;
     notifyListeners();
   }
 }

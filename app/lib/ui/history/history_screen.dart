@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 import '../../core/design/band.dart';
 import '../../core/design/labels.dart';
 import '../../core/design/skin.dart';
+import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../domain/model/change_record.dart';
 import '../../domain/model/inventory.dart';
@@ -63,7 +64,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 2),
-            child: Text(Strings.historyTitle, style: text.headlineMedium),
+            child: Text(Strings.historyTitle, style: Tokens.hero(30)),
           ),
           const SizedBox(height: 2),
           Text(
