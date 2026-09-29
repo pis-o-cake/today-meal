@@ -101,6 +101,14 @@ class Strings {
   static const bandUnknownHint = '기한을 말해 주시면 챙길게요';
   static String bandCount(int n) => '$n가지';
 
+  // 냉장고 타일의 상태 칩. 밴드 한마디("기한이 코앞이에요!")는 타일에 들어가지 않고,
+  // 거르개의 짧은 이름("코앞")만으로는 무엇의 코앞인지 알 수 없다.
+  static const bandWordExpired = '기한 지남';
+  static const bandWordUrgent = '기한 코앞';
+  static const bandWordSoon = '며칠 남음';
+  static const bandWordFresh = '넉넉함';
+  static const bandWordUnknown = '기한 모름';
+
   // 냉장고 상태 거르개의 짧은 이름. 밴드 한마디는 길어 칩에 들어가지 않는다.
   static const bandShortAll = '전체';
   static const bandShortExpired = '지남';

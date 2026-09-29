@@ -60,6 +60,7 @@ class _CookHomeScreenState extends State<CookHomeScreen> {
     final cook = context.watch<CookViewModel>();
     final skin = context.skin;
     return ListScreen(
+      background: skin.cookBackground,
       header: Row(
         children: [
           Expanded(

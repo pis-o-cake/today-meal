@@ -282,7 +282,23 @@ class Skin {
       };
 
   /// 등급을 가리지 않는 화면의 배경. 빛이 화면 꼭대기에서 온다.
+  ///
+  /// 냉장고·기록·마이페이지가 쓴다. 파스텔에서도 **차가운** 회색이다 — 목록은 재료의
+  /// 등급 색이 주인공이라 배경이 색을 띠면 그 색과 싸운다.
   Gradient get listBackground => background(neutral, focusY: -1);
+
+  /// 조리 화면의 배경. 파스텔에서만 따뜻하다.
+  ///
+  /// 목업이 조리 탭에만 따뜻한 바탕을 쓴다 — 불과 냄비의 화면이라 차가운 회색이 어울리지
+  /// 않는다. 나머지 테마는 목록 화면과 같다.
+  Gradient get cookBackground => name == SkinName.pastel
+      ? const RadialGradient(
+          center: Alignment(0, -1),
+          radius: 1.3,
+          colors: [Colors.white, Color(0xFFFBF7F4), Color(0xFFF2E9E2)],
+          stops: [0, 0.45, 1],
+        )
+      : listBackground;
 
   static const _whiteFlat = Color(0xFFF4F5F7);
   static const _whiteBase = Color(0xFFF6F7F9);

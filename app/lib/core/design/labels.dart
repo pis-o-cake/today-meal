@@ -18,7 +18,19 @@ abstract final class Labels {
         Freshness.unknown => Strings.bandUnknown,
       };
 
-  /// 밴드의 짧은 이름. 칩처럼 좁은 자리에 쓴다.
+  /// 밴드의 중간 길이 이름. 냉장고 타일의 상태 칩에 쓴다.
+  ///
+  /// 한마디([freshness])는 문장이라 타일에 안 들어가고, 짧은 이름([freshnessShort])
+  /// 만으로는 "코앞" 이 무엇의 코앞인지 알 수 없다.
+  static String freshnessWord(Freshness grade) => switch (grade) {
+        Freshness.expired => Strings.bandWordExpired,
+        Freshness.urgent => Strings.bandWordUrgent,
+        Freshness.soon => Strings.bandWordSoon,
+        Freshness.fresh => Strings.bandWordFresh,
+        Freshness.unknown => Strings.bandWordUnknown,
+      };
+
+  /// 밴드의 짧은 이름. 거르개 칩처럼 아주 좁은 자리에 쓴다.
   static String freshnessShort(Freshness grade) => switch (grade) {
         Freshness.expired => Strings.bandShortExpired,
         Freshness.urgent => Strings.bandShortUrgent,

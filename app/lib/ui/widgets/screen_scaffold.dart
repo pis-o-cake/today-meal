@@ -20,14 +20,23 @@ import '../../core/design/skin.dart';
 /// 요구하며, 셸이 감싸 줄 것을 기대하면 이 화면을 따로 띄울 때 터진다 — 실기기에서 겪은
 /// 결함이다. 배경은 [Skin.listBackground] 가 그리므로 투명이어야 한다.
 class ListScreen extends StatelessWidget {
-  const ListScreen({required this.header, required this.child, super.key});
+  const ListScreen({
+    required this.header,
+    required this.child,
+    this.background,
+    super.key,
+  });
 
   final Widget header;
   final Widget child;
 
+  /// 배경을 바꿔야 하는 화면. 없으면 목록 화면의 중립 배경이다.
+  final Gradient? background;
+
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(gradient: context.skin.listBackground),
+        decoration: BoxDecoration(
+            gradient: background ?? context.skin.listBackground),
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: SafeArea(

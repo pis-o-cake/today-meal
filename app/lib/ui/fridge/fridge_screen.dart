@@ -218,7 +218,7 @@ class _StatusChips extends StatelessWidget {
     final count = fridge.countInScope(grade);
     final palette = grade == null ? null : skin.band(grade);
     final label = grade == null ? Strings.bandShortAll : Labels.freshnessShort(grade);
-    final fg = on ? (palette?.accent ?? skin.ink) : skin.inkFaint;
+    final fg = on ? (palette?.accent ?? skin.onStrong) : skin.inkFaint;
 
     return Padding(
       padding: const EdgeInsets.only(right: 6),
@@ -232,7 +232,9 @@ class _StatusChips extends StatelessWidget {
             height: 36,
             padding: EdgeInsets.fromLTRB(grade == null ? 12 : 8, 0, 12, 0),
             decoration: ShapeDecoration(
-              color: on ? (palette?.accentSoft ?? skin.raised) : skin.chipNeutral,
+              // 등급 칩은 그 등급 색으로, '전체' 는 먹색으로 채운다 — 등급이 없는
+              // 칩에 등급 색을 빌려 쓰면 어느 등급을 고른 것으로 읽힌다.
+              color: on ? (palette?.accentSoft ?? skin.strong) : skin.chipNeutral,
               shape: StadiumBorder(
                 side: BorderSide(color: on ? Colors.transparent : skin.hairline),
               ),
@@ -483,7 +485,7 @@ class _Tile extends StatelessWidget {
                 children: [
                   Flexible(
                     child: InfoChip(
-                      label: Labels.freshnessShort(batch.freshness),
+                      label: Labels.freshnessWord(batch.freshness),
                       background: palette.bgEdge,
                       foreground: palette.accent,
                       leading: LineFace.compact(
