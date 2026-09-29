@@ -20,6 +20,51 @@ async def find_user_by_email(session: AsyncSession, email: str) -> AppUser | Non
     return result.scalar_one_or_none()
 
 
+async def find_user_by_provider(
+    session: AsyncSession, *, provider: str, provider_user_id: str
+) -> AppUser | None:
+    """제공자 ID 로 계정을 찾는다.
+
+    이메일이 아니라 이 쌍이 계정을 가른다 — 카카오 계정의 이메일은 바뀔 수도, 없을
+    수도 있지만 제공자 안의 ID 는 변하지 않는다.
+    """
+    result = await session.execute(
+        select(AppUser).where(
+            AppUser.provider == provider,
+            AppUser.provider_user_id == provider_user_id,
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def create_social_user(
+    session: AsyncSession,
+    *,
+    household_id: int,
+    provider: str,
+    provider_user_id: str,
+    nickname: str,
+    email: str | None,
+) -> AppUser:
+    """소셜 계정을 만든다. 비밀번호가 없다.
+
+    이메일은 제공자가 준 경우에만 담는다. 이미 다른 계정이 쓰는 이메일이면 비워 둔다 —
+    유일 제약에 걸려 가입 자체가 막히면 안 된다.
+    """
+    taken = email is not None and await find_user_by_email(session, email) is not None
+    user = AppUser(
+        household_id=household_id,
+        provider=provider,
+        provider_user_id=provider_user_id,
+        email=None if taken else (email.strip().lower() if email else None),
+        password_hash=None,
+        display_name=nickname,
+    )
+    session.add(user)
+    await session.flush()
+    return user
+
+
 async def create_household(session: AsyncSession, name: str) -> Household:
     """가입한 사람의 가구를 만든다.
 

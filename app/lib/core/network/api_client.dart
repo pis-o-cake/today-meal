@@ -71,6 +71,18 @@ class ApiClient {
     return response.data ?? const {};
   }
 
+  /// 간편 로그인. 제공자 토큰을 서버가 확인한다.
+  Future<Map<String, dynamic>> signInWithProvider({
+    required String provider,
+    required String accessToken,
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      'api/auth/sign-in/$provider',
+      data: {'access_token': accessToken},
+    );
+    return response.data ?? const {};
+  }
+
   /// 로그아웃. 서버의 세션을 끝낸다.
   Future<void> signOut() => _dio.post<void>('api/auth/sign-out');
 

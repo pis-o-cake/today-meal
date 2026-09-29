@@ -6,6 +6,7 @@ import '../../domain/model/inventory.dart';
 import '../../domain/model/menu.dart';
 import '../../domain/repository/repositories.dart';
 import '../remote/mappers.dart';
+import '../remote/social_sign_in.dart';
 
 /// 서버 인증.
 ///
@@ -14,9 +15,11 @@ import '../remote/mappers.dart';
 ///
 /// CAUTION: 비밀번호와 토큰을 로그에 남기지 않는다.
 class RemoteAuthRepository implements AuthRepository {
-  RemoteAuthRepository(this._api);
+  RemoteAuthRepository(this._api, {SocialSignIn social = const NoSocialSignIn()})
+      : _social = social;
 
   final ApiClient _api;
+  final SocialSignIn _social;
 
   @override
   Future<AuthResult> signUp({
@@ -52,6 +55,27 @@ class RemoteAuthRepository implements AuthRepository {
     required String password,
   }) =>
       _open(() => _api.signIn(email: email, password: password));
+
+  @override
+  Future<AuthResult> signInWith(SocialProvider provider) async {
+    if (!_social.supports(provider)) {
+      return const AuthResult.failed(AuthFailure.notConnected);
+    }
+
+    final token = await _social.tokenFor(provider);
+    if (token.cancelled) {
+      return const AuthResult.failed(AuthFailure.cancelled);
+    }
+    final accessToken = token.accessToken;
+    if (accessToken == null) {
+      return const AuthResult.failed(AuthFailure.unreachable);
+    }
+
+    return _open(() => _api.signInWithProvider(
+          provider: provider.path,
+          accessToken: accessToken,
+        ));
+  }
 
   @override
   Future<void> signOut() async {
@@ -111,6 +135,8 @@ class RemoteAuthRepository implements AuthRepository {
         409 => AuthFailure.emailTaken,
         401 => AuthFailure.wrongCredentials,
         422 || 400 => AuthFailure.invalidInput,
+        // 서버가 아직 안 붙인 제공자라고 답했다.
+        501 => AuthFailure.notConnected,
         _ => AuthFailure.unreachable,
       };
 }

@@ -187,7 +187,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
           _emailError = Strings.signUpErrorTaken;
         case AuthFailure.invalidInput:
           _confirmError = Strings.signUpErrorPassword;
+        // 이메일 가입에서는 나오지 않는 값들이다.
         case AuthFailure.wrongCredentials:
+        case AuthFailure.cancelled:
+        case AuthFailure.notConnected:
         case AuthFailure.unreachable:
           _confirmError = Strings.serverFailed;
       }

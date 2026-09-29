@@ -70,6 +70,16 @@ class SignInRequest(BaseModel):
     password: str
 
 
+class ProviderSignInRequest(BaseModel):
+    """소셜 로그인.
+
+    앱이 제공자 SDK 로 받은 **액세스 토큰**을 그대로 보낸다. 서버가 제공자에게 직접
+    물어 확인하며, 앱이 준 사용자 ID 는 받지도 믿지도 않는다.
+    """
+
+    access_token: str = Field(min_length=1, description="제공자 SDK 가 준 액세스 토큰")
+
+
 class UserRead(BaseModel):
     """로그인한 사람. **비밀번호와 토큰은 담지 않는다.**"""
 

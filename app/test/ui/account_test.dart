@@ -128,8 +128,53 @@ void main() {
     expect(auth.calls, isEmpty, reason: '게스트는 인증 경로를 타지 않는다');
   });
 
-  testWidgets('연동하지 않은 소셜 로그인을 성공으로 처리하지 않는다', (tester) async {
+  testWidgets('카카오 로그인이 성공하면 계정과 토큰을 넘긴다', (tester) async {
     final auth = _FakeAuth();
+    Account? entered;
+    String? token;
+    await _pump(
+      tester,
+      LoginScreen(
+        auth: auth,
+        onSignedIn: (account, value) {
+          entered = account;
+          token = value;
+        },
+        onGuest: () {},
+        onSignUp: () {},
+      ),
+    );
+
+    await _press(tester, find.text(Strings.loginKakao));
+
+    expect(auth.calls, contains('signInWith:kakao'));
+    expect(entered?.provider, AccountProvider.kakao);
+    expect(entered?.nickname, '철');
+    expect(token, 'kakao-token');
+  });
+
+  testWidgets('연동하지 않은 제공자를 성공으로 처리하지 않는다', (tester) async {
+    final auth = _FakeAuth(socialFailure: AuthFailure.notConnected);
+    Account? entered;
+    await _pump(
+      tester,
+      LoginScreen(
+        auth: auth,
+        onSignedIn: (account, _) => entered = account,
+        onGuest: () {},
+        onSignUp: () {},
+      ),
+    );
+
+    await _press(tester, find.text(Strings.loginGoogle));
+
+    expect(entered, isNull);
+    expect(find.textContaining(Strings.loginProviderPending), findsOneWidget);
+  });
+
+  testWidgets('제공자 화면에서 취소하면 아무 말도 하지 않는다', (tester) async {
+    // 사용자가 스스로 그만둔 것이다. 오류를 띄우면 뭔가 잘못된 것으로 읽힌다.
+    final auth = _FakeAuth(socialFailure: AuthFailure.cancelled);
     Account? entered;
     await _pump(
       tester,
@@ -144,8 +189,7 @@ void main() {
     await _press(tester, find.text(Strings.loginKakao));
 
     expect(entered, isNull);
-    expect(auth.calls, isEmpty);
-    expect(find.textContaining(Strings.loginProviderPending), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
   });
 
   testWidgets('필수 동의와 입력이 다 차야 가입할 수 있다', (tester) async {
@@ -328,7 +372,11 @@ class _FakeAuth implements AuthRepository {
     this.failure,
     this.hangs = false,
     this.availability = EmailAvailability.free,
+    this.socialFailure,
   });
+
+  /// 간편 로그인의 결과. `null` 이면 성공한다.
+  final AuthFailure? socialFailure;
 
   final AuthFailure? failure;
 
@@ -393,6 +441,21 @@ class _FakeAuth implements AuthRepository {
   Future<EmailAvailability> checkEmail(String email) async {
     calls.add('checkEmail');
     return availability;
+  }
+
+  @override
+  Future<AuthResult> signInWith(SocialProvider provider) async {
+    calls.add('signInWith:${provider.name}');
+    if (socialFailure != null) return AuthResult.failed(socialFailure);
+    return const AuthResult.success(
+      token: 'kakao-token',
+      account: AuthAccount(
+        userId: 7,
+        householdId: 9,
+        provider: 'kakao',
+        nickname: '철',
+      ),
+    );
   }
 
   @override

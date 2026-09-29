@@ -99,25 +99,59 @@ class _LoginScreenState extends State<LoginScreen> {
       _passwordError = switch (result.failure!) {
         AuthFailure.wrongCredentials => Strings.loginWrongCredentials,
         AuthFailure.invalidInput => Strings.signUpErrorPassword,
-        AuthFailure.unreachable => Strings.serverFailed,
         AuthFailure.emailTaken => Strings.signUpErrorTaken,
+        // 이메일 로그인에서는 나오지 않는 값들이다.
+        AuthFailure.cancelled ||
+        AuthFailure.notConnected ||
+        AuthFailure.unreachable =>
+          Strings.serverFailed,
       };
     });
   }
 
-  /// 연동하지 않은 제공자. 성공으로 넘기지 않고 사실을 알린다.
-  void _pending() {
+  /// 간편 로그인. 제공자 화면을 열고 서버에 토큰을 넘긴다.
+  Future<void> _social(SocialProvider provider) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final result = await widget.auth.signInWith(provider);
+    if (!mounted) return;
+    setState(() => _busy = false);
+
+    if (result.ok) {
+      final account = result.account!;
+      widget.onSignedIn(
+        Account(
+          nickname: account.nickname ?? '',
+          email: account.email ?? '',
+          provider: AccountProvider.parse(account.provider),
+        ),
+        result.token!,
+      );
+      return;
+    }
+
+    // 사용자가 그만둔 것은 오류가 아니다. 아무 말도 하지 않는다.
+    if (result.failure == AuthFailure.cancelled) return;
+    _say(switch (result.failure!) {
+      AuthFailure.notConnected =>
+        '${Strings.loginProviderPending}\n${Strings.loginProviderPendingHint}',
+      _ => Strings.serverFailed,
+    });
+  }
+
+  void _say(String message) {
     final skin = context.skin;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
-          '${Strings.loginProviderPending}\n${Strings.loginProviderPendingHint}',
-        ),
+        content: Text(message),
         backgroundColor: skin.strong,
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
+
+  /// 아직 화면이 없는 경로.
+  void _pending() => _say(Strings.termsPending);
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +214,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 14),
                       _Divider(skin: skin),
                       const SizedBox(height: 14),
-                      _Social(skin: skin, isIos: isIos, onPressed: _pending),
+                      _Social(
+                        skin: skin,
+                        isIos: isIos,
+                        busy: _busy,
+                        onPressed: _social,
+                      ),
                       const SizedBox(height: 6),
                       SizedBox(
                         height: Tokens.tap,
@@ -379,13 +418,17 @@ class _Social extends StatelessWidget {
     required this.skin,
     required this.isIos,
     required this.onPressed,
+    this.busy = false,
   });
 
   final Skin skin;
 
   /// Apple 은 iOS 에만 표시한다.
   final bool isIos;
-  final VoidCallback onPressed;
+  final void Function(SocialProvider provider) onPressed;
+
+  /// 다른 로그인이 진행 중. 두 경로가 겹치지 않게 막는다.
+  final bool busy;
 
   /// 카카오 브랜드 색. 테마를 타지 않는다 — 제공자의 자산 규정이다.
   static const _kakao = Color(0xFFFEE500);
@@ -394,19 +437,21 @@ class _Social extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          _button(context, Strings.loginKakao, _kakao, _kakaoInk, null),
+          _button(context, SocialProvider.kakao, Strings.loginKakao, _kakao,
+              _kakaoInk, null),
           const SizedBox(height: 8),
-          _button(context, Strings.loginGoogle, skin.raised, skin.ink,
-              BorderSide(color: skin.edge)),
+          _button(context, SocialProvider.google, Strings.loginGoogle,
+              skin.raised, skin.ink, BorderSide(color: skin.edge)),
           if (isIos) ...[
             const SizedBox(height: 8),
-            _button(context, Strings.loginApple, Colors.black, Colors.white, null),
+            _button(context, SocialProvider.apple, Strings.loginApple,
+                Colors.black, Colors.white, null),
           ],
         ],
       );
 
-  Widget _button(BuildContext context, String label, Color background,
-      Color ink, BorderSide? border) {
+  Widget _button(BuildContext context, SocialProvider provider, String label,
+      Color background, Color ink, BorderSide? border) {
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(Tokens.radiusField),
       side: border ?? BorderSide.none,
@@ -416,7 +461,7 @@ class _Social extends StatelessWidget {
       child: DecoratedBox(
         decoration: ShapeDecoration(color: background, shape: shape),
         child: InkWell(
-          onTap: onPressed,
+          onTap: busy ? null : () => onPressed(provider),
           customBorder: shape,
           child: Center(
             child: Text(

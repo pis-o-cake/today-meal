@@ -341,6 +341,127 @@ def test_nickname_may_repeat(run):
     run(work)
 
 
+# --- 소셜 로그인 ------------------------------------------------------------
+#
+# 카카오를 실제로 부르지 않는다. 확인하려는 것은 "제공자가 확인해 준 사람을 어떻게
+# 계정에 잇는가" 이고, 제공자 응답을 읽는 부분은 아래 파싱 테스트가 따로 본다.
+
+
+def _kakao(user_id: str, nickname: str | None = "철", email: str | None = None):
+    from app.core.enums import AuthProvider
+    from app.domain.auth.providers import ProviderIdentity
+
+    async def _verify(provider, access_token):
+        return ProviderIdentity(
+            provider=AuthProvider.KAKAO,
+            provider_user_id=user_id,
+            nickname=nickname,
+            email=email,
+        )
+
+    return _verify
+
+
+def test_first_social_sign_in_creates_account_and_household(run, monkeypatch):
+    from app.core.enums import AuthProvider
+    from app.domain.auth import providers, service
+
+    monkeypatch.setattr(providers, "verify", _kakao("kakao-1"))
+
+    async def work(session):
+        opened = await service.sign_in_with_provider(
+            session, provider=AuthProvider.KAKAO, access_token="whatever"
+        )
+        assert opened.user.provider == "kakao"
+        assert opened.user.household_id != get_settings().default_household_id
+        assert opened.access_token
+        return opened
+
+    run(work)
+
+
+def test_second_social_sign_in_reuses_the_account(run, monkeypatch):
+    from app.core.enums import AuthProvider
+    from app.domain.auth import providers, service
+
+    monkeypatch.setattr(providers, "verify", _kakao("kakao-2"))
+
+    async def work(session):
+        first = await service.sign_in_with_provider(
+            session, provider=AuthProvider.KAKAO, access_token="whatever"
+        )
+        second = await service.sign_in_with_provider(
+            session, provider=AuthProvider.KAKAO, access_token="whatever"
+        )
+        assert first.user.user_id == second.user.user_id, (
+            "두 번째 로그인이 계정을 새로 만들면 냉장고가 둘로 갈린다"
+        )
+        assert first.access_token != second.access_token, "세션은 매번 새로 연다"
+
+    run(work)
+
+
+def test_social_account_has_no_password(run, monkeypatch):
+    from app.core.enums import AuthProvider
+    from app.domain.auth import crud, providers, service
+
+    monkeypatch.setattr(providers, "verify", _kakao("kakao-3"))
+
+    async def work(session):
+        opened = await service.sign_in_with_provider(
+            session, provider=AuthProvider.KAKAO, access_token="whatever"
+        )
+        user = await crud.find_user_by_provider(
+            session, provider="kakao", provider_user_id="kakao-3"
+        )
+        assert user is not None
+        assert user.user_id == opened.user.user_id
+        assert user.password_hash is None, "소셜 계정에는 비밀번호가 없다"
+
+    run(work)
+
+
+def test_social_sign_in_does_not_steal_an_existing_email(run, monkeypatch):
+    """제공자가 준 이메일을 이미 다른 계정이 쓰면 비워 둔다.
+
+    그대로 담으면 유일 제약에 걸려 로그인 자체가 막힌다. 두 계정을 합치는 것은 별도
+    정책이므로 여기서 임의로 잇지 않는다.
+    """
+    from app.core.enums import AuthProvider
+    from app.domain.auth import crud, providers, service
+
+    async def work(session):
+        email = _email()
+        await service.sign_up(session, email=email, password="kitchen123", nickname="철")
+
+        monkeypatch.setattr(providers, "verify", _kakao("kakao-4", email=email))
+        opened = await service.sign_in_with_provider(
+            session, provider=AuthProvider.KAKAO, access_token="whatever"
+        )
+
+        owner = await crud.find_user_by_email(session, email)
+        assert owner is not None
+        assert owner.user_id != opened.user.user_id, "남의 계정에 붙지 않는다"
+        assert opened.user.email is None
+
+    run(work)
+
+
+def test_social_sign_in_without_nickname_still_works(run, monkeypatch):
+    from app.core.enums import AuthProvider
+    from app.domain.auth import providers, service
+
+    monkeypatch.setattr(providers, "verify", _kakao("kakao-5", nickname=None))
+
+    async def work(session):
+        opened = await service.sign_in_with_provider(
+            session, provider=AuthProvider.KAKAO, access_token="whatever"
+        )
+        assert opened.user.display_name, "이름이 없어도 빈 문자열로 두지 않는다"
+
+    run(work)
+
+
 def test_two_accounts_get_two_households(run):
     from app.domain.auth import service
 

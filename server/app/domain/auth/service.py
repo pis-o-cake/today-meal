@@ -23,7 +23,7 @@ from app.core.security import (
     session_expiry,
     verify_password,
 )
-from app.domain.auth import crud
+from app.domain.auth import crud, providers
 from app.domain.auth.models import AppUser
 from app.domain.auth.schemas import AvailabilityRead, SessionRead, UserRead
 
@@ -104,6 +104,48 @@ async def sign_in(session: AsyncSession, *, email: str, password: str) -> Sessio
     return result
 
 
+async def sign_in_with_provider(
+    session: AsyncSession, *, provider: AuthProvider, access_token: str
+) -> SessionRead:
+    """소셜 로그인. 처음이면 계정을 만들고 바로 로그인시킨다.
+
+    **앱이 준 사용자 ID 를 믿지 않는다.** 토큰을 제공자에게 직접 물어 확인한 뒤 그
+    결과의 ID 로 계정을 가른다.
+
+    가입과 로그인을 나누지 않는다 — 제공자 로그인에서 사용자는 "가입했는지" 를 모르고,
+    물어볼 것도 없다. 처음 보는 ID 면 가구와 계정을 만든다.
+    """
+    identity = await providers.verify(provider, access_token)
+
+    user = await crud.find_user_by_provider(
+        session,
+        provider=identity.provider.value,
+        provider_user_id=identity.provider_user_id,
+    )
+    if user is None:
+        nickname = identity.nickname or _DEFAULT_NICKNAME
+        household = await crud.create_household(session, name=nickname)
+        user = await crud.create_social_user(
+            session,
+            household_id=household.household_id,
+            provider=identity.provider.value,
+            provider_user_id=identity.provider_user_id,
+            nickname=nickname,
+            email=identity.email,
+        )
+        logger.info(
+            "Created {} account {} in household {}",
+            identity.provider.value,
+            user.user_id,
+            household.household_id,
+        )
+
+    result = await _open_session(session, user)
+    await session.commit()
+    logger.info("Signed in {} user {}", identity.provider.value, user.user_id)
+    return result
+
+
 async def sign_out(session: AsyncSession, token: str) -> None:
     """세션을 끝낸다.
 
@@ -142,6 +184,9 @@ async def _open_session(session: AsyncSession, user: AppUser) -> SessionRead:
         user=UserRead.model_validate(user),
     )
 
+
+#: 제공자가 닉네임을 주지 않았을 때. 사용자가 마이페이지에서 바꾼다.
+_DEFAULT_NICKNAME = "우리 집"
 
 #: 계정이 없을 때도 같은 비용을 치르기 위한 해시. 어떤 비밀번호와도 맞지 않는다.
 _DUMMY_HASH = hash_password("today-meal-timing-guard")

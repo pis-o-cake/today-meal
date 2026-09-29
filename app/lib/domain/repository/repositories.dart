@@ -33,6 +33,12 @@ abstract interface class AuthRepository {
   /// 이메일 로그인.
   Future<AuthResult> signIn({required String email, required String password});
 
+  /// 간편 로그인. 처음이면 계정이 만들어진다.
+  ///
+  /// 제공자 SDK 로 토큰을 받아 서버에 넘긴다. **서버가 제공자에게 직접 물어 확인한다** —
+  /// 앱이 사용자 ID 를 만들어 보내지 않는다.
+  Future<AuthResult> signInWith(SocialProvider provider);
+
   /// 서버 세션을 끝낸다.
   Future<void> signOut();
 
@@ -79,6 +85,19 @@ class AuthResult {
   bool get ok => failure == null;
 }
 
+/// 간편 로그인 제공자.
+///
+/// 지금 붙은 것은 카카오뿐이다. 나머지는 화면에 버튼을 두되 누르면 준비 중이라고
+/// 말한다 — 감추면 왜 없는지 알 수 없고, 성공으로 넘기면 인증한 것처럼 보인다.
+enum SocialProvider {
+  kakao,
+  google,
+  apple;
+
+  /// 서버 경로에 쓰는 이름. `POST /api/auth/sign-in/{provider}`.
+  String get path => name;
+}
+
 /// 이메일을 쓸 수 있는지.
 enum EmailAvailability {
   /// 가입할 수 있다.
@@ -111,6 +130,12 @@ enum AuthFailure {
 
   /// 서버에 닿지 못했다.
   unreachable,
+
+  /// 사용자가 제공자 화면에서 취소했다. **오류로 보여주지 않는다.**
+  cancelled,
+
+  /// 아직 연동하지 않은 제공자다.
+  notConnected,
 }
 
 abstract interface class InventoryRepository {

@@ -5,8 +5,8 @@
 로그인은 **기능을 막는 관문이 아니다.** 토큰 없이 부르면 게스트로 기본 가구를 쓰며
 재고 조회와 명령이 모두 동작한다. 로그인은 자기 가구를 갖기 위한 것이다.
 
-소셜 로그인(카카오·Google·Apple)은 아직 연동하지 않았다. 제공자 토큰을 검증할 수
-없으므로 성공으로 처리하지 않고 501 을 돌려준다.
+소셜 로그인은 카카오만 붙었다. 앱이 받은 제공자 토큰을 서버가 **제공자에게 직접 물어**
+확인한다. Google·Apple 은 키가 없어 501 이며, 빈 성공을 돌려주지 않는다.
 """
 
 from typing import Annotated
@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_session
+from app.core.enums import AuthProvider
 from app.core.exceptions import UnauthorizedError
 from app.core.identity import CallerDep, TokenDep
 from app.core.pending import not_implemented
@@ -22,6 +23,7 @@ from app.domain.auth import service
 from app.domain.auth.models import AppUser
 from app.domain.auth.schemas import (
     AvailabilityRead,
+    ProviderSignInRequest,
     SessionRead,
     SignInRequest,
     SignUpRequest,
@@ -110,11 +112,28 @@ async def read_me(caller: CallerDep, session: SessionDep) -> UserRead:
     return UserRead.model_validate(user)
 
 
-@router.post("/sign-in/{provider}", summary="간편 로그인 — 미연동")
-async def sign_in_with_provider(provider: str) -> dict[str, object]:
-    """카카오·Google·Apple 로그인.
+@router.post(
+    "/sign-in/{provider}",
+    response_model=SessionRead,
+    summary="간편 로그인",
+)
+async def sign_in_with_provider(
+    provider: AuthProvider,
+    body: ProviderSignInRequest,
+    session: SessionDep,
+) -> SessionRead:
+    """제공자 토큰으로 로그인한다. 처음이면 계정을 만든다.
 
-    CAUTION: 제공자 토큰을 검증할 수단이 없어 구현하지 않았다. 빈 성공을 돌려주면 앱이
-    인증된 것으로 착각하므로 501 을 돌려준다.
+    **앱이 보낸 토큰을 제공자에게 직접 물어 확인한다.** 앱이 준 사용자 ID 를 믿으면
+    아무나 남의 계정으로 들어올 수 있다.
+
+    지금 붙은 것은 카카오뿐이다. Google·Apple 은 키가 없어 401 이며, 빈 성공을
+    돌려주지 않는다 — 앱이 인증된 것으로 착각하면 안 된다.
     """
-    raise not_implemented("S-15", "F-22")
+    if provider is AuthProvider.EMAIL:
+        raise UnauthorizedError("use /sign-in for email accounts")
+    if provider is not AuthProvider.KAKAO:
+        raise not_implemented("S-15", "F-22")
+    return await service.sign_in_with_provider(
+        session, provider=provider, access_token=body.access_token
+    )

@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 
+import '../data/remote/social_sign_in.dart';
 import '../data/repository/repositories_impl.dart';
 import '../domain/repository/repositories.dart';
 import '../ui/conversation/conversation_view_model.dart';
@@ -33,8 +34,15 @@ Future<void> registerDependencies(AppConfig config) async {
     ..registerLazySingleton<CommandRepository>(
       () => RemoteCommandRepository(di<ApiClient>()),
     )
+    // 카카오 키가 없으면 제공자를 끼우지 않는다. 버튼은 그대로 두되 눌렀을 때
+    // "준비 중" 으로 답한다 — 감추면 왜 없는지 알 수 없다.
+    ..registerLazySingleton<SocialSignIn>(
+      () => config.hasKakao
+          ? KakaoSignIn(nativeAppKey: config.kakaoNativeAppKey)
+          : const NoSocialSignIn(),
+    )
     ..registerLazySingleton<AuthRepository>(
-      () => RemoteAuthRepository(di<ApiClient>()),
+      () => RemoteAuthRepository(di<ApiClient>(), social: di<SocialSignIn>()),
     )
     ..registerLazySingleton<MenuRepository>(
       () => RemoteMenuRepository(di<ApiClient>()),
