@@ -19,8 +19,9 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -461,13 +462,24 @@ async def undo(
 
 
 async def history(
-    session: AsyncSession, *, household_id: int, limit: int = 50
+    session: AsyncSession,
+    *,
+    household_id: int,
+    limit: int = 50,
+    on: date | None = None,
+    timezone: str = "Asia/Seoul",
 ) -> list[HistoryRow]:
     """변경 이력을 최근 순으로 돌려준다.
 
     수량 변경과 상태 변경을 한 타임라인에 섞고, 명시값과 추정값을 구분해 표시한다.
+
+    Args:
+        on: 이 날 하루치만. 없으면 최근 것부터 `limit` 개다.
+        timezone: 하루를 자르는 기준. 가구의 시간대다 — UTC 로 자르면 밤 늦게 한 일이
+            다음 날로 넘어간다.
     """
-    rows = await crud.list_history(session, household_id, limit)
+    window = _day_window(on, timezone) if on is not None else None
+    rows = await crud.list_history(session, household_id, limit, window=window)
     out: list[HistoryRow] = []
     for kind, event in rows:
         if kind is HistoryKind.QUANTITY:
@@ -506,3 +518,23 @@ async def history(
             )
         )
     return out
+
+
+async def history_days(
+    session: AsyncSession, *, household_id: int, timezone: str, limit: int = 60
+) -> list[date]:
+    """기록이 있는 날짜. 달력이 고를 수 있는 날을 정한다."""
+    return await crud.list_history_days(
+        session, household_id, timezone=timezone, limit=limit
+    )
+
+
+def _day_window(on: date, timezone: str) -> tuple[datetime, datetime]:
+    """그 날 하루를 `[시작, 끝)` 시각 범위로.
+
+    저장된 시각은 UTC 이므로 가구의 시간대로 만든 자정을 UTC 로 옮겨 비교한다.
+    """
+    # WARNING: 이 모듈의 `time` 은 표준 라이브러리 모듈(지연 측정용)이다.
+    # `datetime.time` 이 아니므로 자정을 직접 만든다.
+    start = datetime(on.year, on.month, on.day, tzinfo=ZoneInfo(timezone))
+    return start.astimezone(UTC), (start + timedelta(days=1)).astimezone(UTC)

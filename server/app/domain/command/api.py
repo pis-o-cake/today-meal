@@ -1,5 +1,6 @@
 """음성 명령 API. `/api/command` 에 마운트된다."""
 
+from datetime import date
 from typing import Annotated
 from uuid import UUID, uuid4
 
@@ -13,6 +14,7 @@ from app.core.llm.provider import get_gateway
 from app.domain.command import service
 from app.domain.command.schemas import CommandRequest, CommandResponse, HistoryRow
 from app.domain.command.service import CommandResult
+from app.domain.household import service as household_service
 
 router = APIRouter()
 
@@ -83,10 +85,37 @@ async def history(
     caller: CallerDep,
     session: SessionDep,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    on: Annotated[date | None, Query(description="이 날 하루치만. 가구의 시간대로 자른다")] = None,
 ) -> list[HistoryRow]:
     """입고·사용·보정·정정·취소·개봉·이동을 최근 순으로 돌려준다.
 
     수량 변경과 상태 변경을 한 타임라인에 섞으며, 상태 변경은 잔량 칸이 비어 있다 —
     개봉과 이동은 수량을 바꾸지 않는다는 사실이 화면에 드러나야 한다.
+
+    `on` 을 주면 그 날 하루치만 돌려준다. 기록 화면이 날짜별로 보여주기 위한 것이다.
     """
-    return await service.history(session, household_id=caller.household_id, limit=limit)
+    household = await household_service.get_household(session, caller.household_id)
+    return await service.history(
+        session,
+        household_id=caller.household_id,
+        limit=limit,
+        on=on,
+        timezone=household.timezone,
+    )
+
+
+@router.get("/history/days", response_model=list[date], summary="기록이 있는 날짜")
+async def history_days(
+    caller: CallerDep,
+    session: SessionDep,
+    limit: Annotated[int, Query(ge=1, le=365)] = 60,
+) -> list[date]:
+    """기록이 남은 날짜를 최근 순으로 돌려준다.
+
+    달력이 **기록이 있는 날만** 고르게 하기 위한 것이다. 없는 날을 고르면 빈 화면이 나오고,
+    사용자는 자기가 잘못 골랐는지 기록이 없는지 알 수 없다.
+    """
+    household = await household_service.get_household(session, caller.household_id)
+    return await service.history_days(
+        session, household_id=caller.household_id, timezone=household.timezone, limit=limit
+    )
