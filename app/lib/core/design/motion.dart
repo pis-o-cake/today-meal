@@ -30,6 +30,14 @@ abstract final class Motion {
   /// 스플래시 한 판. 목업의 4.2초 반복은 관찰용이고 앱은 이 길이로 한 번만 재생한다.
   static const splash = Duration(milliseconds: 1800);
 
+  /// 고른 얼굴 뒤 갈기가 한 바퀴 도는 시간.
+  ///
+  /// 목업의 24초다. 느린 것이 의도이며 줄이면 시선을 끌어 밴드 한마디를 가린다.
+  static const maneTurn = Duration(seconds: 24);
+
+  /// 조리 단계 타이머의 눈금이 한 번 도는 시간. 실제 남은 시간은 타이머가 정한다.
+  static const cookTick = Duration(seconds: 1);
+
   /// 등급을 넘길 때의 스프링.
   static const bandSpring = Duration(milliseconds: 460);
 

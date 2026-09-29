@@ -161,6 +161,7 @@ class InfoChip extends StatelessWidget {
     this.background,
     this.foreground,
     this.icon,
+    this.leading,
     super.key,
   });
 
@@ -170,6 +171,9 @@ class InfoChip extends StatelessWidget {
   final Color? background;
   final Color? foreground;
   final IconData? icon;
+
+  /// 아이콘 대신 둘 위젯. 등급 얼굴처럼 Material 아이콘에 없는 그림에 쓴다.
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +190,10 @@ class InfoChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[
+            if (leading != null) ...[
+              leading!,
+              const SizedBox(width: 3),
+            ] else if (icon != null) ...[
               Icon(icon, size: 13, color: fg),
               const SizedBox(width: 4),
             ],

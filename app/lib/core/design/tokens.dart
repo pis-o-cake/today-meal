@@ -35,6 +35,27 @@ abstract final class Tokens {
 
   /// 볼터치.
   static const blush = Color(0xFFFF7A8A);
+
+  /// 목업이 **표제에만** 쓰는 손글씨풍 글꼴.
+  ///
+  /// 본문은 Pretendard 다. Jua 는 굵기가 하나뿐이고 자폭이 넓어 문단에 쓰면 읽기
+  /// 어려워진다 — 화면 제목·밴드 한마디·완료 문구처럼 한 줄짜리 큰 글자에만 쓴다.
+  static const displayFamily = 'Jua';
+
+  /// Jua 표제 한 줄.
+  ///
+  /// 목업의 `font-size` 를 px 그대로 넣는다. CSS `letter-spacing: -0.01em` 은 크기에
+  /// 비례하므로 여기서 계산한다.
+  ///
+  /// Example:
+  ///     Text(Strings.todayGreeting, style: Tokens.hero(30))
+  static TextStyle hero(double size, {double height = 1.2}) => TextStyle(
+        fontFamily: displayFamily,
+        fontSize: size,
+        height: height,
+        fontWeight: FontWeight.w400,
+        letterSpacing: size * -0.01,
+      );
 }
 
 /// 앱 테마.

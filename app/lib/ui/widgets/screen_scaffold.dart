@@ -15,6 +15,10 @@ import '../../core/design/skin.dart';
 ///
 /// 머리말 생김새는 화면마다 달라 통째로 받는다 — 제목 자리를 억지로 공통화하면
 /// 캐릭터와 검색 버튼을 넣은 냉장고 머리말이 들어가지 않는다.
+///
+/// IMPORTANT: 투명한 [Scaffold] 를 안에 둔다. 잉크 효과(`InkWell`)는 `Material` 조상을
+/// 요구하며, 셸이 감싸 줄 것을 기대하면 이 화면을 따로 띄울 때 터진다 — 실기기에서 겪은
+/// 결함이다. 배경은 [Skin.listBackground] 가 그리므로 투명이어야 한다.
 class ListScreen extends StatelessWidget {
   const ListScreen({required this.header, required this.child, super.key});
 
@@ -24,17 +28,20 @@ class ListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(gradient: context.skin.listBackground),
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                child: header,
-              ),
-              Expanded(child: child),
-            ],
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                  child: header,
+                ),
+                Expanded(child: child),
+              ],
+            ),
           ),
         ),
       );

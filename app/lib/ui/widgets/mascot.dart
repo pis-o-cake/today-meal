@@ -6,6 +6,12 @@
 ///
 /// 표정은 [MascotMood] 하나로 결정된다. 색·볼터치·눈·입·메모지가 한 묶음이라 밖에서
 /// 부분만 바꾸지 못하게 막았다.
+///
+/// **움직임도 기분이 정한다.** 넉넉은 통통 튀고, 코앞과 지남은 힘이 빠져 내려앉는다
+/// ([_Life]). 같은 속도로 움직이면 표정만으로는 급한 정도가 읽히지 않는다.
+///
+/// IMPORTANT: 프레임마다 `setState` 를 부르지 않는다. 움직임은 [AnimatedBuilder] 안에서만
+/// 돌며, 모션 감소 설정에서는 아예 돌지 않는다.
 library;
 
 import 'dart:math' as math;
@@ -13,6 +19,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../core/design/band.dart';
+import '../../core/design/motion.dart';
 import '../../core/design/skin.dart';
 import '../../core/design/tokens.dart';
 import '../../domain/model/inventory.dart';
@@ -21,7 +28,7 @@ import '../../domain/model/inventory.dart';
 ///
 /// 몸 색은 테마와 기분이 함께 정한다 — 같은 "얼마 안 남았어요" 가 파스텔에서는 살구색,
 /// 글래스에서는 탁한 주홍이다. 표정과 기울기·메모지는 기분만 따른다.
-class Mascot extends StatelessWidget {
+class Mascot extends StatefulWidget {
   const Mascot({required this.mood, this.size = 164, this.energy = 0, super.key});
 
   final MascotMood mood;
@@ -31,21 +38,7 @@ class Mascot extends StatelessWidget {
   final double energy;
 
   @override
-  Widget build(BuildContext context) {
-    final palette = paletteOf(context.skin, mood);
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(
-        painter: _MascotPainter(
-          mood: mood,
-          energy: energy,
-          body: palette.mascotBody,
-          deep: palette.mascotDeep,
-        ),
-      ),
-    );
-  }
+  State<Mascot> createState() => _MascotState();
 
   /// 기분에 맞는 테마 배색.
   ///
@@ -61,6 +54,158 @@ class Mascot extends StatelessWidget {
         MascotMood.done => skin.done,
         MascotMood.hello => skin.hello,
       };
+}
+
+class _MascotState extends State<Mascot> with SingleTickerProviderStateMixin {
+  late final AnimationController _life = AnimationController(vsync: this);
+
+  MascotMood? _shown;
+  bool _still = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // IMPORTANT: MediaQuery 는 initState 에서 읽을 수 없다.
+    _still = context.reduceMotion;
+    _restart();
+  }
+
+  @override
+  void didUpdateWidget(Mascot old) {
+    super.didUpdateWidget(old);
+    if (old.mood != widget.mood) _restart();
+  }
+
+  /// 기분이 바뀌면 그 기분의 속도로 다시 돈다.
+  void _restart() {
+    final life = _Life.of(widget.mood);
+    if (_shown == widget.mood && _life.isAnimating) return;
+    _shown = widget.mood;
+    _life.duration = life.period;
+    if (_still) {
+      _life
+        ..stop()
+        // 정지 상태에서는 가장 읽기 쉬운 한 장면(가운데)으로 고정한다.
+        ..value = 0;
+      return;
+    }
+    _life.repeat();
+  }
+
+  @override
+  void dispose() {
+    _life.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = Mascot.paletteOf(context.skin, widget.mood);
+    final life = _Life.of(widget.mood);
+
+    return SizedBox(
+      width: widget.size,
+      height: widget.size,
+      child: AnimatedBuilder(
+        animation: _life,
+        builder: (context, _) {
+          // 0 → 1 → 0 으로 오가는 한 박자. 목업의 `keyTimes` 를 옮긴 것이다.
+          final beat = _still ? 0.0 : _wave(_life.value);
+          return Transform.translate(
+            offset: Offset(0, life.bob * beat * widget.size / 200),
+            child: Transform.scale(
+              scaleX: 1 + life.squashX * beat,
+              scaleY: 1 + life.squashY * beat,
+              alignment: Alignment.bottomCenter,
+              child: CustomPaint(
+                painter: _MascotPainter(
+                  mood: widget.mood,
+                  energy: widget.energy,
+                  body: palette.mascotBody,
+                  deep: palette.mascotDeep,
+                  beat: beat,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 톱니가 아닌 부드러운 왕복. 0 에서 시작해 가운데에서 1 이 되고 다시 0 으로 온다.
+  static double _wave(double at) => (1 - math.cos(at * 2 * math.pi)) / 2;
+}
+
+/// 기분별 움직임.
+///
+/// 목업 `Mascot2.dc.html` 의 `ANIM` 표다. **주기가 뜻을 담는다** — 넉넉은 0.9초에 한 번
+/// 튀고, 기한이 지난 것은 4.6초에 한 번 힘없이 내려앉는다.
+@immutable
+class _Life {
+  const _Life({
+    required this.period,
+    required this.bob,
+    required this.squashX,
+    required this.squashY,
+    this.sweat = false,
+  });
+
+  /// 한 박자의 길이.
+  final Duration period;
+
+  /// 위아래 이동(200 좌표계 기준). 음수는 떠오르고 양수는 내려앉는다.
+  final double bob;
+
+  /// 가로·세로 눌림. 튀어오를 때 세로로 늘고 가라앉을 때 가로로 퍼진다.
+  final double squashX;
+  final double squashY;
+
+  /// 땀방울을 흘리는지. 목업은 '기한 코앞' 에만 둔다.
+  final bool sweat;
+
+  static _Life of(MascotMood mood) => _lives[mood] ?? _lives[MascotMood.soon]!;
+
+  static const _lives = <MascotMood, _Life>{
+    MascotMood.fresh: _Life(
+        period: Duration(milliseconds: 900),
+        bob: -14,
+        squashX: -0.045,
+        squashY: 0.05),
+    MascotMood.done: _Life(
+        period: Duration(milliseconds: 1100),
+        bob: -9,
+        squashX: -0.03,
+        squashY: 0.035),
+    MascotMood.hello: _Life(
+        period: Duration(milliseconds: 1300),
+        bob: -7,
+        squashX: -0.02,
+        squashY: 0.025),
+    MascotMood.listening:
+        _Life(period: Duration(milliseconds: 1400), bob: -7, squashX: 0, squashY: 0),
+    MascotMood.asking: _Life(
+        period: Duration(milliseconds: 2600), bob: -3, squashX: 0, squashY: 0),
+    MascotMood.soon: _Life(
+        period: Duration(milliseconds: 2600),
+        bob: -3,
+        squashX: -0.01,
+        squashY: 0.015),
+    MascotMood.unknown: _Life(
+        period: Duration(seconds: 3), bob: -2, squashX: 0, squashY: 0),
+    // 급한 둘은 **아래로** 내려앉는다. 떠오르면 여유로워 보인다.
+    MascotMood.urgent: _Life(
+        period: Duration(milliseconds: 3600),
+        bob: 5,
+        squashX: 0.05,
+        squashY: -0.06,
+        sweat: true),
+    MascotMood.expired: _Life(
+        period: Duration(milliseconds: 4600),
+        bob: 7,
+        squashX: 0.08,
+        squashY: -0.1),
+  };
 }
 
 /// 기분별 볼터치·기울기·메모지. 색과 달리 테마를 타지 않는다.
@@ -95,12 +240,16 @@ class _MascotPainter extends CustomPainter {
     required this.energy,
     required this.body,
     required this.deep,
+    this.beat = 0,
   });
 
   final MascotMood mood;
   final double energy;
   final Color body;
   final Color deep;
+
+  /// 한 박자 안의 위치(0~1). 그림자 크기와 땀방울이 이 값을 따른다.
+  final double beat;
 
   /// 목업의 좌표계. 이 값으로 그리고 마지막에 배율만 건다.
   static const _canvas = 200.0;
@@ -127,16 +276,54 @@ class _MascotPainter extends CustomPainter {
     _memo(canvas, face);
     _cheeks(canvas, face);
     _expression(canvas);
+    _sweat(canvas);
     canvas.restore();
 
     if (mood == MascotMood.listening) _waves(canvas);
   }
 
+  /// 발밑 그림자. 몸이 떠오르면 줄고 내려앉으면 퍼진다.
   void _shadow(Canvas canvas) {
+    final life = _Life.of(mood);
+    // 위로 뜨는 기분은 그림자가 줄고, 내려앉는 기분은 커진다. `bob` 의 부호가 그것을 말한다.
+    final width = 96 - life.bob * beat * 0.9;
     canvas.drawOval(
-      Rect.fromCenter(center: const Offset(100, 190), width: 96, height: 12),
+      Rect.fromCenter(center: const Offset(100, 190), width: width, height: 12),
       Paint()..color = _outline.withValues(alpha: 0.12),
     );
+  }
+
+  /// 땀방울 하나. '기한 코앞' 에만 흐른다.
+  ///
+  /// 목업은 1.9초에 한 번 떨어뜨린다. 여기서는 몸의 박자를 그대로 쓴다 — 별도 시계를 하나
+  /// 더 돌릴 만큼 눈에 띄는 연출이 아니다.
+  void _sweat(Canvas canvas) {
+    if (!_Life.of(mood).sweat) return;
+    final fall = beat;
+    final opacity = fall < 0.2 ? fall / 0.2 : (1 - (fall - 0.2) / 0.8);
+    if (opacity <= 0) return;
+
+    canvas.save();
+    canvas.translate(0, fall * 12);
+    final drop = Path()
+      ..moveTo(161, 56)
+      ..relativeQuadraticBezierTo(-6, 9, -3, 13)
+      ..relativeQuadraticBezierTo(4, 4, 8, 0)
+      ..relativeQuadraticBezierTo(2, -5, -5, -13)
+      ..close();
+    canvas.drawPath(
+      drop,
+      Paint()..color = const Color(0xFFA9DCFF).withValues(alpha: opacity),
+    );
+    canvas.drawPath(
+      drop,
+      Paint()
+        ..color = _outline.withValues(alpha: opacity)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.restore();
   }
 
   /// 아래 발 두 개.
@@ -370,6 +557,7 @@ class _MascotPainter extends CustomPainter {
   bool shouldRepaint(_MascotPainter old) =>
       old.mood != mood ||
       old.energy != energy ||
+      old.beat != beat ||
       old.body != body ||
       old.deep != deep;
 }

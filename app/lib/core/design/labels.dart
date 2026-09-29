@@ -18,6 +18,15 @@ abstract final class Labels {
         Freshness.unknown => Strings.bandUnknown,
       };
 
+  /// 밴드의 짧은 이름. 칩처럼 좁은 자리에 쓴다.
+  static String freshnessShort(Freshness grade) => switch (grade) {
+        Freshness.expired => Strings.bandShortExpired,
+        Freshness.urgent => Strings.bandShortUrgent,
+        Freshness.soon => Strings.bandShortSoon,
+        Freshness.fresh => Strings.bandShortFresh,
+        Freshness.unknown => Strings.bandShortUnknown,
+      };
+
   static String freshnessHint(Freshness grade) => switch (grade) {
         Freshness.expired => Strings.bandExpiredHint,
         Freshness.urgent => Strings.bandUrgentHint,

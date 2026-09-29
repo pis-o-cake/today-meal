@@ -66,3 +66,9 @@ flutter:
     - family: Pretendard
       fonts:
         - asset: assets/fonts/PretendardVariable.ttf
+    # Jua. 목업이 표제(화면 제목·밴드 한마디)에만 쓰는 손글씨풍 글꼴이다. 본문까지
+    # 쓰면 읽기 어려워지므로 Tokens 의 표제 스타일에서만 지정한다. (SIL OFL 1.1,
+    # assets/fonts/Jua-OFL.txt)
+    - family: Jua
+      fonts:
+        - asset: assets/fonts/Jua-Regular.ttf

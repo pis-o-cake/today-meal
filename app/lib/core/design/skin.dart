@@ -33,6 +33,28 @@ enum SkinName {
   bool get isDark => this == SkinName.dark;
 }
 
+/// 고른 얼굴 뒤에서 도는 갈기의 색.
+///
+/// 목업은 이 값을 `hsl` 로 적어 테마 변환에서 빼 두었다 — 등급 색이 아니라 **판의 색**
+/// 이므로 밴드가 바뀌어도 같아야 한다.
+@immutable
+class ManePalette {
+  const ManePalette({
+    required this.fill,
+    required this.stroke,
+    required this.shadow,
+  });
+
+  /// 꽃잎의 면.
+  final Color fill;
+
+  /// 꽃잎의 테두리. 필요 없는 테마에서는 투명이다.
+  final Color stroke;
+
+  /// 아래로 떨어지는 그림자.
+  final Color shadow;
+}
+
 /// 한 테마의 색 묶음.
 class Skin {
   const Skin({
@@ -60,6 +82,7 @@ class Skin {
     required this.shadowTint,
     required this.divider,
     required this.hairline,
+    required this.mane,
     required this.bands,
     required this.listening,
     required this.asking,
@@ -113,6 +136,9 @@ class Skin {
 
   /// 중립 칩의 배경. 보관 위치·종류처럼 등급이 없는 값에 쓴다.
   final Color chipNeutral;
+
+  /// 고른 얼굴 뒤에서 도는 갈기.
+  final ManePalette mane;
 
   /// 막대의 바탕.
   final Color track;
@@ -269,6 +295,11 @@ abstract final class Skins {
     shadowTint: Color(0xFF141923),
     divider: Color(0x1A15181D),
     hairline: Color(0x1215181D),
+    mane: ManePalette(
+      fill: Colors.white,
+      stroke: Colors.transparent,
+      shadow: Color(0x29141824),
+    ),
     bands: _pastelBands,
     listening: BandPalette(
       accent: Color(0xFF3F4FD1),
@@ -342,6 +373,11 @@ abstract final class Skins {
     shadowTint: Color(0xFF141923),
     divider: Color(0x1A15181D),
     hairline: Color(0x1215181D),
+    mane: ManePalette(
+      fill: Colors.white,
+      stroke: Color(0x142B2F3B),
+      shadow: Color(0x24141824),
+    ),
     bands: _whiteBands,
     listening: BandPalette(
       accent: Color(0xFF2B40EE),
@@ -415,6 +451,11 @@ abstract final class Skins {
     shadowTint: Color(0xFF14192D),
     divider: Color(0x1A15181D),
     hairline: Color(0x0F15181D),
+    mane: ManePalette(
+      fill: Color(0x8CFFFFFF),
+      stroke: Color(0xF2FFFFFF),
+      shadow: Color(0x2E242942),
+    ),
     bands: _glassBands,
     // 안쪽 광택. 판 위에 한 겹 덮어 유리처럼 세운다.
     sheen: LinearGradient(
@@ -493,6 +534,11 @@ abstract final class Skins {
     shadowScale: 1.8,
     divider: Color(0x1FE8EAED),
     hairline: Color(0x1AE8EAED),
+    mane: ManePalette(
+      fill: Color(0xFF3D4043),
+      stroke: Color(0x0FFFFFFF),
+      shadow: Color(0x59000000),
+    ),
     bands: _darkBands,
     listening: BandPalette(
       accent: Color(0xFF8AB4F8),
@@ -588,7 +634,7 @@ abstract final class Skins {
     Freshness.expired: BandPalette(
       accent: Color(0xFF6E7784),
       accentBright: Color(0xFF8C95A3),
-      accentSoft: Color(0x2E6E7784),
+      accentSoft: Color(0x246E7784),
       bgMid: Color(0xFFF7F8FA),
       bgEdge: Color(0xFFE6E9EE),
       mascotBody: Color(0xFFD5DAE1),
@@ -598,7 +644,7 @@ abstract final class Skins {
     Freshness.urgent: BandPalette(
       accent: Color(0xFFD8431F),
       accentBright: Color(0xFFE8573A),
-      accentSoft: Color(0x2ED8431F),
+      accentSoft: Color(0x24D8431F),
       bgMid: Color(0xFFFFF8F5),
       bgEdge: Color(0xFFFFE0D4),
       mascotBody: Color(0xFFFFC2B2),
@@ -609,7 +655,7 @@ abstract final class Skins {
     Freshness.soon: BandPalette(
       accent: Color(0xFFA8690A),
       accentBright: Color(0xFFE08E00),
-      accentSoft: Color(0x2EA8690A),
+      accentSoft: Color(0x24A8690A),
       bgMid: Color(0xFFFFFBF3),
       bgEdge: Color(0xFFFFEDCF),
       mascotBody: Color(0xFFFFE0AA),
@@ -620,7 +666,7 @@ abstract final class Skins {
     Freshness.fresh: BandPalette(
       accent: Color(0xFF1B7F43),
       accentBright: Color(0xFF23A05A),
-      accentSoft: Color(0x2E1B7F43),
+      accentSoft: Color(0x241B7F43),
       bgMid: Color(0xFFF6FCF8),
       bgEdge: Color(0xFFDAF2E2),
       mascotBody: Color(0xFFBDEBC9),
@@ -631,7 +677,7 @@ abstract final class Skins {
     Freshness.unknown: BandPalette(
       accent: Color(0xFF5F6A80),
       accentBright: Color(0xFF8A94A8),
-      accentSoft: Color(0x2E5F6A80),
+      accentSoft: Color(0x295F6A80),
       bgMid: Color(0xFFF8F9FB),
       bgEdge: Color(0xFFE7EAF0),
       mascotBody: Color(0xFFD9DEE8),
@@ -644,7 +690,7 @@ abstract final class Skins {
     Freshness.expired: BandPalette(
       accent: Color(0xFF6E7784),
       accentBright: Color(0xFF8C95A3),
-      accentSoft: Color(0x2E6E7784),
+      accentSoft: Color(0x246E7784),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F3),
       mascotBody: Color(0xFFD5DAE1),
@@ -654,7 +700,7 @@ abstract final class Skins {
     Freshness.urgent: BandPalette(
       accent: Color(0xFFC63310),
       accentBright: Color(0xFFDF4020),
-      accentSoft: Color(0x2EE43B13),
+      accentSoft: Color(0x24E43B13),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F3),
       mascotBody: Color(0xFFF1B6A7),
@@ -665,7 +711,7 @@ abstract final class Skins {
     Freshness.soon: BandPalette(
       accent: Color(0xFFA8690A),
       accentBright: Color(0xFFDF9220),
-      accentSoft: Color(0x2ED9870D),
+      accentSoft: Color(0x24D9870D),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F3),
       mascotBody: Color(0xFFF0D3A0),
@@ -676,7 +722,7 @@ abstract final class Skins {
     Freshness.fresh: BandPalette(
       accent: Color(0xFF0C8E40),
       accentBright: Color(0xFF35B85A),
-      accentSoft: Color(0x2E11D45F),
+      accentSoft: Color(0x2411D45F),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F3),
       mascotBody: Color(0xFFA9E5B9),
@@ -687,7 +733,7 @@ abstract final class Skins {
     Freshness.unknown: BandPalette(
       accent: Color(0xFF5F6A80),
       accentBright: Color(0xFF8A94A8),
-      accentSoft: Color(0x2E5F6A80),
+      accentSoft: Color(0x295F6A80),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F3),
       mascotBody: Color(0xFFD9DEE8),
@@ -700,7 +746,7 @@ abstract final class Skins {
     Freshness.expired: BandPalette(
       accent: Color(0xFF6E7784),
       accentBright: Color(0xFF8C95A3),
-      accentSoft: Color(0x2E6E7784),
+      accentSoft: Color(0x246E7784),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F4),
       mascotBody: Color(0xFFD5DAE1),
@@ -710,7 +756,7 @@ abstract final class Skins {
     Freshness.urgent: BandPalette(
       accent: Color(0xFFC93E1D),
       accentBright: Color(0xFFA64430),
-      accentSoft: Color(0x2ED8431F),
+      accentSoft: Color(0x24D8431F),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F4),
       mascotBody: Color(0xFFEEB0A0),
@@ -720,7 +766,7 @@ abstract final class Skins {
     Freshness.soon: BandPalette(
       accent: Color(0xFFA8690A),
       accentBright: Color(0xFFA67730),
-      accentSoft: Color(0x2ED9870D),
+      accentSoft: Color(0x24D9870D),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F4),
       mascotBody: Color(0xFFEED2A0),
@@ -730,7 +776,7 @@ abstract final class Skins {
     Freshness.fresh: BandPalette(
       accent: Color(0xFF138741),
       accentBright: Color(0xFF30A651),
-      accentSoft: Color(0x2E1DC962),
+      accentSoft: Color(0x241DC962),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F4),
       mascotBody: Color(0xFFA9E5B9),
@@ -740,7 +786,7 @@ abstract final class Skins {
     Freshness.unknown: BandPalette(
       accent: Color(0xFF5F6A80),
       accentBright: Color(0xFF8A94A8),
-      accentSoft: Color(0x2E5F6A80),
+      accentSoft: Color(0x295F6A80),
       bgMid: Colors.white,
       bgEdge: Color(0xFFEEF0F4),
       mascotBody: Color(0xFFD9DEE8),
@@ -755,7 +801,7 @@ abstract final class Skins {
     Freshness.expired: BandPalette(
       accent: Color(0xFF9AA0A6),
       accentBright: Color(0xFF9AA0A6),
-      accentSoft: Color(0x389AA0A6),
+      accentSoft: Color(0x2B9AA0A6),
       bgMid: Color(0xFF202124),
       bgEdge: Color(0xFF3C4043),
       mascotBody: Color(0xFFD5DAE1),
@@ -765,7 +811,7 @@ abstract final class Skins {
     Freshness.urgent: BandPalette(
       accent: Color(0xFFF28B82),
       accentBright: Color(0xFFF28B82),
-      accentSoft: Color(0x38F28B82),
+      accentSoft: Color(0x2BF28B82),
       bgMid: Color(0xFF202124),
       bgEdge: Color(0xFF4A3330),
       mascotBody: Color(0xFFFFC2B2),
@@ -775,7 +821,7 @@ abstract final class Skins {
     Freshness.soon: BandPalette(
       accent: Color(0xFFFCAD70),
       accentBright: Color(0xFFFCAD70),
-      accentSoft: Color(0x38FCAD70),
+      accentSoft: Color(0x2BFCAD70),
       bgMid: Color(0xFF202124),
       bgEdge: Color(0xFF4A3D2E),
       mascotBody: Color(0xFFFFE0AA),
@@ -785,7 +831,7 @@ abstract final class Skins {
     Freshness.fresh: BandPalette(
       accent: Color(0xFF81C995),
       accentBright: Color(0xFF81C995),
-      accentSoft: Color(0x3881C995),
+      accentSoft: Color(0x2B81C995),
       bgMid: Color(0xFF202124),
       bgEdge: Color(0xFF2C3E32),
       mascotBody: Color(0xFFBDEBC9),
@@ -795,7 +841,7 @@ abstract final class Skins {
     Freshness.unknown: BandPalette(
       accent: Color(0xFFBDC1C6),
       accentBright: Color(0xFFBDC1C6),
-      accentSoft: Color(0x38BDC1C6),
+      accentSoft: Color(0x2BBDC1C6),
       bgMid: Color(0xFF202124),
       bgEdge: Color(0xFF3C4043),
       mascotBody: Color(0xFFD9DEE8),

@@ -78,21 +78,30 @@ class Strings {
   // 하단 탭. 첫 탭 아이콘은 목업 TabIcons 의 A 수저다.
   static const tabToday = '뭐 먹지?';
   static const tabFridge = '냉장고';
+  static const tabCook = '조리';
   static const tabHistory = '기록';
   static const tabMyPage = '마이페이지';
 
   // 신선도 밴드. 등급은 서버가 판정하고 문구만 여기 있다.
-  static const bandExpired = '기한 지났어요';
+  static const bandExpired = '앗, 기한이 지났어요';
   static const bandExpiredHint = '먹기 전에 상태를 확인해 주세요';
-  static const bandUrgent = '얼마 안 남았어요';
+  static const bandUrgent = '기한이 코앞이에요!';
   static const bandUrgentHint = '하루이틀 안에 쓰면 좋아요';
-  static const bandSoon = '며칠 남았어요';
+  static const bandSoon = '기한이 며칠 안 남았어요';
   static const bandSoonHint = '이번 주 안에 쓰면 좋아요';
-  static const bandFresh = '넉넉해요';
+  static const bandFresh = '기한 넉넉해요~';
   static const bandFreshHint = '아직 여유 있어요';
-  static const bandUnknown = '날짜 몰라요';
+  static const bandUnknown = '기한이 언제예요?';
   static const bandUnknownHint = '기한을 말해 주시면 챙길게요';
   static String bandCount(int n) => '$n가지';
+
+  // 냉장고 상태 거르개의 짧은 이름. 밴드 한마디는 길어 칩에 들어가지 않는다.
+  static const bandShortAll = '전체';
+  static const bandShortExpired = '지남';
+  static const bandShortUrgent = '코앞';
+  static const bandShortSoon = '며칠';
+  static const bandShortFresh = '넉넉';
+  static const bandShortUnknown = '모름';
 
   /// 아치 안내. 밀거나 눌러 등급을 고른다.
   static const arcHint = '밀어서 재료 상태 보기';
@@ -125,11 +134,11 @@ class Strings {
   static const menuHave = '있어요';
   static const menuMissing = '없어요';
 
-  /// 조리 모드. 화면을 켜 두기만 하며 **재고를 바꾸지 않는다.**
-  static const cookModeStart = '조리 모드 시작';
+  /// 조리 시작. 단계 화면이 화면을 켜 두고 호출어 없이 듣는다.
+  static const cookModeStart = '조리 시작';
   static const cookModeStop = '조리 모드 끝내기';
-  static const cookModeHint = '화면을 켜 두고, 부르면 바로 들어요.\n'
-      '다 만들면 “계란 두 개 썼어”처럼 말해주세요.';
+  static const cookModeHint = '단계마다 읽어 주고, 타이머도 말로 맞춰요.\n'
+      '다 만들면 쓴 재료를 알아서 빼 둘게요.';
 
   // 냉장고 화면
   static const fridgeSearch = '재료 검색';
@@ -138,8 +147,15 @@ class Strings {
   static const fridgeSearchEmpty = '찾는 재료가 없어요';
   static const fridgeSearchEmptyHint = '검색이나 보관 위치 필터를 해제해 보세요';
   static const fridgeAll = '전체';
-  static String fridgeSummary(int total, int urgent) =>
-      urgent > 0 ? '$total가지 · 기한 얼마 안 남은 재료 $urgent가지' : '$total가지';
+  static const fridgeStatusFilter = '기한 상태로 거르기';
+
+  /// 냉장고 머리말 한 줄. **0 인 항목은 적지 않는다** — 없는 걱정을 만들지 않는다.
+  static String fridgeSummary(int total, int urgent, int expired) {
+    final parts = <String>['$total가지'];
+    if (urgent > 0) parts.add('기한 코앞 $urgent');
+    if (expired > 0) parts.add('지남 $expired');
+    return parts.join(' · ');
+  }
   static const storageFridge = '냉장';
   static const storageFreezer = '냉동';
   static const storagePantry = '실온';
@@ -320,6 +336,90 @@ class Strings {
   /// 아직 화면이 없는 설정 항목.
   static const settingPending = '다음 단계에서 열어요';
 
+  // 조리 탭
+  static const cookTitle = '조리';
+  static const cookSubtitle = '단계별로 읽어 주고 타이머도 맞춰요';
+  static const cookPicksBadge = 'AI 추천';
+  static const cookPicksTitle = '냉장고 재료로 요리하기';
+  static const cookPicksEmpty = '추천할 요리를 아직 못 골랐어요';
+  static const cookStart = '시작';
+  static const cookVideoTitle = '영상 레시피로 요리하기';
+  static const cookVideoHint = '유튜브 링크를 넣으면 단계별로 정리해 드려요';
+  static const cookVideoField = '유튜브 링크';
+  static const cookVideoPlaceholder = '링크 붙여넣기';
+  static const cookVideoSubmit = '정리하기';
+  static const cookVideoWorking = '영상을 보고 단계로 정리하는 중';
+  static const cookVideoStart = '이 레시피로 조리 시작';
+  static const cookVoiceHint = '“헤이 키친, 두부로 뭐 해 먹지?”';
+
+  /// 영상 레시피 요약 실패. 원인별로 문구를 나눈다.
+  static const cookVideoBadLink = '유튜브 링크가 아닌 것 같아요';
+  static const cookVideoNoScript = '이 영상에는 읽을 수 있는 설명이 없어요';
+  static const cookVideoFailed = '지금은 정리하지 못했어요';
+
+  static String cookVideoSteps(int steps, int minutes) => '$steps단계 · 약 $minutes분';
+  static String cookVideoHave(int have, int total) => '재료 $total개 중 $have개';
+  static String cookVideoMissing(String names) => '$names만 없어요';
+
+  // 조리 진행
+  static const cookingMode = '조리 모드';
+  static const cookingClose = '조리 모드 닫기';
+  static const cookingAllSteps = '전체 단계 보기';
+  static const cookingReading = '읽어 주는 중';
+  static const cookingNext = '다음 단계';
+  static const cookingPrev = '이전';
+  static const cookingNextLabel = '다음';
+  static const cookingFinish = '다 만들었어요';
+  static const cookingPause = '잠깐 멈춤';
+  static const cookingResume = '이어서';
+  static const cookingPlusMinute = '+1분';
+  static const cookingRestart = '처음부터';
+  static const cookingNoTimer = '시간이 필요하면 “타이머 3분”이라고 말해요';
+  static const cookingHandsFree = '호출어 없이 들어요';
+  static const cookingSayNext = '“다음”';
+  static const cookingSayAgain = '“다시 읽어 줘”';
+  static const cookingSayTimer = '“타이머 3분”';
+  static String cookingStepOf(int no, int total) => '$no단계';
+  static String cookingStepTotal(int total) => '/ $total';
+  static String cookingServings(int n) => '$n인분';
+
+  // 조리 완료
+  static const cookDoneTitle = '짠, 다 만들었어요!';
+  static const cookDoneUsedTitle = '쓴 재료를 냉장고에서 뺐어요';
+  static const cookDoneAuto = '자동 차감';
+  static const cookDoneKept = '그대로';
+  static const cookDoneVoiceHint = '틀렸으면 “계란은 3개 썼어”라고 말해 주세요';
+  static const cookDoneLogged = '기록에도 남겼어요';
+  static const cookDoneConfirm = '확인';
+  static String cookDoneSummary(String name, int servings, int minutes) =>
+      '$name · $servings인분 · $minutes분 걸렸어요';
+  static String cookDoneDelta(String before, String after) => '$before → $after';
+  static String cookDoneEditLabel(String name) => '$name 뺀 양 고치기';
+
+  // 재료 상세
+  static const itemTitle = '재료 정보';
+  static const itemDelete = '삭제';
+  static const itemBack = '뒤로';
+  static const itemFieldName = '이름';
+  static const itemFieldQuantity = '수량';
+  static const itemFieldStorage = '보관';
+  static const itemFieldDateKind = '날짜 종류';
+  static const itemFieldDate = '날짜';
+  static const itemEditName = '이름 고치기';
+  static const itemPickDate = '날짜 고르기';
+  static const itemMinus = '수량 줄이기';
+  static const itemPlus = '수량 늘리기';
+  static const itemSave = '저장';
+  static const itemVoiceHint = '말로도 고쳐요 · “두부 기한 10월 5일로 바꿔”';
+  static const itemRecipesAll = '모두 보기';
+  static const quantityUnknownShort = '모름';
+  static String itemDiscardTitle(String name) => '$name${Particles.reul(name)} 버릴까요?';
+  static const itemDiscardBody = '기록에는 남아요. 되돌리려면 다시 등록해야 해요.';
+  static String itemRecipesTitle(String name) =>
+      '$name${Particles.ro(name)} 만들 수 있어요';
+  static String itemDetail(String kind, String date, String remain) =>
+      '$kind $date · $remain';
+
   // 공통
   static const empty = '아직 등록한 재료가 없어요';
   static const emptyHint = '“헤이 키친”이라고 부르고 말해보세요';
@@ -327,4 +427,6 @@ class Strings {
   static const mute = '음소거';
   static const unmute = '음소거 해제';
   static const close = '닫기';
+  static const cancel = '취소';
+  static const confirm = '확인';
 }

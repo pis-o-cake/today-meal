@@ -1,16 +1,16 @@
 /// 하단 탭 아이콘.
 ///
-/// 목업 `TabIcons.dc.html` 에서 고른 **A 수저**(숟가락 + 젓가락)와 냉장고·시계·사람이다.
-/// Material 아이콘에는 수저가 없고, 남은 셋만 Material 로 쓰면 선 굵기와 여백이 달라
-/// 한 줄에서 튄다. 네 개를 같은 24 좌표계·같은 굵기로 그린다.
+/// 목업 `TabIcons.dc.html` 에서 고른 **A 수저**(숟가락 + 젓가락)와 냉장고·냄비·시계·사람이다.
+/// Material 아이콘에는 수저와 이 냄비가 없고, 남은 셋만 Material 로 쓰면 선 굵기와 여백이
+/// 달라 한 줄에서 튄다. 다섯 개를 같은 24 좌표계·같은 굵기로 그린다.
 ///
 /// 고른 탭은 굵기가 올라간다 — 색만으로 구분하지 않는다.
 library;
 
 import 'package:flutter/material.dart';
 
-/// 목업의 탭 넷.
-enum NavGlyph { meal, fridge, history, profile }
+/// 목업의 탭 다섯.
+enum NavGlyph { meal, fridge, cook, history, profile }
 
 class NavIcon extends StatelessWidget {
   const NavIcon({
@@ -68,6 +68,8 @@ class _GlyphPainter extends CustomPainter {
         _meal(canvas, paint);
       case NavGlyph.fridge:
         _fridge(canvas, paint);
+      case NavGlyph.cook:
+        _cook(canvas, paint);
       case NavGlyph.history:
         _history(canvas, paint);
       case NavGlyph.profile:
@@ -98,6 +100,34 @@ class _GlyphPainter extends CustomPainter {
     canvas.drawLine(const Offset(5, 10), const Offset(19, 10), paint);
     canvas.drawLine(const Offset(8.5, 6), const Offset(8.5, 7.5), paint);
     canvas.drawLine(const Offset(8.5, 13), const Offset(8.5, 16), paint);
+  }
+
+  /// 김이 오르는 냄비. 손잡이가 양옆에 하나씩 붙는다.
+  void _cook(Canvas canvas, Paint paint) {
+    canvas.drawPath(
+      Path()
+        ..moveTo(5, 11)
+        ..lineTo(19, 11)
+        ..lineTo(19, 17)
+        ..arcToPoint(const Offset(16, 20), radius: const Radius.circular(3))
+        ..lineTo(8, 20)
+        ..arcToPoint(const Offset(5, 17), radius: const Radius.circular(3))
+        ..close(),
+      paint,
+    );
+    canvas.drawLine(const Offset(3.5, 11), const Offset(20.5, 11), paint);
+    canvas.drawLine(const Offset(10, 8.5), const Offset(14, 8.5), paint);
+    canvas.drawLine(const Offset(3, 13.5), const Offset(5, 13.5), paint);
+    canvas.drawLine(const Offset(19, 13.5), const Offset(21, 13.5), paint);
+    // 김 두 줄. CSS 의 `c0 -1.2 1 -1.3 1 -2.5` 와 같은 완만한 S 곡선이다.
+    for (final x in const [9.5, 13.5]) {
+      canvas.drawPath(
+        Path()
+          ..moveTo(x, 6)
+          ..relativeCubicTo(0, -1.2, 1, -1.3, 1, -2.5),
+        paint,
+      );
+    }
   }
 
   void _history(Canvas canvas, Paint paint) {

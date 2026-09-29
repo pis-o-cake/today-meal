@@ -34,6 +34,12 @@ abstract final class Particles {
     return (coda == null || coda == 0) ? '는' : '은';
   }
 
+  /// `을` / `를`.
+  static String reul(String word) {
+    final coda = _finalConsonant(word);
+    return (coda == null || coda == 0) ? '를' : '을';
+  }
+
   /// `이` / `가`.
   static String i(String word) {
     final coda = _finalConsonant(word);

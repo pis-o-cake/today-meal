@@ -1,7 +1,10 @@
 /// 오늘 화면 아래의 타원 유리면.
 ///
-/// 목업 `Main.dc.html` 의 아래쪽 판이다. **큰 타원 유리면 하나에 얼굴 다섯과 탭 넷을
+/// 목업 `Main.dc.html` 의 아래쪽 판이다. **큰 타원 유리면 하나에 얼굴 다섯과 탭 다섯을
 /// 함께** 얹는다. 둘을 따로 두면 화면 아래가 두 층으로 나뉘어 답답하다.
+///
+/// 고른 얼굴 뒤에는 해바라기 모양 갈기가 아주 느리게 돈다([_Mane]). 고른 표시를 판이
+/// 아니라 갈기로 하는 것은 목업의 개정이며, 얼굴 자체는 그대로 둔다.
 ///
 /// 얼굴은 타원의 윗선을 따라 놓이고 **제자리에 있다.** 미끄러지는 것은 고른 표시뿐이다 —
 /// 얼굴까지 돌리면 끝 등급에서 반대쪽이 면 밖으로 떨어진다. 얼굴마다 타원의 접선 방향으로
@@ -225,31 +228,14 @@ class _BottomDeckState extends State<BottomDeck>
     final high = _at.ceil().clamp(0, BottomDeck.spots.length - 1);
     final blend = _at - low;
     final spot = _Spot.lerp(deck.spotAt(low), deck.spotAt(high), blend);
-    final palette = skin.band(Bands.ordered[_at.round().clamp(0, 4)]);
 
     return Positioned(
-      left: spot.x - _face2,
-      top: spot.y - _face2,
+      left: spot.x - _maneBox / 2,
+      top: spot.y - _maneBox / 2,
       child: IgnorePointer(
         child: Transform.rotate(
           angle: spot.angle,
-          child: Container(
-            width: _faceBox,
-            height: _faceBox,
-            decoration: BoxDecoration(
-              color: skin.fillOf(skin.raised),
-              gradient: skin.sheen,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: palette.accent.withValues(alpha: 0.22),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-                skin.shade(0.12, 22, 10),
-              ],
-            ),
-          ),
+          child: _Mane(palette: skin.mane, size: _maneBox),
         ),
       ),
     );
@@ -293,6 +279,112 @@ class _BottomDeckState extends State<BottomDeck>
   /// 얼굴 판의 한 변과 그 절반.
   static const _faceBox = 52.0;
   static const _face2 = _faceBox / 2;
+
+  /// 갈기 한 변. 목업은 52 얼굴 뒤에 68 을 -8 만큼 물려 놓는다.
+  static const _maneBox = 68.0;
+}
+
+/// 고른 얼굴 뒤에서 도는 해바라기 갈기.
+///
+/// 목업의 SVG 는 반지름 25 원 위의 아홉 점을 반지름 9.06 호로 이어 꽃잎을 만들고, 그 전체를
+/// 24초에 한 바퀴 돌린다. 느린 것이 핵심이다 — 빨리 돌면 시선을 끌어 정작 읽어야 하는
+/// 밴드 한마디를 가린다.
+class _Mane extends StatefulWidget {
+  const _Mane({required this.palette, required this.size});
+
+  final ManePalette palette;
+  final double size;
+
+  @override
+  State<_Mane> createState() => _ManeState();
+}
+
+class _ManeState extends State<_Mane> with SingleTickerProviderStateMixin {
+  late final AnimationController _turn = AnimationController(
+    vsync: this,
+    duration: Motion.maneTurn,
+  );
+
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // IMPORTANT: MediaQuery 는 initState 에서 읽을 수 없다.
+    if (_started) return;
+    _started = true;
+    if (!context.reduceMotion) _turn.repeat();
+  }
+
+  @override
+  void dispose() {
+    _turn.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: AnimatedBuilder(
+          animation: _turn,
+          builder: (context, _) => Transform.rotate(
+            angle: _turn.value * 2 * math.pi,
+            child: CustomPaint(painter: _ManePainter(widget.palette)),
+          ),
+        ),
+      );
+}
+
+class _ManePainter extends CustomPainter {
+  const _ManePainter(this.palette);
+
+  final ManePalette palette;
+
+  /// 목업 SVG 좌표계.
+  static const _canvas = 64.0;
+
+  /// 꽃잎이 앉는 원의 반지름과 꽃잎 호의 반지름.
+  static const _ring = 25.0;
+  static const _petal = 9.06;
+
+  /// 꽃잎 개수.
+  static const _petals = 9;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / _canvas;
+    canvas.scale(scale);
+    final center = const Offset(_canvas / 2, _canvas / 2);
+
+    Offset at(int i) {
+      final angle = -math.pi / 2 + 2 * math.pi * i / _petals;
+      return center + Offset(math.cos(angle), math.sin(angle)) * _ring;
+    }
+
+    final path = Path()..moveTo(at(0).dx, at(0).dy);
+    for (var i = 1; i <= _petals; i++) {
+      final next = at(i % _petals);
+      path.arcToPoint(next, radius: const Radius.circular(_petal));
+    }
+    path.close();
+
+    canvas.drawShadow(path, palette.shadow, 8, false);
+    canvas.drawPath(path, Paint()..color = palette.fill);
+    if (palette.stroke.a > 0) {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = palette.stroke
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2
+          ..strokeJoin = StrokeJoin.round,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ManePainter old) => old.palette != palette;
 }
 
 /// 반투명 타원면. 뒤 배경이 비쳐 화면과 이어져 보인다.
