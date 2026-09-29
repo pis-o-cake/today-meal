@@ -4,7 +4,7 @@ system:
 project:
   name: 'today-meal'
   source-of-truth:
-    android: 'android/'
+    app: 'app/'
     server: 'server/'
 
 commands:
@@ -55,6 +55,16 @@ documentation:
     assign:
       - path: 'README.md'
         type: 'guide'
+      - path: 'AGENTS.md'
+        type: 'guide'
+      - path: 'CLAUDE.md'
+        type: 'guide'
+      - path: 'mockup/README.md'
+        type: 'prototype-record'
+      - path: 'docs/product'
+        type: 'guide'
+      - path: 'docs/ui'
+        type: 'ui-guideline'
       - path: 'docs/adr'
         type: 'decision-record'
       - path: 'docs/architecture'
@@ -73,10 +83,9 @@ documentation:
       - '.claude'
       - '.githooks'
       - 'scripts'
-      - 'android'
       - 'server'
-      - 'docs/product'
-      - 'mockup'
+      - 'mockup/canvas'
+      - 'mockup/index.html'
       - 'app'
   lifecycle:
     design:

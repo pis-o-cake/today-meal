@@ -5,16 +5,19 @@ status: draft
 
 # 0002. 데이터 모델 설계
 
-[기능 범위](../scope/today-meal.md)의 필수 16개와 추가 5개를 담는 PostgreSQL 16 스키마를 정한다.
+[기능 범위](../scope/today-meal.md)의 필수 16개와 추가 6개를 담는 PostgreSQL 16 스키마를 정한다.
 [아키텍처](../architecture/README.md)가 개략 ERD를 가졌으나 컬럼·제약·상태값이 없어 구현에 바로
-쓸 수 없었다. 이 문서가 그 정본이다.
+쓸 수 없었다. 이 문서는 저장 의미와 설계 기준을 갖는다. 실행 스키마는 models와 Alembic이 갖는다.
+목업의 부분 등록·후속 대화는 아래 「추가 설계가 필요한 계약」의 구현 전 요구이며,
+현재 14개 테이블이 이미 충족한다고 해석하지 않는다.
 
 설계를 가른 질문은 하나다 — **잘못 반영된 재고를 어떻게 되돌리는가.** 잔량만 들고 있으면
 되돌릴 수 없고, 이벤트만 들고 있으면 조회마다 전체를 재생해야 한다. 이 문서의 절반은 그 답이다.
 
 ## 제안 요약
 
-테이블 **14개**다. 필수 11개와 추가 3개로 가르며, 추가 쪽을 지워도 필수 기능이 돈다.
+초기 스키마는 테이블 **14개**다. 필수 11개와 추가 3개로 구분한다. 추가 도메인도
+FK와 마이그레이션에 포함돼 있으므로 폴더 삭제만으로 제거하지 않는다.
 
 | 그룹 | 테이블 | 담는 것 |
 |---|---|---|
@@ -35,7 +38,7 @@ status: draft
 | 같은 발화를 재시도해도 한 번만 반영 | `command.command_id`를 앱이 만든 UUID로 두고 **PK**로 쓴다. 재시도는 PK 충돌이 되어 저장된 결과를 그대로 돌려준다 |
 | 음수 잔량을 저장하지 않음 | `ingredient_batch`에 `CHECK (quantity >= 0)` |
 | 기한 종류를 보존하고 임의 변환하지 않음 | `batch_date.kind`를 종류별 행으로 분리. `(batch_id, kind)` UNIQUE |
-| 미확인 기한을 확정값으로 승격하지 않음 | `batch_date.date`를 nullable로 두고 `is_confirmed`를 별도 컬럼으로 |
+| 미확인 기한을 확정값으로 승격하지 않음 | `batch_date.date_value`를 nullable로 두고 `is_confirmed`를 별도 컬럼으로 |
 | 명시값과 추정값을 구분 | `quantity_certainty`와 `change_event.certainty` |
 | 조리 확인만으로 중복 차감하지 않음 | `menu_suggestion.consumption_applied` |
 | 되돌리기가 가능 | `change_event`를 append-only로 두고 `reverses_event_id`로 역산 이벤트를 연결 |
@@ -121,7 +124,7 @@ erDiagram
         numeric quantity "정성이면 NULL"
         varchar unit
         varchar qualitative_amount "조금 반 많이"
-        varchar quantity_certainty "exact estimated qualitative"
+        varchar quantity_certainty "exact estimated qualitative unknown"
         varchar storage_location "fridge freezer pantry unknown"
         bigint split_from_batch_id FK
         timestamptz last_confirmed_at
@@ -151,7 +154,7 @@ erDiagram
         uuid command_id PK "앱이 만든 멱등 키"
         bigint household_id FK
         text utterance "전사 원문"
-        varchar intent "register consume adjust query correct cancel recommend plan_future unknown"
+        varchar intent "register consume adjust open move query correct cancel recommend plan_future unknown"
         varchar status "pending clarifying applied rejected failed superseded reverted"
         jsonb proposal "모델 원본 제안"
         text clarification_question
@@ -568,7 +571,9 @@ GIN 인덱스로 포함 검색이 된다. 문자열만으로 재고를 매칭하
 
 #### `menu_suggestion`
 
-**설명**: 추천 결과와 실제 조리 확인. **관련 기능**: F-13 F-14.
+**설명**: 추천 결과와 기존 조리 확인 API의 상태. **관련 기능**: F-13 F-14.
+현행 [메뉴 UI](../ui/mobile.md)는 조리 모드 시작과 명시적 사용 발화를 사용하므로
+`cooked_at`·`consumption_applied`를 조리 시작 버튼에서 변경하지 않는다.
 
 | 컬럼 | 타입 | PK | FK | NOT NULL | 기본값 | 설명 |
 |---|---|---|---|---|---|---|
@@ -581,7 +586,7 @@ GIN 인덱스로 포함 검색이 된다. 문자열만으로 재고를 매칭하
 | `servings` | SMALLINT | | | ✅ | | 적용 인분 |
 | `priority_ingredient_ids` | BIGINT[] | | | ✅ | `'{}'` | 먼저 쓰는 재료 |
 | `availability` | VARCHAR(20) | | | ✅ | | `ready` `needs_check` `needs_purchase` |
-| `cooked_at` | TIMESTAMPTZ | | | | | "해먹었어요" 확인 시점 |
+| `cooked_at` | TIMESTAMPTZ | | | | | 기존 조리 확인 API의 시점 |
 | `consumption_applied` | BOOLEAN | | | ✅ | `false` | **사용 이벤트 반영 여부** |
 | `created_at` | TIMESTAMPTZ | | | ✅ | `now()` | |
 
@@ -669,13 +674,15 @@ GIN 인덱스로 포함 검색이 된다. 문자열만으로 재고를 매칭하
 [기술 설계](0001-mvp-technical-design.md)의 「인증 — 하지 않는다」에 있다.
 
 세션 테이블을 만들지 않은 이유는 세션이 없기 때문이다. 요청마다 `X-User-Id` 헤더로 식별하고,
-헤더가 없으면 기본 가구로 처리한다. **로그인은 기능을 막는 관문이 아니다** — MVP는 태블릿
-한 대에서 쓰므로 로그인 없이도 전 기능이 돌아야 한다.
+헤더가 없으면 기본 가구로 처리한다. **로그인은 기능을 막는 관문이 아니다** — MVP는 제한된 시연 가구에서 쓰므로 로그인 없이도 전 기능이 돌아야 한다.
 
 `household_id`를 처음부터 모든 주요 테이블에 넣어둔 값이 여기서 나온다. 이 테이블은 FK 하나로
 붙고 기존 조회를 고치지 않는다.
 
-### 정합성 검증 결과
+### 초기 설계의 정합성 점검 기록
+
+아래 표는 초기 스키마 설계 점검이다. 현행 목업의 사용자 흐름이나 이번 버전의
+DB 실행 검증 결과가 아니다. 실행 인수는 [검증 기준](../verification/mvp.md)을 따른다.
 
 | 항목 | 결과 |
 |---|---|
@@ -693,4 +700,24 @@ GIN 인덱스로 포함 검색이 된다. 문자열만으로 재고를 매칭하
 - `ingredient` seed 목록의 범위. 흔한 재료 몇 개를 넣을지는 F-13 평가용 재고 10종을 정할 때 함께 정한다.
 - `unit` 허용값 목록의 정본. `server/app/core/units.py`가 갖고 이 문서는 예시만 든다.
 - 잔량 현재값과 `change_event` 누적의 정합성 확인 쿼리. 검증 항목으로 올린다.
-- 다음 단계는 이 명세로 SQLAlchemy 2.0 모델과 Alembic 마이그레이션을 만드는 것이다.
+- SQLAlchemy 모델과 초기 Alembic 마이그레이션은 존재한다. 변경 시 DB 실물·모델·마이그레이션을 함께 대조한다.
+
+
+### 추가 설계가 필요한 계약 — R-01·R-05·R-07
+
+현재 목업은 명확한 재료의 선반영, 미완료 항목에 대한 후속 답변, 그룹 전체 취소를 요구한다.
+기존 command UUID와 target_command_id만으로 그 계약이 구현돼 있다고 보지 않는다.
+다음 항목은 구현 전 요구이며 컬럼·테이블명은 아직 확정하지 않는다.
+
+| 필요 정보 | 보존·검증 규칙 |
+|---|---|
+| 대화 그룹과 요청 관계 | 최초 발화·후속 적용을 하나의 사용자 변경으로 조회·취소 |
+| 적용/미완료 항목 | 적용 상태를 항목별 구분하고 재시도 중복 방지 |
+| 초안과 질문 | 원문·대상·미확정 필드·종료 상태. 종류 미확정 날짜를 batch_date.kind로 억지 저장하지 않음 |
+| 후속 요청·취소 멱등 키 | 같은 요청 재시도에 한 번만 적용·역산 |
+| 이력 원문·응답 | 실제 저장값만 노출. 정정의 원장 행을 한 행동으로 묶음 |
+| 소분·부분 이동 | 부모/자식 묶음 수량 합과 날짜 출처 보존. 기한 연장 금지 |
+
+초안 시간 초과는 미완료 상태만 닫으며 선반영된 수량을 지우지 않는다. 그룹 취소는 적용된
+모든 이벤트를 역산한다. 정정·취소 관계와 대화 그룹 관계를 구분한다. API 스키마·마이그레이션·
+앱 상태를 함께 구현하고 V-03~05에서 트랜잭션·재시도·지연 응답을 검증한다.

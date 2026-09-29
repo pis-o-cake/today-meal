@@ -1,159 +1,144 @@
 ---
 type: runbook
 status: active
-last-reviewed: 2026-09-28
+last-reviewed: 2026-09-29
 ---
 
-# 로컬 개발 환경 기동
+# 로컬 개발과 새 checkout 재현
 
-서버와 앱을 이 컴퓨터에서 처음 돌릴 때까지의 절차다. 3일 일정이라 **막히는 지점을 미리 적어
-두는 것**이 이 문서의 목적이다. 구조는 [아키텍처](../architecture/README.md), 기술 선택 근거는
-[기술 설계](../design/0001-mvp-technical-design.md)가 갖는다.
+새 checkout에서 앱·서버를 설치하고 실행·검증하는 절차와 실패 복구 방법을 정한다.
 
 ## 적용 상황
 
-새 컴퓨터에서 개발을 시작할 때, 또는 기동이 실패해 원인을 찾을 때 쓴다. 개발서버 배포와 APK
-배포는 이 문서 범위가 아니다 — S-10 에서 따로 적는다.
-
-전제는 다음 넷이다.
-
-| 도구 | 확인 |
-|---|---|
-| Python 3.12 | `python3.12 --version`. Homebrew 라면 `/opt/homebrew/opt/python@3.12/bin/python3.12` |
-| Poetry 2.x | `poetry --version`. `poetry export` 는 없으므로 쓰지 않는다 |
-| Docker | `docker info`. PostgreSQL 컨테이너에 필요하다 |
-| Flutter SDK | `flutter --version`. `flutter doctor` 로 Android toolchain 을 확인한다 |
-| Git Bash (Windows) | sh 스크립트가 Git Bash 에서만 돈다. PowerShell·CMD 는 실행하지 못한다 |
-| Android Studio | Android SDK 와 번들 JBR 을 제공한다 |
-| Xcode | **iOS 빌드에만 필요하다.** 없으면 Android 만 낸다 |
+새 환경에서 서버·앱을 설치하거나 기동 실패를 복구할 때 사용한다. 저장소에 포함된 소스와
+lock 파일로 실행하는 절차다. 배포 완료는 [V-12](../verification/mvp.md)의 별도 실기기 판정이다.
 
 ## 실행 전 확인
 
-**호스트의 5432 포트를 이미 쓰고 있는지 본다.** 이것이 가장 흔한 실패 원인이다.
+| 도구·조건 | 확인 |
+|---|---|
+| Python 3.12·Poetry | `python3.12 --version`, `poetry --version` |
+| Docker | `docker info`. 로컬 PostgreSQL 16 사용 |
+| Flutter·Dart | `flutter --version`, `flutter doctor`. pubspec의 SDK 제약 확인 |
+| Android SDK·기기 | `flutter devices`, 한국어 인식·TTS·마이크 권한 |
+| iOS | Xcode·서명·실기기. Android 검증으로 대신하지 않음 |
+| Windows | sh 명령은 Git Bash에서 실행 |
+| 실기기 통신 | 개발 머신과 같은 LAN, 방화벽·8000 포트 확인 |
 
-```sh
-lsof -nP -iTCP:5432 -sTCP:LISTEN
-brew services list | grep postgres
-```
-
-Homebrew PostgreSQL 이 돌고 있으면 `localhost:5432` 는 그쪽으로 붙는다. 컨테이너는 기본
-**5433** 으로 노출하며 `.env` 의 `TODAY_MEAL_DB_PORT` 도 5433 이다. 컨테이너끼리는 항상
-`db:5432` 를 쓴다. 이미 돌던 PostgreSQL 을 끄지 않아도 된다.
+Flutter가 PATH에 없으면 설치 위치의 `bin`을 PATH에 추가한다. 예를 들어 이 개발 머신의
+SDK 위치는 `$HOME/dev/flutter/bin`일 수 있으나 팀 공통 설치 경로로 강제하지 않는다.
+Porcupine AccessKey와 sherpa-onnx 모델은 필요하지 않다.
 
 ## 절차
 
-### 1. 서버
+### 1. 설정과 의존성
+
+저장소 루트에서 시작한다. 기존 `.env`가 있으면 덮어쓰지 않는다.
 
 ```sh
+cp server/.env.example server/.env
+cp app/.env.example app/.env
 cd server
-cp .env.example .env          # TODAY_MEAL_DB_PASSWORD 를 채운다
-poetry env use /opt/homebrew/opt/python@3.12/bin/python3.12
+poetry env use python3.12
 poetry install
-
-docker compose up -d db
-poetry run alembic upgrade head
-poetry run python -m app.core.seed
-poetry run uvicorn app.main:app --reload --port 8000
-```
-
-`seed` 는 멱등이다. 기본 가구 하나와 재료 사전 32건, 기본 양념 10건을 넣는다. 재고는 넣지
-않는다 — 재고는 음성으로 등록하는 것이 제품이다.
-
-### 2. 앱
-
-```sh
-cd app
-cp .env.example .env            # PORCUPINE_ACCESS_KEY 와 API_BASE_URL 을 채운다
+cd ../app
 flutter pub get
-flutter devices                 # 붙은 기기 확인
-flutter run                     # 디버그 실행
+cd ..
 ```
 
-`.env` 의 `API_BASE_URL` 이 앱이 붙을 서버다. **끝에 슬래시를 붙인다.**
+서버 `.env`의 DB 비밀번호를 설정한다. 실제 모델 시험에는 Gemini 키와 계정에서 접근 가능한
+모델명을 설정한다. 키가 비어 있으면 Fake 경로가 선택되므로 실제 AI 평가로 기록하지 않는다.
+의존성 변경 목적이 아니면 `poetry.lock`·`pubspec.lock`을 재생성하거나 업그레이드하지 않는다.
 
-| 실행 위치 | 주소 |
-|---|---|
-| Android 에뮬레이터 | `http://10.0.2.2:8000/` |
-| iOS 시뮬레이터 | `http://localhost:8000/` |
-| 실기기 | 개발 머신의 LAN 주소. 같은 와이파이에 있어야 한다 |
+앱 `.env`에는 `API_BASE_URL`과 `WAKE_WORD_ENABLED`가 있다. URL 끝의 `/`를 유지한다.
+`WAKE_WORD_ENABLED=false`면 호출 감지가 꺼지며 호출어 기능 완료 시험에 사용할 수 없다.
+`.env`는 앱 자산으로 묶이므로 앱에 서버 비밀키를 넣지 않는다.
 
-릴리스 빌드는 이렇게 만든다.
-
-```sh
-flutter build apk --release      # Android
-flutter build ios --release      # iOS. Xcode 가 있어야 한다
-```
-
-### 2-1. 실기기에 붙이기
-
-폰이 붙으려면 서버가 **LAN 주소**로 열려야 한다. `localhost` 로 열면 폰이 자기 자신을
-가리켜 닿지 못한다. 아래 한 줄이 DB·마이그레이션·시드·주소 설정까지 한다.
+### 2. 개발 스택
 
 ```sh
 sh scripts/dev.sh
 ```
 
-이 스크립트는 LAN 주소를 찾아 `app/.env` 의 `API_BASE_URL` 을 고치고 서버를 `0.0.0.0`
-으로 연다. 폰과 개발 머신이 **같은 와이파이**에 있어야 한다.
-
-### 3. 양쪽 검증
+이 명령은 DB 기동·준비 확인·마이그레이션·시드·앱 LAN 주소 설정 후 서버를 `0.0.0.0:8000`에 연다.
+서버의 `.env`와 의존성을 먼저 준비해야 한다. LAN 자동 탐지가 잘못되면 수동 경로를 사용한다.
 
 ```sh
-sh scripts/verify.sh
+cd server
+docker compose up -d db
+poetry run alembic upgrade head
+poetry run python -m app.core.seed
+poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
+
+기본 노출 DB 포트는 5433이며 컨테이너 내부는 5432다. 호스트의 기존 PostgreSQL을 종료하지 않는다.
+시드는 기본 가구·재료 사전·기본 양념을 준비하며 사용자 재고 등록을 대신하지 않는다.
+
+### 3. 앱
+
+| 위치 | API_BASE_URL 예시 |
+|---|---|
+| Android 에뮬레이터 | `http://10.0.2.2:8000/` |
+| iOS 시뮬레이터 | `http://localhost:8000/` |
+| 실기기 | 개발 머신의 실제 LAN 주소 `http://<LAN-IP>:8000/` |
+
+```sh
+cd app
+flutter run
+```
+
+실기기에서 `localhost`는 폰 자신이다. HTTP 개발 통신은 플랫폼 정책에 따라 차단될 수 있으므로
+실제 응답으로 확인한다. 현재 debug 매니페스트의 INTERNET 권한만 보고 평문 허용이 있다고
+가정하지 않는다. release 연결은 HTTPS 주소와 별도 설치 시험으로 확인한다.
+
+### 4. 검증과 빌드
+
+저장소 루트에서 실행한다.
+
+```sh
+python3 scripts/check-repository.py
+sh scripts/verify.sh
+engsys docs check --project .
+```
+
+새 소스가 아직 untracked면 재현성 검사는 실패한다. 해당 소스만 확인해 Git에 추가한 뒤 다시
+검사한다. 모든 untracked 파일이나 `.env`를 일괄 추가하지 않는다.
+
+```sh
+cd app
+flutter build apk --release
+flutter build ios --release
+```
+
+iOS에는 Xcode·서명이 필요하다. 빌드 성공과 다른 기기 설치 성공을 분리해 기록한다.
 
 ## 성공 확인
 
-서버가 떴으면 다음 셋이 응답해야 한다.
+`/health`, `/api/household/me`, `/api/ingredient?q=파`가 응답하는지 확인한다.
+health만으로 DB·실제 모델·음성 왕복이 동작한다고 판정하지 않는다. 기기에서 등록·조회 후
+DB와 화면 수량이 일치해야 한다. API 정본은 서버 개발 환경의 `/docs`다.
 
-```sh
-curl -s localhost:8000/health
-curl -s localhost:8000/api/household/me
-curl -s "localhost:8000/api/ingredient?q=파"
-```
+서버 테스트의 통과·실패·skip 수와 Flutter analyze/test 결과를 기록한다. 수량 테스트가
+DB 부재로 skip되면 PostgreSQL을 준비해 재실행한다. 테스트 수를 문서에 고정된 합격 숫자로 두지 않는다.
 
-기대값은 이렇다.
-
-| 확인 | 기대 |
-|---|---|
-| `/health` | `{"status":"ok", ...}`. DB 없이도 응답한다 |
-| `/api/household/me` | `household_id` 가 **1**. 헤더 없이 기본 가구로 처리된다 |
-| `/api/ingredient?q=파` | `대파`(별칭 매칭)와 `양파`(이름 매칭) |
-| 테이블 수 | 14개. `alembic_version` 은 별도 |
-| 미구현 엔드포인트 | 501 과 담당 슬라이스 ID. 빈 성공 응답이 아니다 |
-
-테이블 수는 이렇게 센다.
-
-```sh
-docker compose exec -T db psql -U today_meal -d today_meal -tAc \
-  "select count(*) from pg_tables where schemaname='public' and tablename<>'alembic_version'"
-```
-
-`scripts/verify.sh` 는 서버 109건과 앱 테스트를 통과해야 한다. PostgreSQL 이 없으면 서버의 통합
-테스트 10건이 **건너뛰어진다** — 통과가 아니라 건너뛴 것이므로 출력의 `skipped` 수를 본다.
+새 checkout 검증에서는 커밋된 소스·lock·자산만으로 위 절차를 수행한다. `.env.example`에서
+설정을 만들고 캐시·숨겨진 로컬 소스에 기대지 않는지 확인한다. 저장소 검사는 Dart 상대 import와
+앱·서버 소스의 추적 여부를 먼저 확인하지만 실제 의존성 설치·빌드 시험을 대신하지 않는다.
 
 ## 실패와 복구
 
-| 증상 | 원인 | 조치 |
-|---|---|---|
-| `role "today_meal" does not exist` | 호스트의 다른 PostgreSQL 에 붙었다 | `.env` 의 `TODAY_MEAL_DB_PORT` 를 5433 으로 두고 컨테이너 포트를 확인 |
-| `greenlet library is required` | SQLAlchemy async 의 전이 의존이 빠졌다 | `poetry install` 재실행. `greenlet` 은 명시 의존이다 |
-| 통합 테스트가 조용히 전부 skip | 환경변수가 `.env` 를 덮었다 | 셸의 `TODAY_MEAL_DB_*` 를 지운다. 환경변수가 `.env` 보다 우선한다 |
-| `alembic` 이 모델을 못 찾음 | 도메인이 `models.py` 를 갖지 않는다 | `app/domain/<name>/models.py` 를 만든다. `env.py` 는 고치지 않는다 |
-| `flutter: command not found` | Flutter 가 PATH 에 없다 | `brew install --cask flutter` 후 새 터미널을 연다 |
-| `flutter doctor` 가 Android toolchain 실패 | SDK 라이선스 미동의 | `flutter doctor --android-licenses` 를 실행한다 |
-| iOS 빌드가 시작조차 안 됨 | **Xcode 가 없거나 첫 실행 구성요소가 빠졌다** | `sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer` · `sudo xcodebuild -license accept` · `sudo xcodebuild -runFirstLaunch` 를 차례로 실행한다 |
-| Windows 에서 sh 스크립트가 안 돎 | PowerShell·CMD 로 실행했다 | **Git Bash** 를 연다. 경로는 `D:\work` 가 아니라 `/d/work` 형식을 쓴다 |
-| Windows 에서 `invalid profile name` 류 오류 | CRLF 로 체크아웃됐다 | `.gitattributes` 가 LF 로 고정한다. 기존 checkout 이면 다시 clone 하거나 해당 파일을 LF 로 저장한다 |
-| 앱이 `Connection refused` | 실기기가 `localhost` 를 자기 자신으로 본다 | `.env` 의 `API_BASE_URL` 을 개발 머신의 LAN 주소로 바꾼다 |
-| `porcupine.accessKey is missing` | AccessKey 가 없다 | `local.properties` 에 채운다. 커밋하지 않는다 |
-| 앱이 서버에 못 붙음 (`CLEARTEXT`) | 릴리스 빌드로 http 에 붙었다 | 디버그 빌드를 쓴다. 평문 허용은 디버그 매니페스트에만 있다 |
-| 마이그레이션이 절반만 적용 | DDL 트랜잭션 중단 | `alembic downgrade base` 후 `upgrade head`. 개발 DB 라 데이터 손실을 허용한다 |
+| 증상 | 확인과 복구 |
+|---|---|
+| DB role 없음/연결 실패 | 다른 PostgreSQL의 5432에 붙지 않았는지 `.env`의 포트·사용자·비밀번호 확인 |
+| DB 준비 시간 초과 | `docker compose logs db` 확인. 준비 안 된 DB에 마이그레이션을 계속 실행하지 않음 |
+| 통합 테스트 skip | DB 실행·접속값·환경변수 우선순위 확인. 비밀값을 로그에 출력하지 않음 |
+| 앱 data import 없음 | `.gitignore`의 data 범위와 `git ls-files app/lib/data` 확인 |
+| Flutter 없음/SDK 불일치 | 설치 경로·PATH·pubspec SDK 제약 확인. lock 무조건 삭제 금지 |
+| .env asset 없음 | 앱 디렉터리에 example을 복사. 실제 값 커밋 금지 |
+| 음성 불가 | 권한·한국어 인식/TTS·네트워크·전경 상태 확인. 코드의 Unavailable를 사용자 문구로 안내 |
+| iOS 환경 불완전 | `flutter doctor`와 Xcode 첫 실행·서명 확인. 자동 완료로 기록하지 않음 |
+| 실기기 서버 연결 거부 | LAN 주소·같은 네트워크·방화벽·바인딩 주소 확인 |
+| 마이그레이션 오류 | 현재 revision·로그·DB 백업 확인 후 복구. 데이터 삭제를 기본 해법으로 사용하지 않음 |
 
-컨테이너를 완전히 지우고 다시 시작하려면 다음을 쓴다. **볼륨이 지워지므로 개발 DB 의 데이터가
-사라진다.**
-
-```sh
-cd server && docker compose down -v && docker compose up -d db
-poetry run alembic upgrade head && poetry run python -m app.core.seed
-```
+개발 DB를 지우려면 대상이 폐기 가능한 테스트 DB인지 먼저 확인한다. 이 런북은 기존 DB 볼륨을
+자동 삭제하지 않는다. 목업 열람의 Canvas 런타임 의존성은 [목업 인계](../../mockup/README.md)를 따른다.

@@ -10,80 +10,82 @@
 <helmet>
 <style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
 </helmet>
-<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: #15181D; letter-spacing: -0.02em; background: radial-gradient(125% 80% at 50% 24%, #FFFFFF 0%, #F6F7FF 42%, #E1E6FF 100%)">
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
 
   <main style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 24px; text-align: center">
     <sc-if value="{{c1}}" hint-placeholder-val="{{ true }}">
       <dc-import name="Mascot" mood="listening" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
     </sc-if>
     <sc-if value="{{c2}}" hint-placeholder-val="{{ false }}">
-      <dc-import name="Mascot2" mood="listening" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+      <dc-import name="Mascot2" theme="{{themeName}}" mood="listening" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
     </sc-if>
     <sc-if value="{{c3}}" hint-placeholder-val="{{ false }}">
       <dc-import name="Mascot3" mood="listening" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
     </sc-if>
     <h1 style="margin: 8px 0 0; font-size: 28px; line-height: 1.3; font-weight: 700; letter-spacing: -0.045em; white-space: pre-line">말로 쓰려면
 마이크가 필요해요</h1>
-    <div style="font-size: 15px; font-weight: 500; color: #5F6670; margin-top: 10px">냉장고 기록을 손 대신 말로 남겨요</div>
+    <div style="font-size: 15px; font-weight: 500; color: {{K.c1}}; margin-top: 10px">냉장고 기록을 손 대신 말로 남겨요</div>
   </main>
 
-  <section aria-label="필요한 권한" style="margin: 0 20px; border-radius: 24px; background: rgba(255,255,255,0.86); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 10px 28px rgba(20,25,35,0.08); display: flex; flex-direction: column">
+  <section aria-label="필요한 권한" style="margin: 0 20px; border-radius: 24px; background: {{K.c2}}; border: 1px solid {{K.c3}}; box-shadow: 0 10px 28px {{K.c4}}; display: flex; flex-direction: column; {{K.fx}}">
     <div style="display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px">
-      <span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: #E4E8FF; color: #3346B8; display: flex; align-items: center; justify-content: center">
+      <span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: {{K.c5}}; color: {{K.c6}}; display: flex; align-items: center; justify-content: center">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"></path></svg>
       </span>
       <div style="display: flex; flex-direction: column; gap: 3px; text-align: left">
         <span style="font-size: 16px; font-weight: 700">마이크</span>
-        <span style="font-size: 14px; line-height: 1.45; font-weight: 500; color: #5F6670">“헤이 냉장고”와 그 뒤의 말을 들어요</span>
+        <span style="font-size: 14px; line-height: 1.45; font-weight: 500; color: {{K.c1}}">“헤이 키친”와 그 뒤의 말을 들어요</span>
       </div>
     </div>
-    <div style="height: 1px; margin: 0 18px; background: rgba(21,24,29,0.07)"></div>
+    <div style="height: 1px; margin: 0 18px; background: {{K.c7}}"></div>
     <div style="display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px">
-      <span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: #E4E8FF; color: #3346B8; display: flex; align-items: center; justify-content: center">
+      <span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: {{K.c5}}; color: {{K.c6}}; display: flex; align-items: center; justify-content: center">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"></path></svg>
       </span>
       <sc-if value="{{isIOS}}" hint-placeholder-val="{{ true }}">
         <div style="display: flex; flex-direction: column; gap: 3px; text-align: left">
           <span style="font-size: 16px; font-weight: 700">음성 인식</span>
-          <span style="font-size: 14px; line-height: 1.45; font-weight: 500; color: #5F6670">말을 글로 바꿔요. Apple 서버에서 처리될 수 있어요</span>
+          <span style="font-size: 14px; line-height: 1.45; font-weight: 500; color: {{K.c1}}">말을 글로 바꿔요. Apple 서버에서 처리될 수 있어요</span>
         </div>
       </sc-if>
       <sc-if value="{{isAndroid}}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 3px; text-align: left">
           <span style="font-size: 16px; font-weight: 700">음성 인식 서비스</span>
-          <span style="font-size: 14px; line-height: 1.45; font-weight: 500; color: #5F6670">기기에 설정된 음성 인식을 써요. 한국어 음성 데이터가 필요해요</span>
+          <span style="font-size: 14px; line-height: 1.45; font-weight: 500; color: {{K.c1}}">기기에 설정된 음성 인식을 써요. 한국어 음성 데이터가 필요해요</span>
         </div>
       </sc-if>
     </div>
-    <div style="height: 1px; margin: 0 18px; background: rgba(21,24,29,0.07)"></div>
+    <div style="height: 1px; margin: 0 18px; background: {{K.c7}}"></div>
     <div style="display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px">
-      <span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: #ECEEF2; color: #4E5661; display: flex; align-items: center; justify-content: center">
+      <span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: {{K.c8}}; color: {{K.c9}}; display: flex; align-items: center; justify-content: center">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"></rect><path d="M10.5 18.5h3"></path></svg>
       </span>
       <div style="display: flex; flex-direction: column; gap: 3px; text-align: left">
         <span style="font-size: 16px; font-weight: 700">화면이 켜져 있을 때만</span>
-        <span style="font-size: 14px; line-height: 1.45; font-weight: 500; color: #5F6670">앱을 닫거나 화면이 꺼지면 듣지 않아요</span>
+        <span style="font-size: 14px; line-height: 1.45; font-weight: 500; color: {{K.c1}}">앱을 닫거나 화면이 꺼지면 듣지 않아요</span>
       </div>
     </div>
   </section>
 
   <div style="display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 20px 20px 8px">
-    <a href="{{links.home}}" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: #15181D; color: #FFFFFF; text-decoration: none; font-size: 17px; font-weight: 700; box-shadow: 0 10px 22px rgba(20,25,35,0.22)">{{primary}}</a>
-    <div style="text-align: center; font-size: 13px; font-weight: 500; color: #5F6670; padding-top: 4px">{{promptHint}}</div>
-    <a href="{{links.home}}" style="display: flex; align-items: center; justify-content: center; height: 44px; font-size: 15px; font-weight: 600; color: #3E454E; text-decoration: underline; text-underline-offset: 3px">마이크 없이 둘러보기</a>
+    <a href="{{links.home}}" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: {{K.c10}}; color: {{K.c11}}; text-decoration: none; font-size: 17px; font-weight: 700; box-shadow: 0 10px 22px {{K.c12}}; {{K.fxd}}">{{primary}}</a>
+    <div style="text-align: center; font-size: 13px; font-weight: 500; color: {{K.c1}}; padding-top: 4px">{{promptHint}}</div>
+    <a href="{{links.home}}" style="display: flex; align-items: center; justify-content: center; height: 44px; font-size: 15px; font-weight: 600; color: {{K.c13}}; text-decoration: underline; text-underline-offset: 3px">마이크 없이 둘러보기</a>
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"character":{"editor":"enum","options":["1","2","3"],"default":"2"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"character":{"editor":"enum","options":["1","2","3"],"default":"2"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"#5F6670","c2":"rgba(255,255,255,0.86)","c3":"rgba(255,255,255,0.95)","c4":"rgba(20,25,35,0.08)","c5":"#E4E8FF","c6":"#3346B8","c7":"rgba(21,24,29,0.07)","c8":"#ECEEF2","c9":"#4E5661","c10":"#15181D","c11":"#FFFFFF","c12":"rgba(20,25,35,0.22)","c13":"#3E454E","root":"radial-gradient(125% 80% at 50% 24%, #FFFFFF 0%, #F6F7FF 42%, #E1E6FF 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#5F6670","c2":"#FFFFFF","c3":"rgba(17,20,26,0.07)","c4":"rgba(20,25,35,0.08)","c5":"#DADFFF","c6":"#102AC6","c7":"rgba(21,24,29,0.07)","c8":"#ECEEF2","c9":"#4E5661","c10":"#15181D","c11":"#FFFFFF","c12":"rgba(20,25,35,0.22)","c13":"#3E454E","root":"radial-gradient(120% 45% at 50% 0%, rgba(61,92,245,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"#5F6670","c2":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c3":"rgba(255,255,255,0.92)","c4":"rgba(20,25,45,0.08)","c5":"rgba(26,59,255,0.13)","c6":"#1D35C9","c7":"rgba(21,24,29,0.07)","c8":"rgba(120,128,150,0.10)","c9":"#4E5661","c10":"linear-gradient(180deg, rgba(58,62,72,0.92) 0%, rgba(18,20,26,0.94) 100%)","c11":"#FFFFFF","c12":"rgba(20,25,45,0.2)","c13":"#3E454E","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#BDC1C6","c2":"rgba(45,46,49,0.96)","c3":"rgba(232,234,237,0.08)","c4":"rgba(0,0,0,0.14)","c5":"rgba(138,180,248,0.16)","c6":"#8AB4F8","c7":"rgba(232,234,237,0.11)","c8":"#3C4043","c9":"#BDC1C6","c10":"#E8EAED","c11":"#202124","c12":"rgba(0,0,0,0.3)","c13":"#BDC1C6","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
     var android = (this.props.platform || 'ios') === 'android';
     var ch = String(this.props.character || '2');
     var c2 = ch === '2';
     var c3 = ch === '3';
     var g = android ? { w: 412, h: 915, top: 40, bottom: 24, mascot: 188 } : { w: 390, h: 844, top: 59, bottom: 34, mascot: 156 };
-    var L = function (n) { return (android ? 'Android-' : '') + n + '.dc.html'; };
-    return {
+    var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
+    return { K: K, themeName: THEME,
       w: g.w, h: g.h, top: g.top, bottom: g.bottom,
       c1: !c2 && !c3, c2: c2, c3: c3,
       mascotSize: g.mascot, mascotHint: g.mascot + 'px,' + g.mascot + 'px',

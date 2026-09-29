@@ -10,130 +10,141 @@
 <helmet>
 <style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
 </helmet>
-<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: #15181D; letter-spacing: -0.02em; background: radial-gradient(125% 70% at 50% 0%, #FFFFFF 0%, #F6F7F9 45%, #E8EBF0 100%)">
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
 
-  <header style="display: flex; flex-direction: column; gap: 12px; padding: 12px 20px 0">
-    <div style="display: flex; align-items: center; justify-content: space-between">
-      <h1 style="margin: 0; font-size: 30px; line-height: 1.2; font-weight: 700; letter-spacing: -0.04em">냉장고</h1>
-      <div style="display: flex; align-items: center; gap: 6px; height: 36px; box-sizing: border-box; padding: 0 12px; border-radius: 999px; background: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 4px 12px rgba(20,25,35,0.06); font-size: 13px; font-weight: 700">
-        <span style="width: 7px; height: 7px; border-radius: 50%; background: #3F4FD1; box-shadow: 0 0 0 3px rgba(63,79,209,0.18)"></span>
-        호출 대기 중
+  <header style="display: flex; flex-direction: column; gap: 14px; padding: 10px 20px 0">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <dc-import name="Mascot2" theme="{{themeName}}" mood="urgent" size="56" hint-size="56px,56px"></dc-import>
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+        <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800; letter-spacing: -0.045em">냉장고</h1>
+        <span style="font-size: 14px; font-weight: 500; color: {{K.c1}}">8가지 · 기한 얼마 안 남은 재료 1가지</span>
       </div>
+      <button type="button" aria-label="재료 검색" style="width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 1px solid {{K.c2}}; background: {{K.c3}}; box-shadow: 0 6px 16px {{K.c4}}; display: flex; align-items: center; justify-content: center; color: {{K.c5}}; cursor: pointer; {{K.fxc}}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+      </button>
     </div>
-    <label style="display: flex; align-items: center; gap: 10px; height: 48px; box-sizing: border-box; padding: 0 16px; border-radius: 16px; background: rgba(255,255,255,0.84); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 4px 12px rgba(20,25,35,0.05); color: #5F6670">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
-      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">재료 검색</span>
-      <input type="search" placeholder="재료 검색" style="flex-grow: 1; min-width: 0; height: 44px; border: 0; background: transparent; font-family: inherit; font-size: 16px; font-weight: 500; color: #15181D; outline: none">
-    </label>
-    <div role="group" aria-label="보관 위치" style="display: flex; gap: 8px">
-      <button type="button" aria-pressed="true" style="height: 44px; padding: 0 18px; border-radius: 22px; border: 0; background: #15181D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">전체</button>
-      <button type="button" aria-pressed="false" style="height: 44px; padding: 0 18px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.95); background: rgba(255,255,255,0.8); color: #3E454E; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">냉장</button>
-      <button type="button" aria-pressed="false" style="height: 44px; padding: 0 18px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.95); background: rgba(255,255,255,0.8); color: #3E454E; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">냉동</button>
-      <button type="button" aria-pressed="false" style="height: 44px; padding: 0 18px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.95); background: rgba(255,255,255,0.8); color: #3E454E; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">실온</button>
+    <div role="group" aria-label="보관 위치" style="display: flex; gap: 4px; height: 48px; box-sizing: border-box; padding: 4px; border-radius: 24px; background: {{K.c6}}; border: 1px solid {{K.c2}}; box-shadow: 0 6px 18px {{K.c7}}; {{K.fxc}}">
+      <sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+        <button type="button" aria-pressed="{{f.pressed}}" onClick="{{f.pick}}" style="{{f.style}}">{{f.label}}<span style="font-size: 12px; font-weight: 500; color: {{K.c8}}; margin-left: 4px">{{f.count}}</span></button>
+      </sc-for>
     </div>
-    <div style="font-size: 13px; font-weight: 600; color: #5F6670">재료 8종 · 급한 것부터</div>
   </header>
 
-  <div style="flex-grow: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 16px; padding: 12px 20px 0">
-    <sc-for list="{{sections}}" as="s" hint-placeholder-count="5">
-      <section aria-label="{{s.word}}" style="display: flex; flex-direction: column; gap: 8px">
-        <div style="display: flex; align-items: center; gap: 8px">
-          <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true">
-            <circle cx="24" cy="24" r="20" fill="{{s.body}}"></circle>
-            <path d="{{s.fill}}" fill="#333A52"></path>
-            <path d="{{s.stroke}}" fill="none" stroke="#333A52" stroke-width="2.6" stroke-linecap="round"></path>
-            <path d="{{s.brow}}" fill="none" stroke="#333A52" stroke-width="2.2" stroke-linecap="round"></path>
-          </svg>
-          <span style="font-size: 16px; font-weight: 700; color: {{s.acc}}">{{s.word}}</span>
-          <span style="font-size: 13px; font-weight: 600; color: #5F6670">{{s.count}} · {{s.hint}}</span>
-        </div>
-        <div style="display: flex; flex-direction: column; border-radius: 20px; background: rgba(255,255,255,0.86); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 6px 18px rgba(20,25,35,0.06)">
-          <sc-for list="{{s.rows}}" as="r" hint-placeholder-count="1">
-            <div style="{{r.rowStyle}}">
-              <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
-                <span style="font-size: 17px; font-weight: 700">{{r.name}}</span>
-                <span style="font-size: 13px; font-weight: 500; color: #5F6670">{{r.meta}}</span>
-              </div>
-              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px">
-                <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.03em">{{r.qty}}</span>
-                <sc-if value="{{r.hasTag}}" hint-placeholder-val="{{ false }}">
-                  <span style="font-size: 12px; font-weight: 700; padding: 2px 6px; border-radius: 6px; background: #ECEEF2; color: #4E5661">{{r.tag}}</span>
-                </sc-if>
-              </div>
-            </div>
-          </sc-for>
-        </div>
-      </section>
-    </sc-for>
+  <div style="flex-grow: 1; min-height: 0; overflow: hidden; padding: 16px 20px 0">
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+      <sc-for list="{{items}}" as="it" hint-placeholder-count="8">
+        <article style="display: flex; flex-direction: column; padding: 14px; border-radius: 24px; background: {{K.c9}}; border: 1px solid {{K.c10}}; box-shadow: 0 8px 24px {{K.c11}}; {{K.fx}}">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px">
+            <span style="{{it.tagStyle}}">{{it.band}}</span>
+            <span style="flex-shrink: 0; font-size: 12px; font-weight: 500; color: {{K.c8}}">{{it.loc}}</span>
+          </div>
+          <div style="font-size: 17px; font-weight: 700; margin-top: 12px">{{it.name}}</div>
+          <div style="display: flex; align-items: baseline; gap: 2px; margin-top: 2px">
+            <span style="font-size: 26px; font-weight: 800; letter-spacing: -0.04em">{{it.num}}</span>
+            <span style="font-size: 15px; font-weight: 600; color: {{K.c5}}">{{it.unit}}</span>
+            <sc-if value="{{it.est}}" hint-placeholder-val="{{ false }}">
+              <span style="margin-left: 6px; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 6px; background: {{K.c12}}; color: {{K.c1}}">추정</span>
+            </sc-if>
+          </div>
+          <div style="{{it.trackStyle}}">
+            <div style="{{it.fillStyle}}"></div>
+          </div>
+          <div style="font-size: 12px; line-height: 1.45; font-weight: 500; color: {{K.c1}}; margin-top: 7px">{{it.meta}}</div>
+          <div style="font-size: 12px; line-height: 1.45; font-weight: 600; color: {{it.subColor}}">{{it.sub}}</div>
+        </article>
+      </sc-for>
+    </div>
   </div>
 
-  <nav aria-label="주요 화면" style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 24px 16px {{navBottom}}px; background: linear-gradient(to bottom, rgba(232,235,240,0) 0%, rgba(232,235,240,0.92) 40%)">
-    <div style="flex-grow: 1; display: flex; gap: 4px; height: 64px; box-sizing: border-box; padding: 6px; border-radius: 32px; background: rgba(255,255,255,0.84); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 10px 28px rgba(20,25,35,0.1)">
-      <a href="{{links.home}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 26px; color: #5F6670; text-decoration: none; font-size: 12px; font-weight: 600">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11h18a9 9 0 0 1-18 0z"></path><path d="M9.5 3.5c0 1.5 1.5 1.5 1.5 3M13.5 3.5c0 1.5 1.5 1.5 1.5 3"></path></svg>
-        오늘
-      </a>
-      <a href="{{links.fridge}}" aria-current="page" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 26px; background: #FFFFFF; color: #15181D; text-decoration: none; font-size: 12px; font-weight: 700; box-shadow: 0 4px 12px rgba(20,25,35,0.08)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2.5"></rect><path d="M5 10h14M8.5 6v1.5M8.5 13v3"></path></svg>
-        냉장고
-      </a>
-      <a href="{{links.history}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 26px; color: #5F6670; text-decoration: none; font-size: 12px; font-weight: 600">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
-        기록
-      </a>
-    </div>
+  <nav aria-label="주요 화면" style="position: absolute; left: 0; right: 0; bottom: 0; height: {{navH}}px; box-sizing: border-box; padding: 0 12px {{bottom}}px; display: flex; border-radius: 28px 28px 0 0; background: {{K.c13}}; border-top: 1px solid {{K.c10}}; box-shadow: 0 -12px 32px {{K.c4}}; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); {{g_nav}}">
+    <a href="{{links.home}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: {{K.c14}}; text-decoration: none; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6.5a3 4 0 1 0 6 0a3 4 0 1 0 -6 0M8 10.5V21M15 3l.5 18M19 3l-1 18"></path></svg>
+      뭐 먹지?
+    </a>
+    <a href="{{links.fridge}}" aria-current="page" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: {{K.c0}}; text-decoration: none; font-size: 12px; font-weight: 700; {{g_tab}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="3"></rect><path d="M5 10h14M8.5 6v1.5M8.5 13v3"></path></svg>
+      냉장고
+    </a>
+    <a href="{{links.history}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: {{K.c14}}; text-decoration: none; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      기록
+    </a>
+    <a href="{{links.my}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: {{K.c14}}; text-decoration: none; font-size: 12px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"></path></svg>
+      마이페이지
+    </a>
   </nav>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"#5F6670","c2":"rgba(255,255,255,0.95)","c3":"rgba(255,255,255,0.8)","c4":"rgba(20,25,35,0.07)","c5":"#3E454E","c6":"rgba(255,255,255,0.62)","c7":"rgba(20,25,35,0.05)","c8":"#8A9199","c9":"rgba(255,255,255,0.88)","c10":"rgba(255,255,255,0.95)","c11":"rgba(20,25,35,0.06)","c12":"#F0F1F4","c13":"rgba(255,255,255,0.72)","c14":"#7C838C","c15":"#FFE4DB","c16":"#B0341A","c17":"#F07457","c18":"#ECEEF2","c19":"#5E6773","c20":"#C2C9D3","c21":"#FFEFD2","c22":"#8F5A08","c23":"#F2A63C","c24":"#ECEEF3","c25":"#56607A","c26":"#DDF3E4","c27":"#17703C","c28":"#4FC178","c29":"#C9CED6","c30":"#EEF0F4","c31":"#FFFFFF","c32":"rgba(20,25,35,0.08)","root":"radial-gradient(130% 70% at 50% 0%, #FFFFFF 0%, #F6F6F9 45%, #E8EAF0 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#5F6670","c2":"rgba(17,20,26,0.07)","c3":"#FFFFFF","c4":"rgba(20,25,35,0.07)","c5":"#3E454E","c6":"#FFFFFF","c7":"rgba(20,25,35,0.05)","c8":"#8A9199","c9":"#FFFFFF","c10":"rgba(17,20,26,0.07)","c11":"rgba(20,25,35,0.06)","c12":"#F0F1F4","c13":"#FFFFFF","c14":"#7C838C","c15":"#FFDCD1","c16":"#BB2D0F","c17":"#EE502B","c18":"#ECEEF2","c19":"#5E6773","c20":"#C2C9D3","c21":"#FFEBC8","c22":"#8F5A08","c23":"#F19D28","c24":"#ECEEF3","c25":"#1041C0","c26":"#D3F3DD","c27":"#0A7D3A","c28":"#23ED6C","c29":"#C9CED6","c30":"#EEF0F4","c31":"#FFFFFF","c32":"rgba(20,25,35,0.08)","root":"#F4F5F7","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"#5F6670","c2":"rgba(255,255,255,0.7)","c3":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c4":"rgba(20,25,45,0.07)","c5":"#3E454E","c6":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c7":"rgba(20,25,45,0.05)","c8":"#8A9199","c9":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c10":"rgba(255,255,255,0.92)","c11":"rgba(20,25,45,0.06)","c12":"rgba(120,128,150,0.10)","c13":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c14":"#7C838C","c15":"rgba(255,83,26,0.13)","c16":"#B13419","c17":"linear-gradient(180deg, rgba(240,119,91,0.94) 0%, rgba(236,81,44,0.94) 100%)","c18":"rgba(120,128,150,0.10)","c19":"#5E6773","c20":"rgba(120,128,150,0.3)","c21":"rgba(255,173,26,0.13)","c22":"#8F5A08","c23":"linear-gradient(180deg, rgba(244,179,88,0.94) 0%, rgba(241,157,40,0.94) 100%)","c24":"rgba(120,128,150,0.10)","c25":"#1A45B6","c26":"rgba(60,221,111,0.13)","c27":"#11763B","c28":"linear-gradient(180deg, rgba(91,232,142,0.94) 0%, rgba(47,225,111,0.94) 100%)","c29":"#C9CED6","c30":"rgba(120,128,150,0.10)","c31":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c32":"rgba(20,25,45,0.08)","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#BDC1C6","c2":"rgba(232,234,237,0.08)","c3":"rgba(45,46,49,0.96)","c4":"rgba(0,0,0,0.13)","c5":"#BDC1C6","c6":"rgba(45,46,49,0.96)","c7":"rgba(0,0,0,0.09)","c8":"#9AA0A6","c9":"rgba(45,46,49,0.96)","c10":"rgba(232,234,237,0.08)","c11":"rgba(0,0,0,0.11)","c12":"#3C4043","c13":"rgba(45,46,49,0.96)","c14":"#9AA0A6","c15":"rgba(252,173,112,0.16)","c16":"#F28B82","c17":"#F28B82","c18":"#3C4043","c19":"#BDC1C6","c20":"#5F6368","c21":"rgba(252,173,112,0.16)","c22":"#FCAD70","c23":"#FCAD70","c24":"#3C4043","c25":"#8AB4F8","c26":"rgba(129,201,149,0.16)","c27":"#81C995","c28":"#81C995","c29":"#5F6368","c30":"#3C4043","c31":"#3C4043","c32":"rgba(0,0,0,0.14)","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
     var android = (this.props.platform || 'ios') === 'android';
     var g = android ? { w: 412, h: 915, top: 40, bottom: 24 } : { w: 390, h: 844, top: 59, bottom: 34 };
-    var L = function (n) { return (android ? 'Android-' : '') + n + '.dc.html'; };
-    var NONE = 'M0 0';
-    var sp = function (cx, cy, h) { return 'M' + (cx - 2.5) + ' ' + (cy - h / 2 + 2.5) + ' a2.5 2.5 0 0 1 5 0 v' + (h - 5) + ' a2.5 2.5 0 0 1 -5 0 z'; };
-    var dt = function (cx, cy, r) { return 'M' + (cx - r) + ' ' + cy + ' a' + r + ' ' + r + ' 0 1 0 ' + (2 * r) + ' 0 a' + r + ' ' + r + ' 0 1 0 ' + (-2 * r) + ' 0 z'; };
-    var face = {
-      expired: { fill: NONE, stroke: 'M15.5 25 h6 M26.5 25 h6 M22 32 h4', brow: NONE },
-      urgent:  { fill: sp(19, 25, 9) + ' ' + sp(29, 25, 9) + ' ' + dt(24, 32, 2.2), stroke: NONE, brow: 'M14 18.5 l6 -2 M34 18.5 l-6 -2' },
-      soon:    { fill: sp(19, 24, 9) + ' ' + sp(29, 24, 9) + ' M21.5 31 h5 a1.2 1.2 0 0 1 0 2.4 h-5 a1.2 1.2 0 0 1 0 -2.4 z', stroke: NONE, brow: NONE },
-      fresh:   { fill: NONE, stroke: 'M15 26 q3.5 -4.5 7 0 M26 26 q3.5 -4.5 7 0 M20.5 30.5 q3.5 4 7 0', brow: NONE },
-      unknown: { fill: dt(19, 25, 2.4) + ' ' + dt(29, 25, 2.4), stroke: 'M21 32 q3 -1.6 6 0', brow: NONE }
+    var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
+    var self = this;
+    var st = this.state || {};
+    var loc = st.loc || '전체';
+
+    // 상태 이름은 홈과 같은 말을 쓴다.
+    var band = {
+      urgent:  { word: '얼마 안 남았어요', bg: K.c15, fg: K.c16, bar: K.c17 },
+      expired: { word: '기한 지났어요', bg: K.c18, fg: K.c19, bar: K.c20 },
+      soon:    { word: '며칠 남았어요', bg: K.c21, fg: K.c22, bar: K.c23 },
+      unknown: { word: '날짜 몰라요', bg: K.c24, fg: K.c25, bar: '' },
+      fresh:   { word: '넉넉해요', bg: K.c26, fg: K.c27, bar: K.c28 }
     };
     var raw = [
-      { key: 'expired', word: '지남', hint: '오늘 요리 후보에서 뺐어요', acc: '#5E6773', body: '#C2C9D3', rows: [
-        { name: '삼겹살', meta: '소비기한 9/30 · 2일 지남 · 냉장', qty: '300g', tag: '확인 필요' } ] },
-      { key: 'urgent', word: '급함', hint: '오늘 안에 쓰세요', acc: '#C23A1C', body: '#FFB3A0', rows: [
-        { name: '두부', meta: '소비기한 10/3 · D-1 · 냉장', qty: '2모' } ] },
-      { key: 'soon', word: '챙길 것', hint: '이번 주에 쓰세요', acc: '#8F5A08', body: '#FFD79B', rows: [
-        { name: '우유', meta: '유통기한 10/6 · 개봉 2일 · 냉장', qty: '1팩' },
-        { name: '애호박', meta: '점검 알림 10/5 · 냉장', qty: '1개' },
-        { name: '대파', meta: '잔량 확인 필요 · 냉장', qty: '조금', tag: '추정' } ] },
-      { key: 'fresh', word: '여유', hint: '급하지 않아요', acc: '#17703C', body: '#AEE8BE', rows: [
-        { name: '다진마늘', meta: '소비기한 10/24 · 냉동', qty: '1통' },
-        { name: '감자', meta: '점검 알림 10/12 · 실온', qty: '3개' } ] },
-      { key: 'unknown', word: '미확인', hint: '기한을 알려주세요', acc: '#56607A', body: '#CCD2DE', rows: [
-        { name: '계란', meta: '기한 미확인 · 냉장', qty: '4개' } ] }
+      { b: 'urgent', name: '두부', num: '2', unit: '모', loc: '냉장', meta: '소비기한 2026.10.03', sub: 'D-1', fill: 10 },
+      { b: 'expired', name: '삼겹살', num: '300', unit: 'g', loc: '냉장', meta: '소비기한 2026.09.30', sub: '상태 확인 필요', fill: 0, warn: true },
+      { b: 'soon', name: '우유', num: '1', unit: '팩', loc: '냉장', meta: '유통기한 2026.10.06', sub: '개봉 2일째', fill: 30 },
+      { b: 'soon', name: '애호박', num: '1', unit: '개', loc: '냉장', meta: '점검 알림 2026.10.05', sub: 'D-3', fill: 35 },
+      { b: 'soon', name: '대파', num: '조금', unit: '', loc: '냉장', meta: '남은 양 확인 필요', sub: '', fill: 45, est: true },
+      { b: 'unknown', name: '계란', num: '4', unit: '개', loc: '냉장', meta: '기한을 말해 주세요', sub: '', fill: -1 },
+      { b: 'fresh', name: '다진마늘', num: '1', unit: '통', loc: '냉동', meta: '소비기한 2026.10.24', sub: 'D-22', fill: 85 },
+      { b: 'fresh', name: '감자', num: '3', unit: '개', loc: '실온', meta: '점검 알림 2026.10.12', sub: 'D-10', fill: 70 }
     ];
-    var sections = raw.map(function (s) {
-      var fc = face[s.key];
+    var items = raw.filter(function (r) { return loc === '전체' || r.loc === loc; }).map(function (r) {
+      var c = band[r.b];
+      var track = r.fill < 0
+        ? 'height: 6px; margin-top: 12px; box-sizing: border-box; border-radius: 3px; border: 1.5px dashed ' + K.c29 + ''
+        : 'height: 6px; margin-top: 12px; border-radius: 3px; background: ' + K.c30 + '; overflow: hidden';
       return {
-        word: s.word, hint: s.hint, acc: s.acc, body: s.body, count: s.rows.length + '가지',
-        fill: fc.fill, stroke: fc.stroke, brow: fc.brow,
-        rows: s.rows.map(function (r, i) {
-          return {
-            name: r.name, meta: r.meta, qty: r.qty, tag: r.tag || '', hasTag: !!r.tag,
-            rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 62px; box-sizing: border-box; padding: 10px 16px;'
-              + (i > 0 ? ' border-top: 1px solid rgba(21,24,29,0.07);' : '')
-          };
-        })
+        name: r.name, num: r.num, unit: r.unit, loc: r.loc, meta: r.meta, sub: r.sub, band: c.word, est: !!r.est,
+        subColor: r.warn ? K.c16 : c.fg,
+        tagStyle: 'font-size: 12px; font-weight: 700; padding: 3px 7px; border-radius: 8px; white-space: nowrap; letter-spacing: -0.04em; background: ' + c.bg + '; color: ' + c.fg,
+        trackStyle: track,
+        fillStyle: r.fill < 0 ? 'display: none' : 'height: 100%; width: ' + Math.max(r.fill, 4) + '%; border-radius: 3px; background: ' + (c.bar || K.c20)
       };
     });
-    return {
-      w: g.w, h: g.h, top: g.top, navBottom: g.bottom + 8,
-      sections: sections,
-      links: { home: L('Main'), fridge: L('Fridge'), history: L('History'), listen: L('Listening') }
+    var counts = { '전체': raw.length, '냉장': 0, '냉동': 0, '실온': 0 };
+    raw.forEach(function (r) { counts[r.loc] += 1; });
+    var filters = ['전체', '냉장', '냉동', '실온'].map(function (name) {
+      var on = name === loc;
+      return {
+        label: name, count: counts[name], pressed: on ? 'true' : 'false',
+        pick: function () { self.setState({ loc: name }); },
+        style: 'flex-grow: 1; flex-basis: 0; height: 38px; border: 0; border-radius: 19px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em;'
+          + (on ? ' background: ' + K.c31 + '; color: ' + K.c0 + '; font-weight: 700; box-shadow: 0 4px 12px ' + K.c32 + ';' : ' background: transparent; color: ' + K.c1 + '; font-weight: 500;')
+      };
+    });
+    // 글래스 테마 전용: 떠 있는 유리 탭 바 (색은 hsl로 적어 테마 변환에서 제외)
+    var GLASS_ON = THEME === 'glass';
+    var gNav = function (bottomPx) {
+      return 'left: 14px; right: 14px; bottom: ' + bottomPx + 'px; height: 62px; padding: 0 6px; border-radius: 31px; border: 1px solid hsla(0,0%,100%,0.75);'
+        + ' background: linear-gradient(135deg, hsla(0,0%,100%,0.42) 0%, hsla(0,0%,100%,0.1) 50%, hsla(0,0%,100%,0.26) 100%);'
+        + ' backdrop-filter: blur(14px) saturate(190%); -webkit-backdrop-filter: blur(14px) saturate(190%);'
+        + ' box-shadow: inset 1px 1px 0 hsla(0,0%,100%,0.95), inset -1px -1px 0 hsla(0,0%,100%,0.45), inset 0 -12px 20px hsla(0,0%,100%,0.2), 0 0 0 0.5px hsla(230,20%,20%,0.15), 0 12px 30px hsla(230,30%,20%,0.13)';
+    };
+    var gTab = 'margin: 7px 0; border-radius: 24px; background: linear-gradient(135deg, hsla(0,0%,100%,0.72) 0%, hsla(0,0%,100%,0.22) 55%, hsla(0,0%,100%,0.4) 100%);'
+      + ' box-shadow: inset 1px 1px 0 hsla(0,0%,100%,1), inset -1px -1px 0 hsla(0,0%,100%,0.5), 0 0 0 0.5px hsla(230,20%,20%,0.12), 0 4px 12px hsla(230,30%,20%,0.10)';
+
+    return { K: K, themeName: THEME, g_nav: GLASS_ON ? gNav(Math.max(g.bottom - 12, 12)) : '', g_tab: GLASS_ON ? gTab : '',
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom, navH: 64 + g.bottom,
+      filters: filters, items: items,
+      links: { home: L('Main'), fridge: L('Fridge'), history: L('History'), my: L('MyPage') }
     };
   }
 }

@@ -2,37 +2,594 @@
   "v": 3,
   "attachments": {},
   "boards": {
-    "Android-Clarify.dc.html": {"h": 915, "is_interactive": true, "title": "Android · 확인 질문", "w": 412, "x": 1476, "y": 1260},
-    "Android-Fridge.dc.html": {"h": 915, "is_interactive": true, "title": "Android · 냉장고", "w": 412, "x": 2460, "y": 1260},
-    "Android-History.dc.html": {"h": 915, "is_interactive": true, "title": "Android · 기록", "w": 412, "x": 3444, "y": 1260},
-    "Android-Listening.dc.html": {"h": 915, "is_interactive": true, "title": "Android · 듣는 중", "w": 412, "x": 984, "y": 1260},
-    "Android-Main.dc.html": {"h": 915, "is_interactive": true, "title": "Android · 오늘", "w": 412, "x": 492, "y": 1260},
-    "Android-Menu.dc.html": {"h": 915, "is_interactive": true, "title": "Android · 메뉴 상세", "w": 412, "x": 2952, "y": 1260},
-    "Android-Permission.dc.html": {"h": 915, "is_interactive": true, "title": "Android · 권한 안내", "w": 412, "x": 0, "y": 1260},
-    "Android-Result.dc.html": {"h": 915, "is_interactive": true, "title": "Android · 반영 결과", "w": 412, "x": 1968, "y": 1260},
-    "Clarify.dc.html": {"h": 844, "is_interactive": true, "title": "iOS · 확인 질문", "w": 390, "x": 1410, "y": 0},
-    "Fridge.dc.html": {"h": 844, "is_interactive": true, "title": "iOS · 냉장고", "w": 390, "x": 2350, "y": 0},
-    "History.dc.html": {"h": 844, "is_interactive": true, "title": "iOS · 기록", "w": 390, "x": 3290, "y": 0},
-    "Listening.dc.html": {"h": 844, "is_interactive": true, "title": "iOS · 듣는 중", "w": 390, "x": 940, "y": 0},
-    "Main.dc.html": {"h": 844, "is_interactive": true, "title": "iOS · 오늘", "w": 390, "x": 470, "y": 0},
-    "Mascot-states.dc.html": {"h": 320, "title": "캐릭터 시안 1 · 상태 7종", "w": 1240, "x": 0, "y": 2520},
-    "Mascot.dc.html": {"h": 220, "title": "캐릭터 시안 1 · 컴포넌트", "w": 220, "x": 1320, "y": 2520},
-    "Menu.dc.html": {"h": 844, "is_interactive": true, "title": "iOS · 메뉴 상세", "w": 390, "x": 2820, "y": 0},
-    "Permission.dc.html": {"h": 844, "is_interactive": true, "title": "iOS · 권한 안내", "w": 390, "x": 0, "y": 0},
-    "Result.dc.html": {"h": 844, "is_interactive": true, "title": "iOS · 반영 결과", "w": 390, "x": 1880, "y": 0},
-    "Mascot2-states.dc.html": {"h": 320, "title": "캐릭터 시안 2 · 상태 7종", "w": 1240, "x": 0, "y": 3260},
-    "Mascot2.dc.html": {"h": 220, "title": "캐릭터 시안 2 · 컴포넌트", "w": 220, "x": 1320, "y": 3260},
-    "C2-Permission.dc.html": {"h": 844, "is_interactive": true, "title": "시안 2 · 권한 안내", "w": 390, "x": 0, "y": 3700},
-    "C2-Main.dc.html": {"h": 844, "is_interactive": true, "title": "시안 2 · 오늘", "w": 390, "x": 470, "y": 3700},
-    "C2-Clarify.dc.html": {"h": 844, "is_interactive": true, "title": "시안 2 · 확인 질문", "w": 390, "x": 940, "y": 3700},
-    "C2-Result.dc.html": {"h": 844, "is_interactive": true, "title": "시안 2 · 반영 결과", "w": 390, "x": 1410, "y": 3700},
-    "Mascot3-states.dc.html": {"h": 320, "title": "캐릭터 시안 3 · 상태 7종", "w": 1240, "x": 0, "y": 5000},
-    "Mascot3.dc.html": {"h": 220, "title": "캐릭터 시안 3 · 컴포넌트", "w": 220, "x": 1320, "y": 5000},
-    "C3-Permission.dc.html": {"h": 844, "is_interactive": true, "title": "시안 3 · 권한 안내", "w": 390, "x": 0, "y": 5440},
-    "C3-Main.dc.html": {"h": 844, "is_interactive": true, "title": "시안 3 · 오늘", "w": 390, "x": 470, "y": 5440},
-    "C3-Clarify.dc.html": {"h": 844, "is_interactive": true, "title": "시안 3 · 확인 질문", "w": 390, "x": 940, "y": 5440},
-    "C3-Result.dc.html": {"h": 844, "is_interactive": true, "title": "시안 3 · 반영 결과", "w": 390, "x": 1410, "y": 5440},
-    "Neuron.dc.html": {"h": 520, "is_interactive": true, "title": "재료 그래프 · 듣기 연출 컴포넌트", "w": 390, "x": 4042, "y": 1260}
+    "Android-Clarify.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "Android · 확인 질문",
+      "w": 412,
+      "x": 1476,
+      "y": 1260
+    },
+    "Android-Fridge.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "Android · 냉장고",
+      "w": 412,
+      "x": 2460,
+      "y": 1260
+    },
+    "Android-History.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "Android · 기록",
+      "w": 412,
+      "x": 3444,
+      "y": 1260
+    },
+    "Android-Listening.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "Android · 듣는 중",
+      "w": 412,
+      "x": 984,
+      "y": 1260
+    },
+    "Android-Main.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "Android · 뭐 먹지?",
+      "w": 412,
+      "x": 492,
+      "y": 1260
+    },
+    "Android-Menu.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "Android · 메뉴 상세",
+      "w": 412,
+      "x": 2952,
+      "y": 1260
+    },
+    "Android-Permission.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "Android · 권한 안내",
+      "w": 412,
+      "x": 0,
+      "y": 1260
+    },
+    "Android-Result.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "Android · 반영 결과",
+      "w": 412,
+      "x": 1968,
+      "y": 1260
+    },
+    "Clarify.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "iOS · 확인 질문",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "Fridge.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "iOS · 냉장고",
+      "w": 390,
+      "x": 2350,
+      "y": 0
+    },
+    "History.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "iOS · 기록",
+      "w": 390,
+      "x": 3290,
+      "y": 0
+    },
+    "Listening.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "iOS · 듣는 중",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "iOS · 뭐 먹지?",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "Mascot-states.dc.html": {
+      "h": 320,
+      "title": "캐릭터 시안 1 · 상태 7종",
+      "w": 1240,
+      "x": 0,
+      "y": 6300
+    },
+    "Mascot.dc.html": {
+      "h": 220,
+      "title": "캐릭터 시안 1 · 컴포넌트",
+      "w": 220,
+      "x": 1320,
+      "y": 6300
+    },
+    "Menu.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "iOS · 메뉴 상세",
+      "w": 390,
+      "x": 2820,
+      "y": 0
+    },
+    "Permission.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "iOS · 권한 안내",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Result.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "iOS · 반영 결과",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "Mascot2-states.dc.html": {
+      "h": 320,
+      "title": "캐릭터 시안 2 · 상태 7종",
+      "w": 1240,
+      "x": 0,
+      "y": 7040
+    },
+    "Mascot2.dc.html": {
+      "h": 220,
+      "title": "캐릭터 시안 2 · 컴포넌트",
+      "w": 220,
+      "x": 1320,
+      "y": 7040
+    },
+    "C2-Permission.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "시안 2 · 권한 안내",
+      "w": 390,
+      "x": 0,
+      "y": 7480
+    },
+    "C2-Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "시안 2 · 뭐 먹지?",
+      "w": 390,
+      "x": 470,
+      "y": 7480
+    },
+    "C2-Clarify.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "시안 2 · 확인 질문",
+      "w": 390,
+      "x": 940,
+      "y": 7480
+    },
+    "C2-Result.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "시안 2 · 반영 결과",
+      "w": 390,
+      "x": 1410,
+      "y": 7480
+    },
+    "Mascot3-states.dc.html": {
+      "h": 320,
+      "title": "캐릭터 시안 3 · 상태 7종",
+      "w": 1240,
+      "x": 0,
+      "y": 8780
+    },
+    "Mascot3.dc.html": {
+      "h": 220,
+      "title": "캐릭터 시안 3 · 컴포넌트",
+      "w": 220,
+      "x": 1320,
+      "y": 8780
+    },
+    "C3-Permission.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "시안 3 · 권한 안내",
+      "w": 390,
+      "x": 0,
+      "y": 9220
+    },
+    "C3-Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "시안 3 · 뭐 먹지?",
+      "w": 390,
+      "x": 470,
+      "y": 9220
+    },
+    "C3-Clarify.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "시안 3 · 확인 질문",
+      "w": 390,
+      "x": 940,
+      "y": 9220
+    },
+    "C3-Result.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "시안 3 · 반영 결과",
+      "w": 390,
+      "x": 1410,
+      "y": 9220
+    },
+    "Splash.dc.html": {
+      "h": 844,
+      "title": "iOS · 스플래시",
+      "w": 390,
+      "x": -1410,
+      "y": 0
+    },
+    "Android-Splash.dc.html": {
+      "h": 915,
+      "title": "Android · 스플래시",
+      "w": 412,
+      "x": -1476,
+      "y": 1260
+    },
+    "Login.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "iOS · 로그인",
+      "w": 390,
+      "x": -940,
+      "y": 0
+    },
+    "Android-Login.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "Android · 로그인",
+      "w": 412,
+      "x": -984,
+      "y": 1260
+    },
+    "MyPage.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "iOS · 마이페이지",
+      "w": 390,
+      "x": 3760,
+      "y": 0
+    },
+    "Android-MyPage.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "Android · 마이페이지",
+      "w": 412,
+      "x": 3936,
+      "y": 1260
+    },
+    "TabIcons.dc.html": {
+      "h": 400,
+      "title": "‘뭐 먹지?’ 탭 아이콘 · A 수저 적용",
+      "w": 1240,
+      "x": 4520,
+      "y": 1260
+    },
+    "SignUp.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "iOS · 회원가입",
+      "w": 390,
+      "x": -470,
+      "y": 0
+    },
+    "Android-SignUp.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "Android · 회원가입",
+      "w": 412,
+      "x": -492,
+      "y": 1260
+    },
+    "White-Splash.dc.html": {
+      "h": 844,
+      "title": "화이트 · 스플래시",
+      "w": 390,
+      "x": -1410,
+      "y": 2520
+    },
+    "White-Login.dc.html": {
+      "h": 844,
+      "title": "화이트 · 로그인",
+      "w": 390,
+      "x": -940,
+      "y": 2520,
+      "is_interactive": true
+    },
+    "White-SignUp.dc.html": {
+      "h": 844,
+      "title": "화이트 · 회원가입",
+      "w": 390,
+      "x": -470,
+      "y": 2520,
+      "is_interactive": true
+    },
+    "White-Permission.dc.html": {
+      "h": 844,
+      "title": "화이트 · 권한 안내",
+      "w": 390,
+      "x": 0,
+      "y": 2520,
+      "is_interactive": true
+    },
+    "White-Main.dc.html": {
+      "h": 844,
+      "title": "화이트 · 뭐 먹지?",
+      "w": 390,
+      "x": 470,
+      "y": 2520,
+      "is_interactive": true
+    },
+    "White-Listening.dc.html": {
+      "h": 844,
+      "title": "화이트 · 듣는 중",
+      "w": 390,
+      "x": 940,
+      "y": 2520,
+      "is_interactive": true
+    },
+    "White-Clarify.dc.html": {
+      "h": 844,
+      "title": "화이트 · 확인 질문",
+      "w": 390,
+      "x": 1410,
+      "y": 2520,
+      "is_interactive": true
+    },
+    "White-Result.dc.html": {
+      "h": 844,
+      "title": "화이트 · 반영 결과",
+      "w": 390,
+      "x": 1880,
+      "y": 2520,
+      "is_interactive": true
+    },
+    "White-Fridge.dc.html": {
+      "h": 844,
+      "title": "화이트 · 냉장고",
+      "w": 390,
+      "x": 2350,
+      "y": 2520,
+      "is_interactive": true
+    },
+    "White-Menu.dc.html": {
+      "h": 844,
+      "title": "화이트 · 메뉴 상세",
+      "w": 390,
+      "x": 2820,
+      "y": 2520,
+      "is_interactive": true
+    },
+    "White-History.dc.html": {
+      "h": 844,
+      "title": "화이트 · 기록",
+      "w": 390,
+      "x": 3290,
+      "y": 2520,
+      "is_interactive": true
+    },
+    "White-MyPage.dc.html": {
+      "h": 844,
+      "title": "화이트 · 마이페이지",
+      "w": 390,
+      "x": 3760,
+      "y": 2520,
+      "is_interactive": true
+    },
+    "Glass-Splash.dc.html": {
+      "h": 844,
+      "title": "글래스 · 스플래시",
+      "w": 390,
+      "x": -1410,
+      "y": 3780
+    },
+    "Glass-Login.dc.html": {
+      "h": 844,
+      "title": "글래스 · 로그인",
+      "w": 390,
+      "x": -940,
+      "y": 3780,
+      "is_interactive": true
+    },
+    "Glass-SignUp.dc.html": {
+      "h": 844,
+      "title": "글래스 · 회원가입",
+      "w": 390,
+      "x": -470,
+      "y": 3780,
+      "is_interactive": true
+    },
+    "Glass-Permission.dc.html": {
+      "h": 844,
+      "title": "글래스 · 권한 안내",
+      "w": 390,
+      "x": 0,
+      "y": 3780,
+      "is_interactive": true
+    },
+    "Glass-Main.dc.html": {
+      "h": 844,
+      "title": "글래스 · 뭐 먹지?",
+      "w": 390,
+      "x": 470,
+      "y": 3780,
+      "is_interactive": true
+    },
+    "Glass-Listening.dc.html": {
+      "h": 844,
+      "title": "글래스 · 듣는 중",
+      "w": 390,
+      "x": 940,
+      "y": 3780,
+      "is_interactive": true
+    },
+    "Glass-Clarify.dc.html": {
+      "h": 844,
+      "title": "글래스 · 확인 질문",
+      "w": 390,
+      "x": 1410,
+      "y": 3780,
+      "is_interactive": true
+    },
+    "Glass-Result.dc.html": {
+      "h": 844,
+      "title": "글래스 · 반영 결과",
+      "w": 390,
+      "x": 1880,
+      "y": 3780,
+      "is_interactive": true
+    },
+    "Glass-Fridge.dc.html": {
+      "h": 844,
+      "title": "글래스 · 냉장고",
+      "w": 390,
+      "x": 2350,
+      "y": 3780,
+      "is_interactive": true
+    },
+    "Glass-Menu.dc.html": {
+      "h": 844,
+      "title": "글래스 · 메뉴 상세",
+      "w": 390,
+      "x": 2820,
+      "y": 3780,
+      "is_interactive": true
+    },
+    "Glass-History.dc.html": {
+      "h": 844,
+      "title": "글래스 · 기록",
+      "w": 390,
+      "x": 3290,
+      "y": 3780,
+      "is_interactive": true
+    },
+    "Glass-MyPage.dc.html": {
+      "h": 844,
+      "title": "글래스 · 마이페이지",
+      "w": 390,
+      "x": 3760,
+      "y": 3780,
+      "is_interactive": true
+    },
+    "Dark-Splash.dc.html": {
+      "h": 844,
+      "title": "다크 · 스플래시",
+      "w": 390,
+      "x": -1410,
+      "y": 5040
+    },
+    "Dark-Login.dc.html": {
+      "h": 844,
+      "title": "다크 · 로그인",
+      "w": 390,
+      "x": -940,
+      "y": 5040,
+      "is_interactive": true
+    },
+    "Dark-SignUp.dc.html": {
+      "h": 844,
+      "title": "다크 · 회원가입",
+      "w": 390,
+      "x": -470,
+      "y": 5040,
+      "is_interactive": true
+    },
+    "Dark-Permission.dc.html": {
+      "h": 844,
+      "title": "다크 · 권한 안내",
+      "w": 390,
+      "x": 0,
+      "y": 5040,
+      "is_interactive": true
+    },
+    "Dark-Main.dc.html": {
+      "h": 844,
+      "title": "다크 · 뭐 먹지?",
+      "w": 390,
+      "x": 470,
+      "y": 5040,
+      "is_interactive": true
+    },
+    "Dark-Listening.dc.html": {
+      "h": 844,
+      "title": "다크 · 듣는 중",
+      "w": 390,
+      "x": 940,
+      "y": 5040,
+      "is_interactive": true
+    },
+    "Dark-Clarify.dc.html": {
+      "h": 844,
+      "title": "다크 · 확인 질문",
+      "w": 390,
+      "x": 1410,
+      "y": 5040,
+      "is_interactive": true
+    },
+    "Dark-Result.dc.html": {
+      "h": 844,
+      "title": "다크 · 반영 결과",
+      "w": 390,
+      "x": 1880,
+      "y": 5040,
+      "is_interactive": true
+    },
+    "Dark-Fridge.dc.html": {
+      "h": 844,
+      "title": "다크 · 냉장고",
+      "w": 390,
+      "x": 2350,
+      "y": 5040,
+      "is_interactive": true
+    },
+    "Dark-Menu.dc.html": {
+      "h": 844,
+      "title": "다크 · 메뉴 상세",
+      "w": 390,
+      "x": 2820,
+      "y": 5040,
+      "is_interactive": true
+    },
+    "Dark-History.dc.html": {
+      "h": 844,
+      "title": "다크 · 기록",
+      "w": 390,
+      "x": 3290,
+      "y": 5040,
+      "is_interactive": true
+    },
+    "Dark-MyPage.dc.html": {
+      "h": 844,
+      "title": "다크 · 마이페이지",
+      "w": 390,
+      "x": 3760,
+      "y": 5040,
+      "is_interactive": true
+    }
   },
   "createdOnFiles": {
     "at": "2026-09-28T08:17:41Z",
@@ -45,18 +602,86 @@
   "notes": {
     "flutter-memo": {
       "fill": "teal",
-      "text": "Flutter 구현 메모\n\n· 한 코드, 두 기기: 화면은 같고 폭과 SafeArea만 다름. iOS 390×844 상59·하34 / Android 412×915 상40·하24는 가정값이며 실제로는 MediaQuery.padding을 쓴다\n· 배경: 밴드 색의 RadialGradient를 TweenAnimationBuilder로 보간\n· 캐릭터: 시안 2 냉장고 친구로 확정. Rive 상태 머신(mood 7종) 권장, 없으면 CustomPainter\n· 밴드 스와이프: 아치(타원 윗부분) 궤도를 따라 드래그, 가장 가까운 얼굴로 스프링 스냅. 얼굴 5개는 각각 Semantics 버튼\n· 듣기: 원래 HTML 목업과 같은 구성. 홈 위 전체를 어둡게 흐리고 가운데(높이 40%)에 재료 그래프, 아래에 상태 문구와 들은 말. 그래프 바깥을 탭하면 닫힘\n· 재료 그래프: 옵시디언 그래프 뷰 방식. 재료와 메뉴가 노드, 레시피가 연결선이고 force-directed로 떠다닌다. 라벨은 재료명만, 메뉴 노드는 이름 없이 점으로. 말에 나온 재료(두부·계란)는 보라색으로 커졌다 작아지며 연결된 노드까지 밝아진다. 노드를 누르면 이웃만 강조, 끌어서 옮길 수 있다. 앱에서는 speech_to_text의 onSoundLevelChange 값을 energy로 넣고, 인식 중간 결과에서 재료명이 나오면 그 노드를 켠다. CustomPainter + Ticker로 구현\n· 레이더식 회전 스윕·호는 쓰지 않는다\n· 확인·반영: 전체 오버레이. VoiceState 스트림 하나로 듣기·확인·반영 분기\n· 말하기 진입: 별도 마이크 버튼 없음. 호출어, 또는 상단 ‘호출 대기 중’ 칩 탭\n· 뒤로: iOS 셰브런 + 가장자리 스와이프 / Android 화살표 + 시스템 뒤로\n· 글꼴: Pretendard 가변 폰트 번들 (목업도 같은 파일)",
+      "text": "Flutter 구현 메모\n\n· 한 코드, 두 기기: 화면은 같고 폭과 SafeArea만 다름. iOS 390×844 상59·하34 / Android 412×915 상40·하24는 가정값이며 실제로는 MediaQuery.padding을 쓴다\n· 배경: 밴드 색의 RadialGradient를 TweenAnimationBuilder로 보간\n· 캐릭터: 시안 2 냉장고 친구로 확정. Rive 상태 머신(mood 7종) 권장, 없으면 CustomPainter\n· 밴드 스와이프: 화면 아래 큰 타원 유리면(반투명 흰색 + blur) 윗선 안쪽을 따라 선 얼굴 5개. 선택된 것만 흰 카드 위에 밴드 색. 드래그 후 가장 가까운 얼굴로 스프링 스냅. 얼굴 5개는 각각 Semantics 버튼. 탭 3개도 같은 유리면 위에 얹는다\n· 듣기·확인·반영: 같은 전체 화면 구조(위 단계 표시, 가운데 냉장고, 아래 들은 말/질문/결과). 듣는 중에는 냉장고가 위아래로 들썩이고 좌우로 살짝 흔들리며 눈을 깜빡이고 양옆 소리 물결이 번갈아 켜진다. 뒤에 파동 3겹. 앱에서는 마이크 음량으로 들썩임 크기 조절. VoiceState 스트림 하나로 분기. 단계 표시: 같은 크기의 가는 막대 3개 + 이름. 지금 단계만 화면 강조색(듣기 보라, 확인 주황, 반영 초록)에 빛이 흐르고, 이름은 ‘듣는 중 / 확인 중 / 반영 완료’로 굵게 + 맥박 점. 지난 단계는 체크, 다음 단계는 회색. 듣는 중 카드 제목은 ‘받아 적는 중’\n· 냉장고: 2열 타일(밴드 태그, 이름, 큰 수량, 남은 기한 막대). 보관 위치는 유리 세그먼트로 거름\n· 기록: 말한 문장(오른쪽 말풍선) → 냉장고의 반영 결과(왼쪽 카드) 대화형. 가장 최근 것에 되돌리기\n· 상태 이름(남은 기한 기준): 기한 지났어요 / 얼마 안 남았어요(D-1 이하) / 며칠 남았어요(이번 주) / 넉넉해요 / 날짜 몰라요. 듣는 중은 그대로\n· 날짜: 화면은 2026.10.03처럼 연도까지, 음성 응답은 ‘2026년 10월 3일’\n· 하단 탭: 뭐 먹지? · 냉장고 · 기록 · 마이페이지. 뭐 먹지? 아이콘은 A 수저(숟가락 + 젓가락)로 확정\n· 로그인: 이메일·비밀번호 로그인 + 비밀번호 찾기·회원가입, 아래에 간편 로그인(카카오·Google). 버튼 반경 12로 통일, 로고+글자 가운데 정렬. 점선 자리는 각 사 공식 로고 에셋으로 교체. 카카오: #FEE500, 심볼 #000, 글자 검정 85%, ‘카카오 로그인’. Google: 흰 바탕, #747775 1px 테두리, #1F1F1F, ‘Google 계정으로 로그인’, 좌우·간격 iOS 16/12/16, Android 12/10/12. 비밀번호 보기 토글 / 로고 적용: 카카오는 공식 kakao_login_kr_large.svg(336×46, docs/assets)를 노란(#FEE500) 컨테이너 가운데에 그대로, Google은 공식 G 로고(docs/assets/Google/google_g.svg)\n· 회원가입: 닉네임·이메일·비밀번호(영문·숫자·8자 이상)·비밀번호 확인 + 약관(필수 2, 선택 1, 기본은 모두 해제). 필수 동의 전에는 가입 버튼 비활성, ‘모두 동의’로 한 번에\n· 스플래시·로그인·권한 안내는 보라 계열(#F6F7FF → #E1E6FF, 캐릭터 #C7CFFF)로 통일\n· 스플래시: 냉장고가 떨어져 한 번 튕기고(착지 때 납작해짐) → 냉동실 문이 열리며 안쪽 빛과 계란·잎이 보이고 반짝임 4개가 튀어나옴 → 표정이 웃는 얼굴로 바뀜 → 제목·부제가 아래에서 올라옴. 앱에서는 한 번만 재생(약 1.8초) 후 홈으로 페이드, 목업은 4.2초 반복. Rive 또는 AnimationController + Interval로 단계 구성. 네이티브 스플래시(flutter_native_splash)는 같은 배경색 + 정지된 냉장고로 두고 이어받는다\n· 말하기 진입: 별도 마이크 버튼 없음. 호출어, 또는 상단 ‘호출 대기 중’ 칩 탭. 호출어는 ‘Hey Kitchen(헤이 키친)’, Porcupine 영문 키워드로 학습\n· 뒤로: iOS 셰브런 + 가장자리 스와이프 / Android 화살표 + 시스템 뒤로\n· 테마: 파스텔(기본) · 화이트 · 글래스 · 다크 4종, 마이페이지 ‘화면 테마’에서 선택(시스템 설정 따라가기 옵션 추가 권장). ThemeExtension 하나에 색 토큰(배경 그라데이션, 표면, 표면 테두리, 글자 1·2·3, 상태별 강조·옅은 강조, 그림자)을 두고 화면은 토큰만 쓴다. 화이트: 흰·연회색 바탕, 강조색 채도↑. 글래스: 배경은 색 없이 흰색→연회색(#EEF0F4). 카드는 위가 더 불투명한 흰 그라데이션 + BackdropFilter(blur 24) + 위쪽 1px 흰 하이라이트 + 0.5px 윤곽 + 부드러운 그림자. 흰 버튼·알약 칩·탭 바·상태 슬라이드는 투명한 유리: 채움은 흰색 14~52%의 대각 그라데이션, 테두리 흰색 70~85%, 안쪽 좌상단 흰 하이라이트 + 우하단 옅은 하이라이트, blur 12~16, 0.5px 윤곽 + 그림자. 탭 바는 좌우 14px 띄운 알약 모양(선택 탭은 안쪽 유리 알약), 상태 슬라이드는 투명 유리 판 + 선택 얼굴은 볼록 렌즈, 그 아래에만 상태 색 빛. 캐릭터는 반투명 유리 재질(몸통 그라데이션 82→60%, 위 흰색·아래 진한 색 테두리, 안쪽 하이라이트). 다크: Google Nest Hub 느낌 — 바탕 #202124, 카드 #2D2E31, 칩·선택 #3C4043, 선 #5F6368, 글자 #E8EAED / #BDC1C6 / #9AA0A6, 강조색은 Google 200 톤(빨강 #F28B82, 주황 #FCAD70, 노랑 #FDD663, 초록 #81C995, 파랑 #8AB4F8, 보라 #C58AF9), 태그는 강조색 16% 바탕. 캐릭터는 파스텔 그대로(스플래시 포함), 검정 버튼은 밝은 버튼으로 뒤집기. 화이트: 캐릭터는 채도 낮춘 파스텔(형광 느낌 없이)\n· 글꼴: Pretendard 가변 폰트 번들 (목업도 같은 파일)",
       "w": 460,
-      "x": 4042,
+      "x": 4520,
       "y": 0
     },
-    "title-android": {"kind": "title1", "maxW": 3856, "text": "Android · 412 × 915", "w": 240, "x": 0, "y": 960},
-    "title-ios": {"kind": "title1", "maxW": 3680, "text": "iOS · 390 × 844", "w": 240, "x": 0, "y": -300},
-    "title-parts": {"kind": "title1", "maxW": 1540, "text": "캐릭터 시안 1 · 젤리", "w": 240, "x": 0, "y": 2220},
-    "title-c2": {"kind": "title1", "maxW": 1800, "text": "캐릭터 시안 2 · 냉장고 친구 (적용)", "w": 240, "x": 0, "y": 2960},
-    "title-c3": {"kind": "title1", "maxW": 1800, "text": "캐릭터 시안 3 · 밥그릇", "w": 240, "x": 0, "y": 4700}
+    "title-android": {
+      "kind": "title1",
+      "maxW": 5824,
+      "text": "Android · 412 × 915",
+      "w": 240,
+      "x": -1476,
+      "y": 960
+    },
+    "title-ios": {
+      "kind": "title1",
+      "maxW": 5560,
+      "text": "iOS · 390 × 844",
+      "w": 240,
+      "x": -1410,
+      "y": -300
+    },
+    "title-parts": {
+      "kind": "title1",
+      "maxW": 1540,
+      "text": "캐릭터 시안 1 · 젤리",
+      "w": 240,
+      "x": 0,
+      "y": 6000
+    },
+    "title-c2": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "캐릭터 시안 2 · 냉장고 친구 (적용)",
+      "w": 240,
+      "x": 0,
+      "y": 6740
+    },
+    "title-c3": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "캐릭터 시안 3 · 밥그릇",
+      "w": 240,
+      "x": 0,
+      "y": 8480
+    },
+    "title-white": {
+      "kind": "title1",
+      "maxW": 5560,
+      "text": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "w": 240,
+      "x": -1410,
+      "y": 2220
+    },
+    "title-glass": {
+      "kind": "title1",
+      "maxW": 5560,
+      "text": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "w": 240,
+      "x": -1410,
+      "y": 3480
+    },
+    "title-dark": {
+      "kind": "title1",
+      "maxW": 5560,
+      "text": "테마 · 다크 (Google Nest Hub 느낌)",
+      "w": 240,
+      "x": -1410,
+      "y": 4740
+    }
   },
   "order": [
+    "Splash.dc.html",
+    "Android-Splash.dc.html",
+    "Login.dc.html",
+    "SignUp.dc.html",
+    "Android-Login.dc.html",
+    "Android-SignUp.dc.html",
+    "MyPage.dc.html",
+    "Android-MyPage.dc.html",
+    "TabIcons.dc.html",
     "Permission.dc.html",
     "Main.dc.html",
     "Listening.dc.html",
@@ -87,7 +712,42 @@
     "C3-Main.dc.html",
     "C3-Clarify.dc.html",
     "C3-Result.dc.html",
-    "Neuron.dc.html"
+    "White-Splash.dc.html",
+    "White-Login.dc.html",
+    "White-SignUp.dc.html",
+    "White-Permission.dc.html",
+    "White-Main.dc.html",
+    "White-Listening.dc.html",
+    "White-Clarify.dc.html",
+    "White-Result.dc.html",
+    "White-Fridge.dc.html",
+    "White-Menu.dc.html",
+    "White-History.dc.html",
+    "White-MyPage.dc.html",
+    "Glass-Splash.dc.html",
+    "Glass-Login.dc.html",
+    "Glass-SignUp.dc.html",
+    "Glass-Permission.dc.html",
+    "Glass-Main.dc.html",
+    "Glass-Listening.dc.html",
+    "Glass-Clarify.dc.html",
+    "Glass-Result.dc.html",
+    "Glass-Fridge.dc.html",
+    "Glass-Menu.dc.html",
+    "Glass-History.dc.html",
+    "Glass-MyPage.dc.html",
+    "Dark-Splash.dc.html",
+    "Dark-Login.dc.html",
+    "Dark-SignUp.dc.html",
+    "Dark-Permission.dc.html",
+    "Dark-Main.dc.html",
+    "Dark-Listening.dc.html",
+    "Dark-Clarify.dc.html",
+    "Dark-Result.dc.html",
+    "Dark-Fridge.dc.html",
+    "Dark-Menu.dc.html",
+    "Dark-History.dc.html",
+    "Dark-MyPage.dc.html"
   ],
   "pages": [],
   "title": "오늘 뭐 먹지? · 앱 목업"
