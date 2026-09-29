@@ -25,6 +25,7 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import stock_match
 from app.core import units as unit_utils
 from app.core.enums import (
     CommandIntent,
@@ -37,6 +38,7 @@ from app.core.enums import (
 from app.core.llm.gateway import LlmGateway, MenuRequest
 from app.core.llm.prompts import menu_ko
 from app.core.llm.schemas import ProposedRecipe
+from app.core.stock_match import IngredientCheck, RequiredIngredient, StockIndex
 from app.domain.command.models import Command
 from app.domain.command.validation import ValidatedItem
 from app.domain.household.models import Household
@@ -51,23 +53,6 @@ MAX_SUGGESTIONS = 3
 
 # 모델에 넘길 재고 항목 수. 전부 넘기면 토큰이 비용이다.
 _CONTEXT_LIMIT = 30
-
-
-@dataclass(slots=True)
-class IngredientCheck:
-    """레시피 재료 한 줄의 재고 대조 결과.
-
-    Attributes:
-        status: `have` · `needs_check` · `missing`.
-        reason: `needs_check` 인 이유. 로그와 화면 설명에 쓴다.
-    """
-
-    raw_name: str
-    required_amount: Decimal | None
-    unit: str | None
-    is_essential: bool
-    status: str
-    reason: str | None = None
 
 
 @dataclass(slots=True)
@@ -187,77 +172,33 @@ def _describe(batch: IngredientBatch) -> str:
 
 def _stock_index(
     batches: Sequence[IngredientBatch], staples: Sequence[str]
-) -> dict[str, tuple[Decimal | None, str | None]]:
-    """이름으로 찾을 수 있는 재고 색인.
-
-    같은 이름의 묶음이 여럿이면 합친다. 기본 양념은 수량을 모르는 보유로 둔다 — 사용자가
-    보유한다고 선언한 것만 넣으며, 선언하지 않은 양념을 있다고 가정하지 않는다.
-    """
-    index: dict[str, tuple[Decimal | None, str | None]] = {}
-    for batch in batches:
-        current = index.get(batch.raw_name)
-        if current is None:
-            index[batch.raw_name] = (batch.quantity, batch.unit)
-            continue
-        amount, unit = current
-        if amount is not None and batch.quantity is not None and unit == batch.unit:
-            index[batch.raw_name] = (amount + batch.quantity, unit)
-        else:
-            index[batch.raw_name] = (None, unit or batch.unit)
-    for name in staples:
-        index.setdefault(name, (None, None))
-    return index
+) -> StockIndex:
+    """재고 묶음을 이름 색인으로 바꾼다. 판정 규칙은 `core.stock_match` 가 갖는다."""
+    return stock_match.index_stock(
+        ((b.raw_name, b.quantity, b.unit) for b in batches), staples
+    )
 
 
 def _score(
     recipe: ProposedRecipe,
-    stock: dict[str, tuple[Decimal | None, str | None]],
+    stock: StockIndex,
     priority: set[str],
 ) -> ScoredSuggestion:
-    """레시피 재료를 재고와 대조한다."""
-    checks: list[IngredientCheck] = []
-    hits: list[str] = []
-
-    for item in recipe.ingredients:
-        name = item.raw_name.strip()
-        required = Decimal(str(item.amount)) if item.amount is not None else None
-        unit = unit_utils.normalize_unit(item.unit_text)
-
-        if name in priority:
-            hits.append(name)
-
-        held = stock.get(name)
-        if held is None:
-            checks.append(
-                IngredientCheck(name, required, unit, item.is_essential, "missing")
+    """레시피 재료를 재고와 대조한다. 규칙은 `core.stock_match` 가 갖는다."""
+    checks, hits = stock_match.check_ingredients(
+        (
+            RequiredIngredient(
+                raw_name=item.raw_name,
+                amount=item.amount,
+                unit_text=item.unit_text,
+                is_essential=item.is_essential,
+                is_amount_unknown=item.is_amount_unknown,
             )
-            continue
-
-        held_amount, held_unit = held
-        if item.is_amount_unknown or required is None or held_amount is None:
-            # 필요량이나 보유량을 모른다. 있다고 단정하지 않고 확인 대상으로 둔다.
-            checks.append(
-                IngredientCheck(
-                    name, required, unit, item.is_essential, "needs_check", "amount unknown"
-                )
-            )
-            continue
-
-        shortage = unit_utils.shortage(
-            unit_utils.Quantity(required, unit or held_unit or "ea"),
-            unit_utils.Quantity(held_amount, held_unit or unit or "ea"),
-        )
-        if shortage.needs_confirm:
-            # 단위를 맞출 근거가 없다. 숫자를 만들지 않는다.
-            checks.append(
-                IngredientCheck(
-                    name, required, unit, item.is_essential, "needs_check", shortage.reason
-                )
-            )
-            continue
-        status = "have" if shortage.quantity.amount == 0 else "missing"
-        checks.append(IngredientCheck(name, required, unit, item.is_essential, status))
-
+            for item in recipe.ingredients
+        ),
+        stock,
+        priority,
+    )
     return ScoredSuggestion(
         recipe=recipe,
         checks=checks,
@@ -267,19 +208,8 @@ def _score(
 
 
 def _availability(checks: Sequence[IngredientCheck]) -> MenuAvailability:
-    """가능 여부를 판정한다.
-
-    IMPORTANT: **필수 재료가 하나라도 없으면 '지금 가능' 이 아니다.** F-13 의 완료 기준이
-    이 한 줄에 걸려 있다.
-    """
-    if any(c.status == "missing" and c.is_essential for c in checks):
-        return MenuAvailability.NEEDS_PURCHASE
-    if any(c.status == "needs_check" and c.is_essential for c in checks):
-        return MenuAvailability.NEEDS_CHECK
-    if any(c.status == "missing" for c in checks):
-        # 선택 재료만 없다. 만들 수는 있지만 원래 레시피와 달라진다.
-        return MenuAvailability.NEEDS_CHECK
-    return MenuAvailability.READY
+    """가능 여부를 판정한다. 규칙은 `core.stock_match` 가 갖는다."""
+    return stock_match.availability(checks)
 
 
 async def _persist_recipe(
