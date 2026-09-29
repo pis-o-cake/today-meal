@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  런처와 시스템 화면에 보이는 앱 이름.
+
+  매니페스트에 문자열을 직접 적지 않는다 — 언어가 늘면 `values-<locale>/strings.xml` 을
+  더하는 것만으로 이름이 따라와야 한다.
+-->
+<resources>
+    <string name="app_name">오늘 뭐 먹지?</string>
+</resources>

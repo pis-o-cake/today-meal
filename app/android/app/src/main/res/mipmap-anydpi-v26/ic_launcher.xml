@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  적응형 런처 아이콘 (Android 8.0+).
+
+  배경과 전경을 나눠 두면 기기가 정한 모양(원·둥근 사각·물방울)으로 잘라도 캐릭터가 잘리지
+  않는다. 한 장짜리 아이콘으로 두면 원형 런처에서 냉장고의 모서리가 깎인다.
+
+  원본은 docs/assets/app-icon/android/ 이며 mockup/tools/icon 이 만든다.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@mipmap/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+    <monochrome android:drawable="@mipmap/ic_launcher_foreground" />
+</adaptive-icon>
