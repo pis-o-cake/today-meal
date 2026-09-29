@@ -277,6 +277,70 @@ def test_unknown_token_does_not_resolve(run):
     run(work)
 
 
+def test_email_check_reports_taken(run):
+    from app.domain.auth import service
+
+    async def work(session):
+        email = _email()
+        free = await service.check_email(session, email)
+        assert free.available is True
+        assert free.reason == "ok"
+
+        await service.sign_up(session, email=email, password="kitchen123", nickname="철")
+
+        taken = await service.check_email(session, email)
+        assert taken.available is False
+        assert taken.reason == "taken"
+
+        # 대소문자와 앞뒤 공백은 같은 계정으로 본다.
+        same = await service.check_email(session, f"  {email.upper()}  ")
+        assert same.reason == "taken"
+
+    run(work)
+
+
+def test_email_check_separates_invalid_from_taken(run):
+    """형식이 틀린 것과 이미 쓰는 것은 사용자가 고쳐야 할 것이 다르다."""
+    from app.domain.auth import service
+
+    async def work(session):
+        for bad in ["notanemail", "", "   ", "a@", "@b.com"]:
+            result = await service.check_email(session, bad)
+            assert result.available is False
+            assert result.reason == "invalid", bad
+
+    run(work)
+
+
+def test_email_check_creates_nothing(run):
+    """확인은 조회일 뿐이다. 이것만으로 계정이 생기면 안 된다."""
+    from app.domain.auth import crud, service
+
+    async def work(session):
+        email = _email()
+        await service.check_email(session, email)
+        assert await crud.find_user_by_email(session, email) is None
+
+    run(work)
+
+
+def test_nickname_may_repeat(run):
+    """닉네임은 중복을 허용한다. 본인에게만 보이는 이름이라 막을 이유가 없다."""
+    from app.domain.auth import service
+
+    async def work(session):
+        one = await service.sign_up(
+            session, email=_email(), password="kitchen123", nickname="철"
+        )
+        two = await service.sign_up(
+            session, email=_email(), password="kitchen123", nickname="철"
+        )
+        assert one.user.display_name == two.user.display_name == "철"
+        assert one.user.user_id != two.user.user_id
+
+    run(work)
+
+
 def test_two_accounts_get_two_households(run):
     from app.domain.auth import service
 

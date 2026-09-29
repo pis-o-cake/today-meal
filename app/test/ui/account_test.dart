@@ -170,17 +170,76 @@ void main() {
 
     await _press(tester, find.text(Strings.signUpSubmit));
     expect(made, isNull, reason: '필수 동의 전에는 가입되지 않는다');
-    expect(auth.calls, isEmpty);
+    expect(auth.signUpCount, 0);
 
     // 모두 동의하면 켜진다. 선택 동의까지 켜지지만 필수만으로도 충분하다.
     await _press(tester, find.text(Strings.signUpAgreeAll));
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
     await _press(tester, find.text(Strings.signUpSubmit));
 
     expect(made?.nickname, '철');
-    expect(auth.calls, ['signUp']);
+    expect(auth.signUpCount, 1);
   });
 
-  testWidgets('이미 가입된 이메일은 이메일 칸에 표시한다', (tester) async {
+  testWidgets('중복 확인이 이미 쓰는 이메일을 미리 막는다', (tester) async {
+    final auth = _FakeAuth(availability: EmailAvailability.taken);
+    Account? made;
+    await _pump(
+      tester,
+      SignUpScreen(
+        auth: auth,
+        onSignedUp: (account, _) => made = account,
+        onBack: () {},
+      ),
+    );
+
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), '철');
+    await tester.enterText(fields.at(1), 'taken@example.com');
+    await tester.enterText(fields.at(2), 'kitchen123');
+    await tester.enterText(fields.at(3), 'kitchen123');
+    await _press(tester, find.text(Strings.signUpAgreeAll));
+    // 타이핑이 멈춘 뒤에 확인한다.
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
+
+    expect(auth.calls, contains('checkEmail'));
+    expect(find.text(Strings.signUpErrorTaken), findsOneWidget);
+
+    await _press(tester, find.text(Strings.signUpSubmit));
+    expect(made, isNull, reason: '이미 쓰는 이메일이면 누를 수 없다');
+    expect(auth.calls, isNot(contains('signUp')));
+  });
+
+  testWidgets('확인하지 못해도 가입을 막지 않는다', (tester) async {
+    // 서버가 잠깐 흔들렸다고 아무도 가입하지 못하면 안 된다. 판정은 가입 시점이다.
+    final auth = _FakeAuth(availability: EmailAvailability.unknown);
+    Account? made;
+    await _pump(
+      tester,
+      SignUpScreen(
+        auth: auth,
+        onSignedUp: (account, _) => made = account,
+        onBack: () {},
+      ),
+    );
+
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), '철');
+    await tester.enterText(fields.at(1), 'cheol@example.com');
+    await tester.enterText(fields.at(2), 'kitchen123');
+    await tester.enterText(fields.at(3), 'kitchen123');
+    await _press(tester, find.text(Strings.signUpAgreeAll));
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
+
+    await _press(tester, find.text(Strings.signUpSubmit));
+    expect(made?.nickname, '철');
+  });
+
+  testWidgets('가입 시점에 서버가 거절하면 이메일 칸에 표시한다', (tester) async {
+    // 확인은 통과했는데 그 사이에 남이 먼저 가입한 경우다.
     final auth = _FakeAuth(failure: AuthFailure.emailTaken);
     Account? made;
     await _pump(
@@ -198,6 +257,8 @@ void main() {
     await tester.enterText(fields.at(2), 'kitchen123');
     await tester.enterText(fields.at(3), 'kitchen123');
     await _press(tester, find.text(Strings.signUpAgreeAll));
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
     await _press(tester, find.text(Strings.signUpSubmit));
 
     expect(made, isNull);
@@ -217,6 +278,8 @@ void main() {
     await tester.enterText(fields.at(2), 'kitchen123');
     await tester.enterText(fields.at(3), 'kitchen123');
     await _press(tester, find.text(Strings.signUpAgreeAll));
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text(Strings.signUpSubmit));
     await tester.pumpAndSettle();
@@ -226,7 +289,7 @@ void main() {
     await tester.tap(find.byType(SignUpScreen), warnIfMissed: false);
     await tester.pump();
 
-    expect(auth.calls, ['signUp'], reason: '한 번만 보내야 계정이 하나 만들어진다');
+    expect(auth.signUpCount, 1, reason: '한 번만 보내야 계정이 하나 만들어진다');
     auth.release();
     await tester.pumpAndSettle();
   });
@@ -261,14 +324,24 @@ Future<void> _press(WidgetTester tester, Finder finder) async {
 
 /// 서버 대신 미리 정한 답을 준다.
 class _FakeAuth implements AuthRepository {
-  _FakeAuth({this.failure, this.hangs = false});
+  _FakeAuth({
+    this.failure,
+    this.hangs = false,
+    this.availability = EmailAvailability.free,
+  });
 
   final AuthFailure? failure;
+
+  /// 중복 확인의 답. 가입 화면이 이 값으로 버튼을 켜고 끈다.
+  final EmailAvailability availability;
 
   /// 응답을 붙잡아 둔다. 기다리는 동안의 화면을 보기 위한 것이다.
   final bool hangs;
 
   final calls = <String>[];
+
+  /// 가입을 몇 번 보냈는지. 중복 확인 호출이 섞여도 이것만 센다.
+  int get signUpCount => calls.where((c) => c == 'signUp').length;
   final _held = <void Function()>[];
 
   void release() {
@@ -314,6 +387,12 @@ class _FakeAuth implements AuthRepository {
   }) {
     calls.add('signIn');
     return _answer();
+  }
+
+  @override
+  Future<EmailAvailability> checkEmail(String email) async {
+    calls.add('checkEmail');
+    return availability;
   }
 
   @override

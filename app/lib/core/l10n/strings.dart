@@ -280,7 +280,8 @@ class Strings {
   static const signUpErrorEmail = '이메일 형식이 맞지 않아요';
   static const signUpErrorPassword = '영문과 숫자를 넣어 8자 이상으로 해주세요';
   static const signUpErrorConfirm = '비밀번호가 서로 달라요';
-  static const signUpErrorTaken = '이 기기에 이미 가입된 이메일이에요';
+  static const signUpErrorTaken = '이미 가입된 이메일이에요';
+  static const signUpEmailFree = '쓸 수 있는 이메일이에요';
 
   /// 약관 본문이 아직 없다는 사실.
   ///

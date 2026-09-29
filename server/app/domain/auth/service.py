@@ -10,6 +10,7 @@ IMPORTANT: 실패 이유를 **로그인과 가입에서 다르게 다룬다.**
   아무나 이메일 목록을 확인할 수 있다.
 """
 
+from email_validator import EmailNotValidError, validate_email
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,7 +25,7 @@ from app.core.security import (
 )
 from app.domain.auth import crud
 from app.domain.auth.models import AppUser
-from app.domain.auth.schemas import SessionRead, UserRead
+from app.domain.auth.schemas import AvailabilityRead, SessionRead, UserRead
 
 
 async def sign_up(
@@ -55,6 +56,30 @@ async def sign_up(
     await session.commit()
     logger.info("Signed up user {} into household {}", user.user_id, household.household_id)
     return result
+
+
+async def check_email(session: AsyncSession, email: str) -> AvailabilityRead:
+    """이 이메일로 가입할 수 있는지.
+
+    **아무것도 만들지 않는다.** 가입 버튼을 누르기 전에 미리 알려주기 위한 것이며,
+    확인과 가입 사이에 남이 먼저 가입할 수 있으므로 가입 시점에 서버가 다시 막는다
+    (DB 의 유일 제약이 최종 판정이다).
+
+    CAUTION: 이 엔드포인트는 **가입된 이메일인지 알려준다.** 가입 화면에서 그 사실을
+    숨길 수 없으므로(누르면 어차피 409) 여기서도 숨기지 않는다. 로그인 실패는 다르다 —
+    거기서는 알려주지 않는다.
+    """
+    normalized = email.strip().lower()
+    try:
+        validate_email(normalized, check_deliverability=False)
+    except EmailNotValidError:
+        return AvailabilityRead(available=False, reason="invalid")
+
+    taken = await crud.find_user_by_email(session, normalized) is not None
+    return AvailabilityRead(
+        available=not taken,
+        reason="taken" if taken else "ok",
+    )
 
 
 async def sign_in(session: AsyncSession, *, email: str, password: str) -> SessionRead:

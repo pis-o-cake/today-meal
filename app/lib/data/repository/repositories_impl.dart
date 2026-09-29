@@ -31,6 +31,22 @@ class RemoteAuthRepository implements AuthRepository {
           ));
 
   @override
+  Future<EmailAvailability> checkEmail(String email) async {
+    try {
+      final body = await _api.emailAvailable(email);
+      if (body['available'] == true) return EmailAvailability.free;
+      return switch (body['reason']) {
+        'taken' => EmailAvailability.taken,
+        'invalid' => EmailAvailability.invalid,
+        _ => EmailAvailability.unknown,
+      };
+    } on DioException {
+      // 확인이 실패해도 가입을 막지 않는다. 판정은 가입 시점의 서버가 한다.
+      return EmailAvailability.unknown;
+    }
+  }
+
+  @override
   Future<AuthResult> signIn({
     required String email,
     required String password,

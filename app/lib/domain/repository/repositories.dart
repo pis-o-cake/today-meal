@@ -24,6 +24,12 @@ abstract interface class AuthRepository {
     required String nickname,
   });
 
+  /// 이 이메일로 가입할 수 있는지 미리 확인한다.
+  ///
+  /// **확정이 아니다.** 확인과 가입 사이에 남이 먼저 가입할 수 있으므로 가입 시점에
+  /// 서버가 다시 막는다. 화면은 이 값을 "지금 눌러도 될지" 를 알려주는 데만 쓴다.
+  Future<EmailAvailability> checkEmail(String email);
+
   /// 이메일 로그인.
   Future<AuthResult> signIn({required String email, required String password});
 
@@ -71,6 +77,24 @@ class AuthResult {
   final AuthFailure? failure;
 
   bool get ok => failure == null;
+}
+
+/// 이메일을 쓸 수 있는지.
+enum EmailAvailability {
+  /// 가입할 수 있다.
+  free,
+
+  /// 이미 가입된 이메일이다.
+  taken,
+
+  /// 형식이 이메일이 아니다.
+  invalid,
+
+  /// 확인하지 못했다. 서버에 닿지 못했거나 응답이 이상하다.
+  ///
+  /// **막지 않는다.** 확인은 돕는 것이고 판정은 가입 시점의 서버가 한다 — 확인이
+  /// 실패했다고 가입 버튼을 잠그면 서버가 잠깐 흔들릴 때 아무도 가입하지 못한다.
+  unknown,
 }
 
 /// 사용자가 고칠 수 있는 실패.

@@ -50,6 +50,15 @@ class ApiClient {
     return response.data ?? const {};
   }
 
+  /// 가입 전 이메일 중복 확인.
+  Future<Map<String, dynamic>> emailAvailable(String email) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      'api/auth/available',
+      queryParameters: {'email': email},
+    );
+    return response.data ?? const {};
+  }
+
   /// 이메일 로그인.
   Future<Map<String, dynamic>> signIn({
     required String email,

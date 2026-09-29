@@ -9,6 +9,8 @@
 /// 비어 있다** — 게스트로 둘러보던 재고는 기본 가구의 것이며 옮겨오지 않는다.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/design/skin.dart';
@@ -48,6 +50,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String? _emailError;
   String? _confirmError;
 
+  /// 서버에 물어본 이메일 사용 가능 여부. 아직 묻지 않았으면 `null` 이다.
+  EmailAvailability? _emailState;
+
+  /// 지금 확인 중인 이메일. 늦게 온 응답이 최신 입력을 덮지 않게 한다.
+  String? _checking;
+
+  /// 타이핑이 멈추기를 기다리는 타이머. 글자마다 부르면 서버를 두드린다.
+  Timer? _debounce;
+
+  /// 타이핑이 멈췄다고 보는 시간.
+  static const _settleDelay = Duration(milliseconds: 500);
+
   /// 손댄 적 있는 칸. 건드리지 않은 칸에 먼저 빨간 글씨를 띄우지 않는다.
   final _touched = <String>{};
 
@@ -64,10 +78,46 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     for (final field in [_nickname, _email, _password, _confirm]) {
       field.dispose();
     }
     super.dispose();
+  }
+
+  /// 타이핑이 멈추면 이메일을 한 번 확인한다.
+  ///
+  /// 글자마다 부르지 않는다 — 서버를 두드릴 뿐 아니라, 아직 다 치지 않은 주소에
+  /// "쓸 수 없어요" 를 띄우게 된다.
+  void _scheduleEmailCheck() {
+    _debounce?.cancel();
+    final email = _email.text.trim();
+    setState(() {
+      _emailState = null;
+      _checking = null;
+    });
+    if (!Credentials.isEmail(email)) return;
+    _debounce = Timer(_settleDelay, () => _checkEmail(email));
+  }
+
+  Future<void> _checkEmail(String email) async {
+    setState(() => _checking = email);
+    final result = await widget.auth.checkEmail(email);
+    if (!mounted) return;
+    // 그 사이에 더 쳤으면 이 응답은 버린다.
+    if (_email.text.trim() != email) return;
+    setState(() {
+      _checking = null;
+      _emailState = result;
+    });
+  }
+
+  /// 이메일 칸에 보여줄 오류. 서버가 준 것이 앱 형식 검사보다 앞선다.
+  String? get _emailMessage {
+    if (_emailError != null) return _emailError;
+    if (_emailState == EmailAvailability.taken) return Strings.signUpErrorTaken;
+    return _errorFor('email', _email.text.trim(), Credentials.isEmail,
+        Strings.signUpErrorEmail);
   }
 
   void _revalidate() => setState(() {
@@ -93,7 +143,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _nickname.text.trim().isNotEmpty &&
       Credentials.isEmail(_email.text) &&
       Credentials.isStrongPassword(_password.text) &&
-      _confirm.text == _password.text;
+      _confirm.text == _password.text &&
+      // 이미 쓰는 이메일이면 눌러도 서버가 거절한다. 확인하지 못한 경우
+      // (`unknown`)는 막지 않는다 — 판정은 가입 시점의 서버가 한다.
+      _emailState != EmailAvailability.taken;
 
   bool get _canSubmit => _inputsValid && _requiredAgreed;
 
@@ -187,12 +240,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         label: Strings.loginEmail,
                         controller: _email,
                         hint: Strings.loginEmailHint,
-                        error: _emailError ??
-                            _errorFor('email', _email.text.trim(),
-                                Credentials.isEmail, Strings.signUpErrorEmail),
+                        error: _emailMessage,
                         keyboardType: TextInputType.emailAddress,
                         autofillHints: const [AutofillHints.email],
-                        onChanged: (_) => _touch('email'),
+                        onChanged: (_) {
+                          _touch('email');
+                          _scheduleEmailCheck();
+                        },
+                        trailing: _EmailMark(
+                          checking: _checking != null,
+                          state: _emailState,
+                          skin: skin,
+                        ),
                       ),
                       const SizedBox(height: 14),
                       GlassField(
@@ -320,6 +379,42 @@ enum _Term {
 
   String get tag =>
       required ? Strings.signUpTermsRequired : Strings.signUpTermsOptional;
+}
+
+/// 이메일 칸 오른쪽의 확인 표시.
+///
+/// 쓸 수 있으면 체크, 확인 중이면 회전, 나머지는 비운다 — 오류 문구가 이미 칸 아래에
+/// 나오므로 여기서 또 말하지 않는다.
+class _EmailMark extends StatelessWidget {
+  const _EmailMark({
+    required this.checking,
+    required this.state,
+    required this.skin,
+  });
+
+  final bool checking;
+  final EmailAvailability? state;
+  final Skin skin;
+
+  @override
+  Widget build(BuildContext context) {
+    if (checking) {
+      return Center(
+        child: SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(strokeWidth: 2, color: skin.inkDim),
+        ),
+      );
+    }
+    if (state != EmailAvailability.free) return const SizedBox.shrink();
+    return Semantics(
+      label: Strings.signUpEmailFree,
+      child: Center(
+        child: Icon(Icons.check_rounded, size: 20, color: skin.done.accent),
+      ),
+    );
+  }
 }
 
 class _TitleBar extends StatelessWidget {

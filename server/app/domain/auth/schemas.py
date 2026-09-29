@@ -6,6 +6,7 @@
 
 import re
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -48,6 +49,18 @@ class SignUpRequest(BaseModel):
         if not stripped:
             raise ValueError("nickname must not be blank")
         return stripped
+
+
+class AvailabilityRead(BaseModel):
+    """이메일을 쓸 수 있는지.
+
+    형식이 틀린 것과 이미 쓰는 것을 구분해 돌려준다 — 사용자가 고쳐야 할 것이 다르다.
+    """
+
+    available: bool
+    reason: Literal["ok", "taken", "invalid"] = Field(
+        description="available 이 거짓일 때의 이유"
+    )
 
 
 class SignInRequest(BaseModel):

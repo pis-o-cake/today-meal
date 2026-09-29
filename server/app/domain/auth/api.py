@@ -11,7 +11,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_session
@@ -20,7 +20,13 @@ from app.core.identity import CallerDep, TokenDep
 from app.core.pending import not_implemented
 from app.domain.auth import service
 from app.domain.auth.models import AppUser
-from app.domain.auth.schemas import SessionRead, SignInRequest, SignUpRequest, UserRead
+from app.domain.auth.schemas import (
+    AvailabilityRead,
+    SessionRead,
+    SignInRequest,
+    SignUpRequest,
+    UserRead,
+)
 
 router = APIRouter()
 
@@ -47,6 +53,25 @@ async def sign_up(body: SignUpRequest, session: SessionDep) -> SessionRead:
         password=body.password,
         nickname=body.nickname,
     )
+
+
+@router.get(
+    "/available",
+    response_model=AvailabilityRead,
+    summary="이메일 중복 확인",
+)
+async def check_email(
+    session: SessionDep,
+    email: Annotated[str, Query(description="확인할 이메일")],
+) -> AvailabilityRead:
+    """가입 전에 이 이메일을 쓸 수 있는지 확인한다.
+
+    **확정이 아니다.** 확인과 가입 사이에 남이 먼저 가입할 수 있으므로 가입 시점에
+    서버가 다시 막는다. 여기서 available 이 참이어도 `/sign-up` 이 409 를 줄 수 있다.
+
+    닉네임은 확인하지 않는다 — 중복을 허용하므로 막을 것이 없다.
+    """
+    return await service.check_email(session, email)
 
 
 @router.post("/sign-in", response_model=SessionRead, summary="이메일 로그인")
