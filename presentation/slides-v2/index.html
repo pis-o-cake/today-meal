@@ -21,6 +21,13 @@
   font-weight: 45 920;
   font-display: block;
 }
+/* 제목용 배민 주아체(OFL 1.1, assets/fonts/Jua-OFL.txt). 한 굵기뿐이라 합성 굵기를 막는다. */
+@font-face {
+  font-family: 'Jua';
+  src: url('assets/fonts/Jua-deck.woff2') format('woff2');
+  font-weight: 400;
+  font-display: block;
+}
 
 :root {
   --cream: #F3EEE3;
@@ -394,6 +401,16 @@ body {
 .ask b { display: block; font-size: 42px; font-weight: 850; letter-spacing: -0.035em; }
 .ask small { display: block; margin-top: 8px; font-size: 26px; font-weight: 650; color: var(--muted); }
 .ask__now { position: absolute; left: 160px; right: 160px; top: 900px; margin: 0; font-size: 26px; font-weight: 650; color: var(--muted); }
+
+/* ---------- v2 제목 글꼴: 주아체. 본문·표·수치는 Pretendard 그대로 ---------- */
+.title, .open__title, .demo__title, .close__words {
+  font-family: 'Jua', 'Pretendard', sans-serif;
+  font-weight: 400; font-synthesis: none; text-shadow: none;
+}
+.title { font-size: 80px; line-height: 1.18; letter-spacing: -0.01em; }
+.open__title { font-size: 140px; line-height: 1.1; letter-spacing: -0.01em; }
+.demo__title { font-size: 136px; line-height: 1.1; letter-spacing: -0.01em; }
+.close__words { font-size: 72px; line-height: 1.38; letter-spacing: -0.01em; }
 
 /* ---------- 진행 표시 ---------- */
 .progress { position: fixed; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(29, 34, 31, .06); }

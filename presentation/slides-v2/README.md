@@ -8,7 +8,7 @@
 |---|---|
 | `index.html` | 청중 화면. CSS·JS·교체 값을 모두 포함 |
 | `presenter.html` | 발표자 창(대본·노트·시간). 청중 화면에서 `P`로 연다 |
-| `assets/fonts/` | Pretendard |
+| `assets/fonts/` | 본문 Pretendard, 제목 배민 주아체(`Jua-deck.woff2`, SIL OFL 1.1 — `Jua-OFL.txt`). 둘 다 덱 문구만 남긴 서브셋 |
 | `assets/img/rec-egg10.png`, `home-urgent.png`, `cook-timer.png` | 3장 실제 앱 화면(10/1 실기기 녹화에서 추출) |
 | `assets/img/cook-done.png` | 3장 조리 완료 차감 화면(90초 v3 영상 73.5초 프레임) |
 | `assets/video/demo.mp4` | 4장 시연 영상 = `demo/final/voiceover/today-meal-90s-v4-ai-voice-leda.mp4` 복사본 |
