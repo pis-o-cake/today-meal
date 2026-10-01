@@ -38,3 +38,5 @@
 
 `python3 build_deck.py` 로 `server/app/deck/` 을 만든다(이미지·폰트 인라인). 서버가 `/deck` 으로 싣고,
 Cloudflare 공유는 `cloudflare/` 에서 `npx wrangler deploy`.
+
+문구를 바꾸면 `python3 ../subset_font.py .` 로 글꼴 서브셋을 다시 만든다(fonttools 필요).
