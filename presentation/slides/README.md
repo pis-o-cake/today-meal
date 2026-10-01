@@ -9,8 +9,7 @@
 | `index.html` | 청중 화면. CSS·JS·교체 값을 모두 포함 |
 | `presenter.html` | 발표자 창(대본·노트·시간). 청중 화면에서 `P`로 연다 |
 | `assets/fonts/` | Pretendard |
-| `assets/img/home-*.png` | 3·7장 실제 앱 홈 화면(10/1 실기기 녹화에서 추출) |
-| `assets/img/theme-*.png` | 7장 테마 시안 4종(`mockup/export/png/*Main.png` 축소본) |
+| `assets/img/home-*.png` | 3장 실제 앱 홈 화면(10/1 실기기 녹화에서 추출) |
 | `assets/img/rec-*.png`, `menu-list.png`, `cook-timer.png` | 4·5장 실제 앱 화면 |
 | `assets/video/demo.mp4` | 6장 시연 영상 = `demo/final/voiceover/today-meal-90s-v4-ai-voice-leda.mp4` 복사본 |
 

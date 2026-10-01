@@ -273,23 +273,21 @@ body {
 .slide--demo.is-failed .demo__status { color: var(--urgent); }
 
 /* ---------- 7. 단계별 AI ---------- */
-.tools { position: absolute; left: 160px; right: 160px; top: 262px; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 20px; }
-.tools li { padding: 16px 26px; border-radius: 22px; background: var(--paper); display: flex; flex-direction: column; }
-.tools span { font-size: 22px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
-.tools b { margin-top: 2px; font-size: 34px; font-weight: 850; letter-spacing: -0.03em; }
-.cases { position: absolute; left: 160px; right: 160px; top: 410px; display: grid; grid-template-columns: 1040px 1fr; column-gap: 40px; }
-.case h3 { margin: 0 0 22px; font-size: 34px; font-weight: 850; letter-spacing: -0.03em; }
-.themes { display: flex; align-items: flex-end; gap: 16px; }
-.themes figure { margin: 0; display: flex; flex-direction: column; align-items: center; }
-.themes img { display: block; height: 360px; border-radius: 18px; box-shadow: 0 0 0 3px var(--line); }
-.themes figcaption { margin-top: 12px; font-size: 22px; font-weight: 700; color: var(--muted); }
-.themes .is-pick img, .themes .is-real img { box-shadow: 0 0 0 5px var(--green), 0 16px 30px rgba(29, 34, 31, .14); }
-.themes .is-pick figcaption, .themes .is-real figcaption { color: var(--green); }
-.themes__arrow { align-self: center; margin: 0 6px 30px; width: 40px; height: 3px; background: var(--ink-2); position: relative; flex: none; }
-.themes__arrow::after { content: ''; position: absolute; right: -2px; top: -7px; border-style: solid; border-width: 8.5px 0 8.5px 13px; border-color: transparent transparent transparent var(--ink-2); }
-.fix { list-style: none; margin: 0; padding: 0; display: grid; row-gap: 16px; }
-.fix li { padding: 20px 24px; border-radius: 22px; background: var(--paper); font-size: 27px; line-height: 1.42; font-weight: 650; color: var(--ink-2); letter-spacing: -0.02em; }
-.fix span { display: block; margin-bottom: 4px; font-size: 22px; font-weight: 800; color: var(--green); }
+.ai { position: absolute; left: 160px; right: 160px; top: 290px; list-style: none; margin: 0; padding: 0; display: grid; row-gap: 18px; }
+.ai li {
+  display: grid; grid-template-columns: 300px 420px 1fr 280px; column-gap: 36px; align-items: center;
+  padding: 26px 40px; border-radius: 26px; background: var(--paper);
+  opacity: .3; transition: opacity .45s var(--ease), box-shadow .45s var(--ease);
+}
+.ai li.ai__head { opacity: 1; background: transparent; padding-top: 0; padding-bottom: 0; font-size: 24px; font-weight: 700; color: var(--muted); }
+.slide--ai.s1 [data-row="1"], .slide--ai.s2 [data-row="2"], .slide--ai.s3 [data-row="3"], .slide--ai.s4 [data-row="4"] { opacity: 1; }
+.slide--ai.s1:not(.s2) [data-row="1"], .slide--ai.s2:not(.s3) [data-row="2"],
+.slide--ai.s3:not(.s4) [data-row="3"], .slide--ai.s4:not(.s5) [data-row="4"] { box-shadow: inset 0 0 0 4px var(--green); }
+.ai__stage { font-size: 30px; font-weight: 700; color: var(--ink-2); }
+.ai__tool { font-size: 42px; font-weight: 850; letter-spacing: -0.035em; color: var(--ink); }
+.ai__tool small { display: block; font-size: 20px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
+.ai__did { font-size: 29px; line-height: 1.4; font-weight: 650; color: var(--ink-2); letter-spacing: -0.02em; }
+.ai__me { font-size: 29px; font-weight: 800; color: var(--green); letter-spacing: -0.02em; }
 .ai__more { position: absolute; left: 160px; top: 930px; margin: 0; font-size: 34px; font-weight: 750; color: var(--ink); }
 
 /* ---------- 7. 기술 선택과 제약 ---------- */
@@ -330,9 +328,12 @@ body {
 /* ---------- 9. 마무리 ---------- */
 .close__end { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .close__fridge { width: 300px; height: 300px; }
-.close__next { margin: 44px 0 0; font-size: 32px; font-weight: 600; color: var(--ink-2); letter-spacing: -0.015em; }
+.close__flow { margin: 36px 0 0; display: flex; align-items: center; gap: 18px; font-size: 32px; font-weight: 650; color: var(--green); letter-spacing: -0.015em; }
+.close__flow i { width: 32px; height: 3px; background: var(--green); position: relative; flex: none; }
+.close__flow i::after { content: ''; position: absolute; right: -2px; top: -6px; border-style: solid; border-width: 7.5px 0 7.5px 11px; border-color: transparent transparent transparent var(--green); }
+.close__next { margin: 40px 0 0; font-size: 28px; font-weight: 600; color: var(--muted); letter-spacing: -0.015em; }
 .close__next b { margin-right: 18px; font-weight: 850; color: var(--green); }
-.close__words { margin: 44px 0 0; text-align: center; font-size: 80px; line-height: 1.3; font-weight: 800; letter-spacing: -0.04em; }
+.close__words { margin: 28px 0 0; text-align: center; font-size: 80px; line-height: 1.3; font-weight: 800; letter-spacing: -0.04em; }
 
 /* ---------- 진행 표시 ---------- */
 .progress { position: fixed; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(29, 34, 31, .06); }
@@ -510,36 +511,16 @@ body {
     </section>
 
     <!-- 7 -->
-    <section class="slide slide--ai" data-steps="3" aria-label="단계마다, 필요한 AI">
+    <section class="slide slide--ai" data-steps="5" aria-label="단계마다, 필요한 AI">
       <h2 class="title">단계마다, 필요한 AI</h2>
-      <ul class="tools" aria-label="단계별 도구">
-        <li><span>기획·검증</span><b>GPT / Astra</b></li>
-        <li><span>디자인</span><b>Claude Design</b></li>
-        <li><span>구현</span><b>Claude Code</b></li>
-        <li><span>작업 기준 · 기존 자체 도구</span><b>engsys</b></li>
-      </ul>
-      <div class="cases">
-        <div class="case" data-step="1">
-          <h3>시안을 비교해 고르고, 그대로 구현</h3>
-          <div class="themes">
-            <figure><img src="assets/img/theme-pastel.png" alt="파스텔 테마 시안"><figcaption>파스텔</figcaption></figure>
-            <figure><img src="assets/img/theme-white.png" alt="화이트 테마 시안"><figcaption>화이트</figcaption></figure>
-            <figure class="is-pick"><img src="assets/img/theme-glass.png" alt="글래스 테마 시안"><figcaption>글래스 선택</figcaption></figure>
-            <figure><img src="assets/img/theme-dark.png" alt="다크 테마 시안"><figcaption>다크</figcaption></figure>
-            <i class="themes__arrow" aria-hidden="true"></i>
-            <figure class="is-real"><img src="assets/img/home-urgent.png" alt="실제 앱 홈 화면"><figcaption>실제 앱</figcaption></figure>
-          </div>
-        </div>
-        <div class="case" data-step="2">
-          <h3>실기기에서 찾고, 고치고, 확인</h3>
-          <ol class="fix">
-            <li><span>문제</span>‘네?’라고 답한 뒤에야 들어 앞말이 잘림</li>
-            <li><span>수정</span>짧은 신호음 뒤 바로 듣기</li>
-            <li><span>확인</span>시연 촬영에서 신호음 → 명령 순서 확인</li>
-          </ol>
-        </div>
-      </div>
-      <p class="ai__more" data-step="3">시연 영상 편집과 웹 발표자료 제작에도 AI 활용</p>
+      <ol class="ai">
+        <li class="ai__head" aria-hidden="true"><span>단계</span><span>활용 도구</span><span>실제 한 일</span><span>직접 판단</span></li>
+        <li data-row="1"><span class="ai__stage">기획·기술 검증</span><span class="ai__tool">GPT / Astra</span><span class="ai__did">선택지 비교, 구현 방향 정리</span><span class="ai__me">방향 결정</span></li>
+        <li data-row="2"><span class="ai__stage">디자인</span><span class="ai__tool">Claude Design</span><span class="ai__did">화면·테마 시안 비교</span><span class="ai__me">시안 선택</span></li>
+        <li data-row="3"><span class="ai__stage">구현·수정</span><span class="ai__tool">Claude Code</span><span class="ai__did">앱·서버 구현, 실기기 문제 수정</span><span class="ai__me">실기기 검수</span></li>
+        <li data-row="4"><span class="ai__stage">검토·검증</span><span class="ai__tool"><small>기존 개발 지원 도구 · AI 모델 아님</small>engsys</span><span class="ai__did">문서 기준과 자동 검사 적용</span><span class="ai__me">적용 기준 결정</span></li>
+      </ol>
+      <p class="ai__more" data-step="5">AI로 초안을 만들고 구현을 진행하되, 방향 선택과 실기기 검수는 직접 맡았습니다.</p>
     </section>
 
     <!-- 8 -->
@@ -577,6 +558,7 @@ body {
     <section class="slide slide--close" data-steps="0" aria-label="냉장고를 비우는 한 끼">
       <div class="close__end">
         <div class="close__fridge" data-fridge data-mood="smile"></div>
+        <p class="close__flow">말로 기록하고 <i></i> 먼저 쓸 재료로 요리하고 <i></i> 남은 재료를 다음 식사로</p>
         <p class="close__words">“오늘 뭐 먹지?”라는 고민을,<br>냉장고를 비우는 한 끼로 연결합니다.</p>
         <p class="close__next"><b>다음 검증</b>실제 가정에서 기록이 꾸준히 이어지는지 · 추천이 실제 식사로 이어지는지</p>
       </div>
