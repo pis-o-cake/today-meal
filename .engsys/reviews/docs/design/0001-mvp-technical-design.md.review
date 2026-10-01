@@ -1,0 +1,10 @@
+engsys-document-review: 1
+document: docs/design/0001-mvp-technical-design.md
+blob: 301e49c50f482d61e804ae3b140ee2a066717633
+decision: pass
+reviewer: Codex
+audience: 기술 검토자와 구현 담당자
+purpose: AI와 서버의 책임 및 영상 조리 설계 의도 설명
+
+독자: 기술 검토자와 구현 담당자. 다른 작업자가 추가한 클라우드·호출어 선택 이력은 보존하고, AI 제안과 서버 검증·저장 경계 및 복구 근거를 제품 흐름으로 추가했다. 부분 반영은 목표로 구분했다. 추천 조리만 완료 시 차감한다는 제한을 맞추고 카카오 구현과 남은 소셜 검증을 구분했다. 과거 공급자 정책의 외부 링크는 기존 기록으로 보존했으며 이번 검토에서 재검증한 사실로 간주하지 않는다. 실기기 인수 전 draft 상태를 유지한다. Codex 자체 편집 검토.
+

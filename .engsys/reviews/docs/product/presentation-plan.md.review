@@ -1,0 +1,10 @@
+engsys-document-review: 1
+document: docs/product/presentation-plan.md
+blob: 279d66bfe5c70d88c1c0ae576bebff86db4ff885
+decision: pass
+reviewer: Codex
+audience: 발표 준비자
+purpose: 검증 범위에 맞는 제품 가치와 시연 설명
+
+독자: 발표 준비자. 유튜브 링크 분석에서 조리 안내로 이어지는 가치와 검증 후 사용할 시연 경로를 추가했다. AI가 의도와 레시피를 제안하고 서버가 수량과 대상을 검증하는 예시를 넣었다. 140초 시연에 추가 시간을 강제하지 않고 메뉴 장면 대체로 제안했다. 실제 영상 검증 전 시연 완료를 주장하지 않으며 부분 반영과 검색 미구현을 구분했다. Codex 자체 편집 검토.
+

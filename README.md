@@ -32,10 +32,21 @@ AI는 발화와 영상에서 의도·재료·조리 순서를 해석한다. 서�
 
 실행은 아래 [개발 환경](#개발-환경)과 [로컬 개발 런북](docs/runbook/local-development.md)을,
 시연 순서는 [발표 구성안](docs/product/presentation-plan.md)을 따른다.
-실제 앱 캡처·시연 영상의 제출 링크는 아직 확정하지 않았다.
 [목업](mockup/README.md)은 화면 설계 자료이며 실제 앱 동작 증거와 구분한다.
 계획 일정은 9/28~9/30, 실제 개발 기간은 개발자 설명 기준 이틀이다. 제출 목표는 9/30 18:00,
 시연은 10/2다.
+
+## 제출물
+
+| 항목 | 위치 |
+|---|---|
+| 시연 영상 90초(발표용, 사용자 음성 AI 후시 녹음) | [demo/final/voiceover/today-meal-90s-v4-ai-voice-leda.mp4](demo/final/voiceover/today-meal-90s-v4-ai-voice-leda.mp4) |
+| 시연 영상 90초(본인 음성·배경음악) | [demo/final/today-meal-90s-v3.mp4](demo/final/today-meal-90s-v3.mp4) |
+| 시연 영상 전체 기능본(약 6분) | [demo/final/today-meal-full-v3.mp4](demo/final/today-meal-full-v3.mp4) |
+| 영상 편집 기록·촬영 대본 | [EDIT-NOTES](demo/final/EDIT-NOTES.md) · [촬영 대본](demo/script.md) |
+| 발표 슬라이드(웹) | [presentation/slides](presentation/slides/README.md) · 서버 `/deck` |
+| 발표 스토리보드 | [presentation/storyboard.md](presentation/storyboard.md) |
+| Android 설치 파일 | 서버 `/install` (빌드 산출물, 저장소 밖) |
 
 ## 작업을 시작할 때
 

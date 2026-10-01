@@ -1,0 +1,13 @@
+engsys-document-review: 1
+document: docs/plan/hackathon-3day.md
+blob: 3472cbfa7a30d459a454cea0b7f0f8f5c26583dd
+decision: pass
+reviewer: claude-opus-5-5
+audience: 프로젝트 책임자와 실행 담당자
+purpose: 호출어 작업에 무엇이 남았는가
+
+결론: R-02의 남은 작업에서 Porcupine을 빼고 호출 성공·누락·오호출 실기기 검증을 남긴 작업으로 기록했다. 상태는 구현 중 유지.
+근거: 기술 설계의 Porcupine 제외 판단, 아키텍처의 현행 판정 규칙과 오호출 한계.
+변경: 기준 시점 절에 "3일"은 당시 계획, 실제 개발은 이틀(개발자 설명)임을 구분. 제목·파일명·과거 판정 절은 보존.
+한계: 문서 보완만으로 F-01 완료를 판정하지 않음. 실기기 증거 없음.
+

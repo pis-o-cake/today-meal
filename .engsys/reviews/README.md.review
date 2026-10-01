@@ -1,0 +1,10 @@
+engsys-document-review: 1
+document: README.md
+blob: c6b45019382c18cb92c369b0588b4c74cf1018fc
+decision: pass
+reviewer: Codex
+audience: 제출 검토자와 개발자
+purpose: 제품 흐름과 현재 상태 및 실행 경로 안내
+
+독자: 제출물을 처음 보는 검토자. 제품 사용 흐름과 제출 상태로 시작하도록 바꾸고 실제 호출어와 제외한 Porcupine 설명을 코드와 대조했다. 영상 조리의 자동 차감 제외와 미구현 부분 반영을 명시했다. 캡처와 영상 링크는 미확정으로 남겼으며 목업을 실행 증거로 사용하지 않았다. 실행 명령과 기존 문서 안내는 보존했다. Codex 자체 편집 검토이며 독립 검증이 아니다.
+

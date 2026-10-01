@@ -1,0 +1,13 @@
+engsys-document-review: 1
+document: docs/architecture/README.md
+blob: eb7a1c90dcbf177fc50bba83d00827d4a82a7b9a
+decision: pass
+reviewer: claude-opus-5-5
+audience: 개발자와 운영자
+purpose: 호출어 감지가 지금 어떤 경로와 규칙으로 동작하는가
+
+결론: 현행 호출어 감지 경로(ko_KR 반복 청취→후보 전체→음절·영문 변형 판정→명령 청취)와 판정 규칙·한계를 코드 기준으로 요약했다.
+근거: wake_listen_source.dart(30초 구간·침묵 8초·alternates), device_wake_word_detector.dart(250ms·400ms~8s 백오프), wake_phrase.dart(두 낱말 한 벌, 키친·헤이 변형, 타월 제외, 좁은 모음).
+변경: Porcupine 목표 행 삭제, "표기 흔들림 별칭" 설명을 전사 판정 규칙 확장으로 교체, SM-E426S 여섯 번 호출 관찰을 한 기기 관찰로 한정. 영상 레시피 표에 YouTube Data API·oEmbed·자막 조회 경로 행 추가. 선택 배경은 기술 설계로 링크.
+한계: 실기기 호출 성공·누락·오호출 미확인(R-02). 다른 작업자의 미커밋 변경을 포함한 전체 본문 기준 검토다.
+
