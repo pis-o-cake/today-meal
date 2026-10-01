@@ -86,10 +86,11 @@ def create_app() -> FastAPI:
         )
 
     # 발표 자료(웹 슬라이드). 링크 하나로 열어 볼 수 있게 서버에 같이 싣는다.
-    # 원본은 `presentation/slides/`, 여기는 `build_deck.py` 가 만든 공개용 빌드다.
-    deck_dir = Path(__file__).resolve().parent / "deck"
-    if deck_dir.is_dir():
-        application.mount("/deck", StaticFiles(directory=deck_dir, html=True), name="deck")
+    # 원본은 `presentation/slides*/`, 여기는 각 `build_deck.py` 가 만든 공개용 빌드다.
+    for deck in ("deck", "deck-v2"):
+        deck_dir = Path(__file__).resolve().parent / deck
+        if deck_dir.is_dir():
+            application.mount(f"/{deck}", StaticFiles(directory=deck_dir, html=True), name=deck)
 
     @application.get("/health", tags=["health"], summary="서버와 설정 상태")
     async def health() -> dict[str, object]:
