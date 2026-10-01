@@ -46,6 +46,7 @@ AI는 발화와 영상에서 의도·재료·조리 순서를 해석한다. 서�
 | 영상 편집 기록·촬영 대본 | [EDIT-NOTES](demo/final/EDIT-NOTES.md) · [촬영 대본](demo/script.md) |
 | 발표 슬라이드(웹) | [presentation/slides](presentation/slides/README.md) · 서버 `/deck` |
 | 발표 스토리보드 | [presentation/storyboard.md](presentation/storyboard.md) |
+| 발표 슬라이드 v2(재구성판) | [presentation/slides-v2](presentation/slides-v2/README.md) · [스토리보드 v2](presentation/storyboard-v2.md) · 서버 `/deck-v2` |
 | Android 설치 파일 | 서버 `/install` (빌드 산출물, 저장소 밖) |
 
 ## 작업을 시작할 때

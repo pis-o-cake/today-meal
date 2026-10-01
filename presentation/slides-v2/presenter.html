@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>발표자 창 v2</title>
+<style>
+  @font-face { font-family: 'Pretendard'; src: url('assets/fonts/Pretendard-deck.woff2') format('woff2'); font-weight: 45 920; }
+  :root { --bg: #1D221F; --panel: #262C28; --text: #EFEBE1; --muted: #A9AFA7; --green: #7CC49A; --warn: #E8A87C; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; word-break: keep-all; }
+  .wrap { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; min-height: 100vh; }
+  header { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+  h1 { margin: 0; font-size: 34px; font-weight: 750; letter-spacing: -0.02em; }
+  .pos { font-size: 20px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .panel { background: var(--panel); border-radius: 16px; padding: 18px 22px; }
+  .panel h2 { margin: 0 0 10px; font-size: 16px; font-weight: 700; color: var(--muted); }
+  .script p { margin: 0 0 14px; font-size: 26px; line-height: 1.55; }
+  .script p.cue { font-size: 19px; font-weight: 650; color: var(--green); }
+  .script kbd { display: inline-block; min-width: 64px; padding: 2px 10px; margin-right: 6px; border-radius: 8px; background: #2E6A4E; color: #fff; font: inherit; text-align: center; }
+  .notes li, .steps li { font-size: 18px; line-height: 1.55; margin-bottom: 6px; color: #DCD8CE; }
+  .notes ul, .steps ul { margin: 0; padding-left: 20px; }
+  .steps li.done { color: var(--muted); text-decoration: line-through; }
+  .steps li.now { color: var(--green); font-weight: 700; }
+  aside { display: flex; flex-direction: column; gap: 16px; }
+  .clock { font-size: 44px; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .clock small { display: block; font-size: 16px; font-weight: 500; color: var(--muted); }
+  .over { color: var(--warn); }
+  .next { font-size: 22px; font-weight: 650; margin: 0; }
+  .status { font-size: 17px; margin: 0; }
+  .ok { color: var(--green); } .bad { color: var(--warn); }
+  .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button { font: inherit; font-size: 18px; padding: 12px; border-radius: 10px; border: 0; background: #3A423D; color: var(--text); cursor: pointer; }
+  button.primary { grid-column: 1 / -1; background: #2E6A4E; font-weight: 700; }
+  button:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  .keys { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .main { display: flex; flex-direction: column; gap: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="title">연결 대기</h1>
+    <span class="pos" id="pos">청중 화면(index.html)에서 P를 눌러 이 창을 여세요</span>
+  </header>
+  <div class="main">
+    <section class="panel steps"><h2>이 장의 진행</h2><ul id="steps"></ul></section>
+    <section class="panel script"><h2>대본</h2><div id="script"></div></section>
+    <section class="panel notes"><h2>노트</h2><ul id="notes"></ul></section>
+  </div>
+  <aside>
+    <section class="panel">
+      <div class="clock" id="slide-clock">0:00<small>이 장</small></div>
+      <div class="clock" id="total-clock">0:00<small>전체</small></div>
+      <button id="reset" type="button" class="primary">발표 시작 (전체 시간 측정)</button>
+    </section>
+    <section class="panel"><h2>다음 장</h2><p class="next" id="next">—</p></section>
+    <section class="panel"><h2>준비물</h2><p class="status" id="asset">4장 영상 assets/video/demo.mp4</p></section>
+    <section class="panel">
+      <div class="buttons">
+        <button type="button" data-cmd="prev">이전 장</button>
+        <button type="button" data-cmd="next">다음 장</button>
+        <button type="button" data-cmd="backward">이전 단계</button>
+        <button type="button" class="primary" data-cmd="forward">진행 (Space)</button>
+      </div>
+      <p class="keys">← → 장 이동, Space 진행, Shift+Space 이전 단계.<br>이 창의 키 입력도 청중 화면을 움직입니다.</p>
+    </section>
+  </aside>
+</div>
+<script>
+/*
+ * 발표자 노트. 청중 화면(index.html)은 이 파일을 읽지 않는다. 발표자 창(presenter.html)만 쓴다.
+ * budget: 장별 목표 시간(초). 합계 390초(6:30). 4장은 87초 영상과 도입 설명을 포함한다.
+ * WARNING: 대본 분량으로 잡은 추정치다. 리허설로 재기 전에는 시간 검증 완료로 보지 않는다.
+ */
+window.DECK_NOTES = [
+  {
+    title: '제품과 핵심 가치', budget: 20,
+    steps: ['Space: 냉장고 문 열기 · 핵심 문장'],
+    script: [
+      { key: '발표 시작', act: '발표자 창 버튼 클릭 → 말하기 시작' },
+      '“오늘 뭐 먹지?” 매일 하는 이 고민을, 냉장고 속 재료에서 풀어 보려 했습니다.',
+      { key: 'Space', act: '냉장고 문 열림 · 핵심 문장' },
+      '이 앱은 재료를 기록하는 데서 끝내지 않고, 메뉴 선택과 조리, 남은 재고까지 연결합니다.',
+      { key: 'Space', act: '2장으로' },
+    ],
+    notes: ['도구·기술 이름을 말하지 않는다. 음식물 낭비 감소·시간 절약은 검증 전이라 주장하지 않는다.'],
+  },
+  {
+    title: '사용자 문제와 해결 방향', budget: 35,
+    steps: ['Space: 기한 순 정렬, 삼겹살 강조', 'Space: 해결 방향 표시'],
+    script: [
+      '처음 대상은 집에서 자주 요리하는 1~2인 가구로 잡았습니다.',
+      '냉장고에 삼겹살, 두부, 계란이 있으면 무엇부터 써야 할지 바로 떠오르지 않습니다. 삼겹살 기한이 내일까지라면,',
+      { key: 'Space', act: '기한 순 정렬 · 삼겹살 강조' },
+      '오늘은 삼겹살부터 쓰는 게 맞겠죠. 그런데 이걸 알려면 재고가 기록돼 있어야 하고, 매번 적고 잔량을 맞추는 일은 번거롭습니다.',
+      { key: 'Space', act: '해결 방향 표시' },
+      '그래서 먼저 쓸 재료를 앞에 보여 메뉴 결정을 돕고, 기록과 보정은 말로 해서 부담을 줄였습니다.',
+      { key: 'Space', act: '3장으로' },
+    ],
+    notes: [
+      '대상은 초기 가정이다. 조사로 확인한 사실이나 통계처럼 말하지 않는다.',
+      '카드 값은 시연 영상과 같은 재료·수량(삼겹살 D-1, 두부 D-2, 계란 D-3, 대파 기한 없음).',
+    ],
+  },
+  {
+    title: '제품의 전체 흐름', budget: 35,
+    steps: ['Space: 유튜브 레시피 경로와 차감 없음'],
+    script: [
+      '영상에서 볼 흐름은 네 단계입니다. 말로 기록하고, 먼저 쓸 재료를 확인하고, 메뉴를 골라 조리하고, 끝나면 재고에 반영됩니다.',
+      '마지막 단계는 추천 메뉴로 조리를 마쳤을 때, 조리한 인분을 기준으로 맞출 수 있는 재료를 빼는 것입니다.',
+      { key: 'Space', act: '유튜브 레시피 경로' },
+      '직접 고른 유튜브 레시피도 같은 조리 안내로 이어지지만, 이 경우에는 재고를 자동으로 빼지 않습니다.',
+      { key: 'Space', act: '4장으로' },
+    ],
+    notes: [
+      '화면 4장: rec-egg10·home-urgent·cook-timer(10/1 실기기 녹화), cook-done(90초 v3 영상 73.5초 프레임, 삼겹살 300g→100g·두부 2모→1모, 대파 등은 “빼지 못했어요”).',
+      '각 단계를 자세히 설명하지 않는다. 곧 영상으로 본다.',
+    ],
+  },
+  {
+    title: '실제 앱 시연', budget: 100,
+    steps: ['Space: 영상 재생(무대 가득)', 'Space: 일시정지·다시 재생', '영상이 끝난 뒤 Space 또는 →: 5장'],
+    script: [
+      '실제 기기에서 기능별로 찍어 이은 87초 영상입니다. 사용자 목소리만 AI로 다시 녹음했고, 앱 응답은 실제 소리입니다. 말로 바뀌는 수량과, 조리 뒤 빠지는 재고를 봐 주세요.',
+      { key: 'Space', act: '영상 재생 (87초) — 영상 중에는 말하지 않는다. 멈춤·재개도 Space' },
+      { key: 'Space', act: '5장으로 (영상이 끝난 뒤에만 넘어간다)' },
+    ],
+    notes: [
+      '파일: assets/video/demo.mp4 = demo/final/voiceover/today-meal-90s-v4-ai-voice-leda.mp4(87초, 배경음악 Life of Riley). 막히면 같은 파일을 플레이어로 전체 화면 재생.',
+      '화면의 “사용자 음성 · AI 후시 녹음”, “대기 구간 단축”, “조리 단계 일부 생략” 표시는 그대로 둔다.',
+      '영상 장면: 계란 등록 → 2개 사용 → 4개로 보정 → 삼겹살 추천 → 2인분에서 3인분 확인 후 2인분으로 조리 → 완료 차감 → 유튜브 링크 분석.',
+      '정정·취소·복합 등록·4인분 변경은 영상에 없다. 시연한 것처럼 말하지 않는다.',
+    ],
+  },
+  {
+    title: '시연에서 확인한 결과와 범위', budget: 35,
+    steps: ['Space: 영상이 보여주지 않는 것'],
+    script: [
+      '영상에서 확인한 것은 네 가지입니다. 계란이 10개에서 8개, 다시 4개로 바뀐 등록·사용·보정, 추천에서 조리로 이어지는 흐름, 2인분 조리 뒤 삼겹살 300g이 100g으로, 두부 2모가 1모로 빠진 차감, 그리고 유튜브 레시피 정리입니다.',
+      { key: 'Space', act: '보여주지 않는 것' },
+      '다만 안드로이드 기기 한 대에서 장면별로 찍은 결과입니다. 반복 사용의 안정성이나 일상에서의 효과, 음성 인식 품질 전반을 보여주지는 않습니다.',
+      { key: 'Space', act: '6장으로' },
+    ],
+    notes: [
+      '근거: demo/final/EDIT-NOTES.md(2026-09-30~10-01 촬영, 받아쓰기로 발화·응답 시각 확인).',
+      '편집 기록의 한계: 05 끝 냉장고 화면은 계란이 10개로 찍혀(04 결과는 4개) 빼고 차감 결과 화면에서 끝냈다 — 장면 사이 재고가 이어진다고 말하지 않는다.',
+      '편집 기록의 한계: 04 기록 화면에 영어 “undo” 말풍선, 05 메뉴 상세의 재료가 모두 “있어요”로 보이는 표시 오류(촬영 뒤 서버에서 고침).',
+      '조리 완료 차감은 너그러운 모드다. 없는 재료·단위를 맞출 수 없는 재료는 건너뛴다(화면의 “빼지 못했어요”).',
+    ],
+  },
+  {
+    title: '제품 안에서 AI와 서버가 맡는 일', budget: 45,
+    steps: ['Space: 구현된 것과 목표', 'Space: Gemini를 고른 이유'],
+    script: [
+      '이 흐름을 믿을 수 있게 하려고 역할을 나눴습니다. AI는 말과 영상을 해석하고, 서버는 대상과 수량을 검증해 저장합니다.',
+      '‘계란 두 개 썼어’를 AI가 사용, 계란, 2개로 해석하면, 서버가 재고에 있는지, 단위가 맞는지, 남은 양보다 많지 않은지 확인하고 이력과 함께 저장합니다.',
+      { key: 'Space', act: '구현과 목표' },
+      '모르는 수량이나 날짜는 지어내지 않고 되묻습니다. 여러 재료 중 명확한 것만 먼저 저장하는 부분 반영은 아직 목표입니다.',
+      { key: 'Space', act: 'Gemini 선택 이유' },
+      '모델은 유튜브 링크를 직접 분석해야 해서 이를 지원하는 Gemini를 골랐고, 명령 해석과 추천도 같은 모델로 맞췄습니다.',
+      { key: 'Space', act: '7장으로' },
+    ],
+    notes: [
+      '근거 코드: server/app/domain/command/validation.py(모델 제안 검증, 숫자를 만들지 않음), inventory/service.py apply_usage(재고 없음·단위 불일치·음수 재고는 되묻고 아무것도 반영하지 않음), command/service.py undo·정정(되돌린 뒤 다시 적용).',
+      '부분 반영·후속 확인·그룹 취소는 미구현 목표(docs/verification/results/2026-09-30-submission-status.md R-01).',
+      'Gemini: 공식 문서 ai.google.dev/gemini-api/docs/video-understanding(2026-09-23 갱신)에 YouTube URL 입력 지원, “preview” 표기, 공개 영상만. 서버는 gemini-3.8-flash에 fileData.fileUri로 URL을 넘긴다(core/llm/gemini.py).',
+      '다른 모델이 영상 분석을 못 한다고 말하지 않는다. YouTube Data API(제목·설명 조회)와 Gemini 영상 분석은 별개다.',
+    ],
+  },
+  {
+    title: '개발 과정의 AI 활용과 사람의 판단', budget: 60,
+    steps: ['Space: 실기기 수정 사례', 'Space: 마지막 한 줄'],
+    script: [
+      '개발 과정에서도 AI가 만든 것과 제가 판단한 것을 나눴습니다.',
+      '기획에서는 GPT와 Astra로 선택지를 비교했고 방향은 제가 정했습니다. 디자인은 Claude Design으로 화면 목업과 테마 시안을 만들고 그중 하나를 골랐습니다. 구현은 Claude Code로 앱과 서버, 테스트를 만들었고 실기기 검수는 직접 했습니다. 검토에는 기존에 만든 개발 지원 도구 engsys로 문서 규칙과 커밋 검사를 적용했습니다.',
+      { key: 'Space', act: '실기기 수정 사례' },
+      '실기기에서 호출하면 ‘네?’라고 답한 뒤에야 듣기 시작해 앞말이 잘렸습니다. 신호음 뒤 바로 듣도록 바꿨고, 시연 촬영에서 신호음 다음에 명령이 이어지는 것을 확인했습니다.',
+      { key: 'Space', act: '마지막 한 줄' },
+      'AI로 초안을 만들고 구현을 진행하되, 방향 선택과 실기기 검수는 직접 맡았습니다.',
+      { key: 'Space', act: '8장으로' },
+    ],
+    notes: [
+      'Claude Design 창 전환은 하지 않는다. 목업은 표의 한 행으로만 다룬다. 앱 기본 테마는 글래스(mockup/README).',
+      'engsys는 AI 모델이 아니라 기존에 만든 자체 개발 지원 도구다. 이번에 새로 만든 결과물로 말하지 않는다.',
+      '사례 근거: listening_cue.dart(9/30 22:49 작성, 커밋 6dacd9a) — “네?” 낭독이 끝나야 듣기 시작해 앞말이 잘림 → 짧은 두 음 신호 뒤 듣기. 재확인: 9/30 23:13 이후 촬영본 받아쓰기에서 “헤이 키친 → 신호음 → 명령” 순서(EDIT-NOTES). 인식률 개선으로 말하지 않는다.',
+      '자동 테스트 수치는 말하지 않는다. 질문 시: 10/1 로컬 실행, 서버 279건(pytest)·앱 179건(flutter test, 커밋 77de778) 통과.',
+      '질문 시: 문서 편집 검토 기록(.engsys/reviews)과 시연 영상 편집·웹 발표자료 제작에도 AI를 썼다.',
+    ],
+  },
+  {
+    title: '남은 핵심 가설과 다음 검증', budget: 35,
+    steps: ['Space: 확인 방법(제안)'],
+    script: [
+      '이제 확인할 것은 남은 기능 목록보다 세 가지 질문입니다. 생활 속에서 기록을 계속 유지하는가, 기록이 어긋났을 때 쉽게 복구하는가, 추천이 실제 조리로 이어지는가.',
+      { key: 'Space', act: '확인 방법(제안)' },
+      '기록 빈도의 변화, 보정이 한 번에 끝나는 비율, 추천에서 조리 완료까지 이어진 비율로 확인해 볼 수 있습니다. 지금은 앱이 화면에 떠 있을 때만 호출을 받고, 실기기 확인은 안드로이드에서만 했습니다.',
+      { key: 'Space', act: '9장으로' },
+    ],
+    notes: [
+      '확인 방법은 제안이다. 계획이 확정됐거나 일정이 잡힌 것처럼 말하지 않는다.',
+      '호출 감지는 전경 한정(submission-status 미지원과 제한). iOS 설치 검증은 남아 있다.',
+    ],
+  },
+  {
+    title: '무엇을 만들었고 무엇을 확인할지', budget: 25,
+    steps: [],
+    script: [
+      '이번에 구현한 핵심은 재료를 기록하는 데서 끝내지 않고, 메뉴 선택과 조리 후 재고 반영까지 연결한 것입니다.',
+      '이제 확인해야 할 것은 이 흐름이 실제 생활에서도 꾸준히 유지되는가입니다.',
+      '‘오늘 뭐 먹지?’라는 고민을, 냉장고를 비우는 한 끼로 연결하겠습니다. 감사합니다.',
+      { key: '끝', act: '마지막 장 — 더 누르지 않는다. 인사 뒤 잠시 멈춘다' },
+    ],
+    notes: ['AI 도구 이름을 다시 나열하지 않는다.'],
+  },
+];
+</script>
+<script>
+(() => {
+  'use strict';
+  const notes = window.DECK_NOTES || [];
+  // 목표 합계는 장별 budget의 합. 리허설 전 추정치다.
+  const TOTAL_BUDGET = notes.reduce((sum, n) => sum + (n.budget || 0), 0);
+  const $ = (id) => document.getElementById(id);
+
+  let state = null;
+  let startedAt = null;
+  let slideStartedAt = Date.now();
+  let lastIndex = -1;
+
+  const fmt = (sec) => {
+    const s = Math.max(0, Math.floor(sec));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  };
+
+  // 청중 화면(이 창을 연 창)에 명령을 보낸다. file:// 에서도 창 참조 postMessage는 동작한다.
+  function send(action) {
+    const deck = window.opener;
+    if (!deck || deck.closed) {
+      $('pos').textContent = '청중 화면과 연결이 끊겼습니다. 청중 화면에서 P를 다시 누르세요';
+      return;
+    }
+    deck.postMessage({ type: 'cmd', action }, '*');
+  }
+
+  function list(el, items, cls) {
+    el.replaceChildren(...items.map((text, i) => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      if (cls) li.className = cls(i);
+      return li;
+    }));
+  }
+
+  function show(next) {
+    state = next;
+    const n = notes[state.index] || { title: '', script: [], notes: [], steps: [] };
+    if (state.index !== lastIndex) {
+      lastIndex = state.index;
+      slideStartedAt = Date.now();
+    }
+    $('title').textContent = `${state.index + 1}. ${n.title}`;
+    $('pos').textContent = `${state.index + 1} / ${state.total}   단계 ${state.step} / ${state.steps}`;
+    list($('steps'), n.steps || [], (i) => (i < state.step ? 'done' : i === state.step ? 'now' : ''));
+    $('script').replaceChildren(...(n.script || []).map((t) => {
+      const p = document.createElement('p');
+      if (typeof t === 'string') {
+        p.textContent = t;
+        return p;
+      }
+      // 키 입력 줄: 누를 키와 화면에 일어나는 일
+      p.className = 'cue';
+      const k = document.createElement('kbd');
+      k.textContent = t.key;
+      p.append(k, ` ${t.act}`);
+      return p;
+    }));
+    list($('notes'), n.notes || []);
+    const after = notes[state.index + 1];
+    $('next').textContent = after ? `${state.index + 2}. ${after.title}` : '마지막 장';
+  }
+
+  function tick() {
+    const n = state ? notes[state.index] : null;
+    const budget = n ? n.budget : 0;
+    const slideSec = (Date.now() - slideStartedAt) / 1000;
+    const totalSec = startedAt ? (Date.now() - startedAt) / 1000 : 0;
+    $('slide-clock').innerHTML = `${fmt(slideSec)}<small>이 장 / 목표 ${fmt(budget)}</small>`;
+    $('slide-clock').classList.toggle('over', budget > 0 && slideSec > budget);
+    const totalLabel = startedAt ? `전체 / 목표 ${fmt(TOTAL_BUDGET)} (리허설 전 추정)` : '전체 · 1장에서 발표 시작을 누르세요';
+    $('total-clock').innerHTML = `${fmt(totalSec)}<small>${totalLabel}</small>`;
+    $('total-clock').classList.toggle('over', totalSec > TOTAL_BUDGET);
+  }
+
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'state') show(e.data);
+  });
+  document.querySelectorAll('[data-cmd]').forEach((b) => b.addEventListener('click', () => send(b.dataset.cmd)));
+  // IMPORTANT: 전체 시간은 버튼으로만 시작한다. 장 이동으로 자동 시작하면 1장 시간이 빠진다.
+  $('reset').addEventListener('click', () => {
+    startedAt = Date.now();
+    slideStartedAt = Date.now();
+    $('reset').textContent = '시간 다시 재기';
+    $('reset').classList.remove('primary');
+  });
+  document.addEventListener('keydown', (e) => {
+    const map = { ArrowRight: 'next', ArrowLeft: 'prev', PageDown: 'forward', PageUp: 'backward', ArrowDown: 'forward', ArrowUp: 'backward' };
+    if (e.key === ' ') { e.preventDefault(); send(e.shiftKey ? 'backward' : 'forward'); return; }
+    if (map[e.key]) { e.preventDefault(); send(map[e.key]); }
+  });
+
+  // 청중 화면을 새로고침해도 다시 연결되도록 주기적으로 상태를 요청한다.
+  send('sync');
+  setInterval(() => { if (window.opener && !window.opener.closed) window.opener.postMessage({ type: 'cmd', action: 'sync' }, '*'); }, 2000);
+  setInterval(tick, 500);
+  tick();
+})();
+</script>
+</body>
+</html>

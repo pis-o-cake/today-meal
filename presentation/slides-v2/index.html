@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오늘 뭐 먹지? v2</title>
+<meta name="description" content="먼저 쓸 재료로 정하는 오늘의 한 끼 · 발표 자료">
+<!-- 링크 미리보기. 메신저는 절대 주소만 읽는다. -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://today-meal-deck.today-meal.workers.dev/">
+<meta property="og:title" content="오늘 뭐 먹지?">
+<meta property="og:description" content="먼저 쓸 재료로 정하는 오늘의 한 끼 · 발표 자료">
+<meta property="og:image" content="https://today-meal-deck.today-meal.workers.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="628">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+@font-face {
+  font-family: 'Pretendard';
+  src: url('assets/fonts/Pretendard-deck.woff2') format('woff2');
+  font-weight: 45 920;
+  font-display: block;
+}
+
+:root {
+  --cream: #F3EEE3;
+  --paper: #FBF8F1;
+  --ink: #1D221F;
+  --ink-2: #3C423D;
+  --muted: #5E625C;
+  --line: #D3CAB8;
+  --green: #2E6A4E;
+  --green-soft: #DDE9DF;
+  --urgent: #9C4221;
+  --urgent-soft: #F4E0D5;
+  --soon: #9A5B0E;
+  --soon-soft: #F5E6CC;
+  --fresh: #2E7D4A;
+  --fresh-soft: #DCEFE1;
+  --unknown: #555D6B;
+  --unknown-soft: #E3E6EC;
+  --expired: #3E5A9A;
+  --expired-soft: #DFE6F5;
+  --fridge: #BFE3C8;
+  --ease: cubic-bezier(.3, 0, .2, 1);
+  --t: .55s;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--cream); }
+body {
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+}
+
+/* 1920×1080 무대를 창 크기에 맞춰 축소·확대한다. 좌표는 모두 무대 기준 px. */
+.viewport { position: fixed; inset: 0; }
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1920px; height: 1080px;
+  transform-origin: 50% 50%;
+  background: var(--cream);
+}
+
+.slide {
+  position: absolute; inset: 0;
+  padding: 130px 160px 120px;
+  opacity: 0; visibility: hidden;
+  transition: opacity .35s var(--ease), visibility 0s linear .35s;
+}
+.slide.is-active { opacity: 1; visibility: visible; transition: opacity .35s var(--ease); }
+
+/* 단계 공개: data-step="n"은 현재 단계가 n 이상일 때 보인다. */
+[data-step] { opacity: 0; transition: opacity var(--t) var(--ease), transform var(--t) var(--ease); }
+.slide.s1 [data-step="1"], .slide.s2 [data-step="2"], .slide.s3 [data-step="3"], .slide.s4 [data-step="4"], .slide.s5 [data-step="5"] { opacity: 1; }
+
+.title {
+  margin: 0;
+  font-size: 88px; line-height: 1.12; font-weight: 800; letter-spacing: -0.035em;
+}
+.lead {
+  margin: 36px 0 0;
+  font-size: 38px; line-height: 1.5; font-weight: 500; color: var(--ink-2); letter-spacing: -0.015em;
+}
+.tag {
+  display: inline-block;
+  font-size: 24px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em;
+}
+
+/* ---------- 냉장고 캐릭터 ---------- */
+.fridge { display: block; width: 100%; height: 100%; overflow: visible; }
+.fridge .f-shadow { fill: var(--ink); opacity: .1; }
+.fridge .f-ink { fill: var(--ink); }
+.fridge .f-body { fill: var(--fridge); stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
+.fridge .f-line { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
+.fridge .f-line--flat { stroke-linecap: butt; }
+.fridge .f-gloss { fill: none; stroke: #fff; stroke-opacity: .75; stroke-width: 5; stroke-linecap: round; }
+.fridge .f-gloss--soft { stroke-opacity: .6; }
+.fridge .f-note { fill: #FFF3B8; stroke: var(--ink); stroke-width: 3; }
+.fridge .f-pin { fill: var(--green); stroke: var(--ink); stroke-width: 2; }
+.fridge .f-note-lines { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
+.fridge .f-cheek { fill: #FF8A98; opacity: .45; }
+.fridge .f-mouth { fill: var(--ink); }
+.fridge .f-tongue { fill: #FF8A98; }
+.fridge .f-light { fill: #FFF1C2; opacity: 0; transition: opacity .4s var(--ease) .15s; }
+.fridge .f-items { opacity: 0; transition: opacity .4s var(--ease) .3s; }
+.fridge .f-shelf { stroke: #E3BE62; stroke-width: 3; stroke-linecap: round; }
+.fridge .f-egg { fill: #fff; stroke: var(--ink); stroke-width: 2.5; }
+.fridge .f-leaf { fill: #5FB870; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; }
+.fridge .f-door {
+  transform-box: view-box; transform-origin: 46px 50px;
+  transition: transform .75s var(--ease);
+}
+.fridge .f-face { transition: opacity .2s linear .35s; }
+.fridge .f-face--smile { opacity: 0; }
+.slide--open.s1 .fridge .f-door { transform: scaleX(.14); }
+.slide--open.s1 .fridge .f-light, .slide--open.s1 .fridge .f-items { opacity: 1; }
+.slide--open.s1 .fridge .f-face--calm, [data-mood="smile"] .f-face--calm { opacity: 0; }
+.slide--open.s1 .fridge .f-face--smile, [data-mood="smile"] .f-face--smile { opacity: 1; }
+
+/* ---------- 1. 오늘 뭐 먹지? ---------- */
+.slide--open { display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 60px; }
+.open__fridge { width: 440px; height: 440px; }
+.open__title { margin: 28px 0 0; font-size: 150px; line-height: 1; font-weight: 850; letter-spacing: -0.05em; }
+.open__line { margin: 40px 0 0; font-size: 40px; font-weight: 500; color: var(--ink-2); transform: translateY(8px); }
+.slide--open.s1 .open__line { transform: none; }
+
+/* ---------- 2. 냉장고 선반 ---------- */
+.slide--shelf { display: grid; grid-template-columns: 720px 1fr; column-gap: 80px; align-items: center; }
+.shelf__list { position: relative; list-style: none; margin: 0; padding: 0; height: 600px; }
+.item {
+  position: absolute; left: 0; right: 0; top: 0; height: 128px;
+  display: grid; grid-template-columns: 76px auto 1fr auto; align-items: center; column-gap: 24px;
+  padding: 0 36px 0 28px;
+  background: var(--paper); border: 3px solid transparent; border-radius: 24px;
+  transform: translateY(calc(var(--from) * 152px));
+  transition: transform .6s var(--ease) .5s, border-color .25s var(--ease), box-shadow .25s var(--ease);
+}
+/* 삼겹살 카드가 먼저 떠올라 맨 위로 가고, 나머지가 뒤이어 자리를 옮긴다. */
+.item--first { z-index: 2; transition: transform .7s var(--ease) .15s, border-color .2s var(--ease), box-shadow .2s var(--ease); }
+.slide--shelf.s1 .item { transform: translateY(calc(var(--to) * 152px)); }
+.slide--shelf.s1 .item--first { border-color: var(--green); box-shadow: 0 14px 30px rgba(29, 34, 31, .14); }
+.who { display: inline-block; margin: 0 0 30px; padding: 10px 24px; border-radius: 999px; background: var(--paper); font-size: 28px; font-weight: 750; color: var(--green); letter-spacing: -0.01em; }
+.pain { list-style: none; margin: 44px 0 0; padding: 0; display: grid; row-gap: 18px; }
+.pain li { position: relative; padding-left: 32px; font-size: 38px; line-height: 1.4; font-weight: 650; color: var(--ink-2); letter-spacing: -0.02em; }
+.pain li::before { content: ''; position: absolute; left: 0; top: .5em; width: 14px; height: 14px; border-radius: 50%; background: var(--green); }
+.item__icon { width: 64px; height: 64px; color: var(--ink); }
+.item__icon svg { width: 100%; height: 100%; display: block; }
+.item__name { font-size: 46px; font-weight: 750; letter-spacing: -0.03em; }
+.item__qty { font-size: 34px; font-weight: 500; color: var(--muted); }
+.chip {
+  justify-self: end;
+  padding: 10px 22px; border-radius: 999px;
+  font-size: 28px; font-weight: 650; letter-spacing: -0.01em;
+  color: var(--ink-2); background: #E6DFD0;
+}
+.chip--urgent { color: var(--urgent); background: var(--urgent-soft); }
+.chip--unknown { background: transparent; box-shadow: inset 0 0 0 2px var(--line); color: var(--muted); }
+
+/* ---------- 3. 기한별 홈(실제 앱 화면) ---------- */
+.slide--bands { display: grid; grid-template-columns: 1fr 470px 470px; column-gap: 70px; align-items: center; padding-right: 120px; }
+.bands__text .lead { max-width: 640px; }
+.bands__phone {
+  position: relative; height: 900px; aspect-ratio: 600 / 1338;
+  border-radius: 44px; background: var(--ink); padding: 7px; justify-self: center;
+  box-shadow: 0 30px 60px rgba(29, 34, 31, .18);
+}
+.bands__screen { position: relative; width: 100%; height: 100%; border-radius: 38px; overflow: hidden; background: #fff; }
+.bands__screen img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transform: scale(1.015); transition: opacity .55s var(--ease), transform .7s var(--ease);
+}
+.bands__tag { position: absolute; left: 0; top: -44px; }
+.slide--bands:not(.s1) [data-band="urgent"],
+.slide--bands.s1 [data-band="unknown"] { opacity: 1; transform: none; }
+.legend { list-style: none; margin: 0; padding: 0; display: grid; row-gap: 18px; }
+.legend li {
+  display: flex; align-items: center; gap: 18px;
+  padding: 18px 26px; border-radius: 22px; background: transparent;
+  font-size: 32px; font-weight: 700; letter-spacing: -0.02em; color: var(--muted);
+  transition: background .4s var(--ease), color .4s var(--ease), transform .4s var(--ease);
+}
+.legend li::before { content: ''; width: 22px; height: 22px; border-radius: 50%; background: currentColor; opacity: .55; flex: none; }
+.legend span { display: flex; flex-direction: column; }
+.legend small { display: block; margin-top: 4px; font-size: 22px; font-weight: 600; opacity: .8; }
+.slide--bands:not(.s1) [data-leg="urgent"] { background: var(--urgent-soft); color: var(--urgent); transform: translateX(-10px); }
+.slide--bands.s1 [data-leg="unknown"] { background: var(--unknown-soft); color: var(--unknown); transform: translateX(-10px); }
+.legend [data-leg="soon"], .legend [data-leg="fresh"] { font-size: 26px; padding-top: 10px; padding-bottom: 10px; }
+
+/* ---------- 4. 말로 기록하고, 먹은 만큼 맞추고 ---------- */
+.slide--voice { display: grid; grid-template-columns: 1fr 470px; column-gap: 100px; align-items: center; padding-right: 220px; }
+.say { list-style: none; margin: 60px 0 0; padding: 0; display: grid; row-gap: 22px; }
+.say li {
+  display: grid; grid-template-columns: 1fr 330px; column-gap: 30px; align-items: center;
+  padding: 26px 34px; border-radius: 28px; background: var(--paper);
+  opacity: .32; transition: opacity .45s var(--ease), box-shadow .45s var(--ease);
+}
+.say q { quotes: '“' '”'; font-size: 38px; line-height: 1.35; font-weight: 750; letter-spacing: -0.03em; }
+.say b { font-size: 30px; font-weight: 750; color: var(--green); }
+.slide--voice:not(.s1) [data-say="1"], .slide--voice.s1:not(.s2) [data-say="2"], .slide--voice.s2 [data-say="3"] { opacity: 1; box-shadow: inset 0 0 0 4px var(--green); }
+.phone-shot {
+  position: relative; height: 900px; aspect-ratio: 600 / 1338; justify-self: center;
+  border-radius: 44px; background: var(--ink); padding: 7px; box-shadow: 0 30px 60px rgba(29, 34, 31, .18);
+}
+.phone-shot__tag { position: absolute; left: 0; top: -44px; }
+.phone-shot__screen { position: relative; width: 100%; height: 100%; border-radius: 38px; overflow: hidden; background: #fff; }
+.phone-shot__screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s var(--ease); }
+.slide--voice:not(.s1) [data-shot="1"], .slide--voice.s1:not(.s2) [data-shot="2"], .slide--voice.s2 [data-shot="3"] { opacity: 1; }
+
+/* ---------- 5. 먼저 쓸 재료가 오늘의 메뉴로 ---------- */
+.mflow { position: absolute; left: 160px; right: 160px; top: 270px; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 40px; }
+.mflow li {
+  position: relative; height: 130px; padding: 0 30px; border-radius: 28px; background: var(--paper);
+  display: flex; flex-direction: column; justify-content: center;
+  font-size: 42px; font-weight: 800; letter-spacing: -0.035em;
+}
+.mflow li small { margin-top: 6px; font-size: 24px; line-height: 1.25; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
+.mflow li:not(:last-child)::after {
+  content: ''; position: absolute; right: -32px; top: 50%; margin-top: -10px;
+  border-style: solid; border-width: 10px 0 10px 16px; border-color: transparent transparent transparent var(--ink-2);
+}
+.mshots { position: absolute; left: 160px; top: 460px; display: flex; gap: 40px; }
+.mshot { position: relative; }
+.mshot .tag { position: absolute; left: 0; top: -38px; white-space: nowrap; }
+.mshot img { display: block; height: 560px; border-radius: 30px; box-shadow: 0 0 0 5px var(--ink), 0 20px 40px rgba(29, 34, 31, .14); }
+.yt { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; }
+.yt__line { position: absolute; left: 1145px; top: 400px; width: 40px; height: 200px; overflow: visible; }
+.yt__line path { fill: none; stroke: var(--ink-2); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 8 10; }
+.yt__card { position: absolute; left: 860px; top: 600px; width: 900px; padding: 38px 44px; border-radius: 30px; box-shadow: inset 0 0 0 4px var(--ink-2); background: var(--cream); }
+.yt__card b { display: block; font-size: 46px; font-weight: 850; letter-spacing: -0.035em; }
+.yt__card p { margin: 18px 0 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0 18px; font-size: 32px; font-weight: 650; color: var(--ink-2); }
+.yt__note { display: inline-block; margin-top: 20px; padding: 6px 18px; border-radius: 999px; font-style: normal; font-size: 26px; font-weight: 750; color: var(--urgent); background: var(--urgent-soft); }
+.yt__card i { width: 36px; height: 3px; background: var(--ink-2); position: relative; }
+.yt__card i::after { content: ''; position: absolute; right: -2px; top: -6px; border-style: solid; border-width: 7.5px 0 7.5px 11px; border-color: transparent transparent transparent var(--ink-2); }
+
+/* ---------- 5. 실제 앱 시연 ---------- */
+.slide--demo { display: flex; flex-direction: column; justify-content: center; }
+.demo__title { margin: 0; font-size: 150px; line-height: 1.05; font-weight: 850; letter-spacing: -0.05em; }
+.demo__meta { margin: 30px 0 0; font-size: 38px; font-weight: 600; color: var(--ink-2); }
+.demo__head { transition: opacity .4s var(--ease), transform .5s var(--ease); }
+.slide--demo.is-started .demo__head { opacity: 0; transform: translateY(-14px); pointer-events: none; }
+/* 영상은 1920×1080 편집본이다. 무대를 가득 채워 재생한다. */
+.demo__player { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .45s var(--ease) .15s; }
+.slide--demo.is-started .demo__player { opacity: 1; }
+.demo__player video { width: 100%; height: 100%; object-fit: contain; display: block; }
+.demo__pause {
+  position: absolute; left: 50%; top: 50%; width: 120px; height: 120px; margin: -60px 0 0 -60px;
+  border-radius: 50%; background: rgba(251, 248, 241, .9); opacity: 0; transition: opacity .25s linear; pointer-events: none;
+}
+.demo__pause::after {
+  content: ''; position: absolute; left: 47px; top: 36px;
+  border-style: solid; border-width: 24px 0 24px 38px; border-color: transparent transparent transparent var(--ink);
+}
+.demo__player.is-paused .demo__pause { opacity: 1; }
+/* 재생 바: 아래 가장자리 얇은 선. 누른 곳으로 이동한다. 위쪽 여백까지 눌리도록 판정 영역을 넓게 둔다. */
+.demo__bar { position: absolute; left: 0; right: 0; bottom: 0; height: 56px; cursor: pointer; }
+.slide--demo.is-started .demo__bar { pointer-events: auto; }
+.demo__track, .demo__fill { position: absolute; left: 0; bottom: 0; height: 8px; transition: height .2s var(--ease); }
+.demo__track { right: 0; background: rgba(29, 34, 31, .14); }
+.demo__fill { width: 0; background: var(--green); }
+.demo__bar:hover .demo__track, .demo__bar:hover .demo__fill { height: 14px; }
+.demo__time {
+  position: absolute; left: 32px; bottom: 30px; padding: 6px 16px; border-radius: 999px;
+  background: rgba(251, 248, 241, .94); border: 1px solid var(--line);
+  font-size: 22px; font-weight: 650; color: var(--ink-2); font-variant-numeric: tabular-nums;
+  opacity: 0; transition: opacity .25s linear; pointer-events: none;
+}
+.demo__player.is-paused .demo__time, .demo__bar:hover + .demo__time { opacity: 1; }
+.demo__status { margin: 34px 0 0; min-height: 40px; font-size: 30px; font-weight: 650; color: var(--muted); }
+.slide--demo.is-failed .demo__status { color: var(--urgent); }
+
+/* ---------- 7. 단계별 AI ---------- */
+.ai { position: absolute; left: 160px; right: 160px; top: 290px; list-style: none; margin: 0; padding: 0; display: grid; row-gap: 18px; }
+.ai li {
+  display: grid; grid-template-columns: 300px 420px 1fr 280px; column-gap: 36px; align-items: center;
+  padding: 26px 40px; border-radius: 26px; background: var(--paper);
+  opacity: .3; transition: opacity .45s var(--ease), box-shadow .45s var(--ease);
+}
+.ai li.ai__head { opacity: 1; background: transparent; padding-top: 0; padding-bottom: 0; font-size: 24px; font-weight: 700; color: var(--muted); }
+.slide--ai.s1 [data-row="1"], .slide--ai.s2 [data-row="2"], .slide--ai.s3 [data-row="3"], .slide--ai.s4 [data-row="4"] { opacity: 1; }
+.slide--ai.s1:not(.s2) [data-row="1"], .slide--ai.s2:not(.s3) [data-row="2"],
+.slide--ai.s3:not(.s4) [data-row="3"], .slide--ai.s4:not(.s5) [data-row="4"] { box-shadow: inset 0 0 0 4px var(--green); }
+.ai__stage { font-size: 30px; font-weight: 700; color: var(--ink-2); }
+.ai__tool { font-size: 42px; font-weight: 850; letter-spacing: -0.035em; color: var(--ink); }
+.ai__tool small { display: block; font-size: 20px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
+.ai__did { font-size: 29px; line-height: 1.4; font-weight: 650; color: var(--ink-2); letter-spacing: -0.02em; }
+.ai__me { font-size: 29px; font-weight: 800; color: var(--green); letter-spacing: -0.02em; }
+.ai__more { position: absolute; left: 160px; top: 930px; margin: 0; font-size: 34px; font-weight: 750; color: var(--ink); }
+
+/* ---------- 7. 기술 선택과 제약 ---------- */
+.tech { position: absolute; left: 160px; right: 160px; top: 390px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 80px; }
+.tech h3 { margin: 0; font-size: 48px; font-weight: 850; letter-spacing: -0.035em; }
+.tech__pick { margin: 26px 0 0; padding: 28px 32px; border-radius: 26px; background: var(--paper); font-size: 32px; line-height: 1.5; font-weight: 650; }
+.tech__pick b { color: var(--green); }
+.tech__sub { display: block; margin-top: 14px; font-size: 26px; line-height: 1.45; font-weight: 600; color: var(--muted); }
+.wake { position: relative; margin-top: 26px; height: 330px; }
+.wake__heard { list-style: none; margin: 0; padding: 0; display: grid; row-gap: 16px; width: 300px; }
+.wake__heard li {
+  height: 66px; display: flex; align-items: center; padding: 0 24px; border-radius: 16px; background: var(--paper);
+  font-size: 32px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink-2);
+}
+.wake__heard li em { font-style: normal; font-size: 20px; font-weight: 600; color: var(--muted); margin-left: 8px; }
+.wake svg { position: absolute; left: 300px; top: 0; width: 140px; height: 360px; overflow: visible; }
+.wake path { fill: none; stroke: var(--green); stroke-width: 4; stroke-linecap: round; }
+.wake__rule {
+  position: absolute; left: 440px; top: 80px; width: 330px; padding: 26px 28px;
+  border-radius: 24px; box-shadow: inset 0 0 0 3px var(--green);
+  font-size: 26px; line-height: 1.45; font-weight: 650; color: var(--ink-2);
+}
+.wake__rule small { display: block; margin-top: 12px; font-size: 22px; font-weight: 700; color: var(--muted); }
+.wake__rule b { display: block; font-size: 38px; font-weight: 850; color: var(--green); margin-bottom: 8px; }
+.wake__heard, .wake svg, .wake__rule { transition: opacity .45s var(--ease), transform .5s var(--ease); }
+.slide--tech:not(.s1) .wake svg, .slide--tech:not(.s1) .wake__rule { opacity: 0; transform: translateX(-12px); }
+
+.roles { position: absolute; left: 160px; right: 160px; top: 262px; margin: 0; display: flex; align-items: center; gap: 26px; font-size: 30px; font-weight: 650; color: var(--ink-2); }
+.roles span { padding: 14px 28px; border-radius: 20px; background: var(--paper); }
+.roles b { margin-right: 14px; font-weight: 850; color: var(--green); }
+.roles i { width: 40px; height: 3px; background: var(--ink-2); position: relative; flex: none; }
+.roles i::after { content: ''; position: absolute; right: -2px; top: -7px; border-style: solid; border-width: 8.5px 0 8.5px 13px; border-color: transparent transparent transparent var(--ink-2); }
+.scope { position: absolute; left: 160px; right: 160px; top: 860px; display: grid; row-gap: 12px; }
+.scope p { margin: 0; font-size: 28px; font-weight: 600; color: var(--ink-2); letter-spacing: -0.015em; }
+.scope b { display: inline-block; width: 200px; font-weight: 850; color: var(--green); }
+.scope p + p b { color: var(--muted); }
+
+/* ---------- 9. 마무리 ---------- */
+.close__end { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.close__fridge { width: 300px; height: 300px; }
+.close__flow { margin: 36px 0 0; display: flex; align-items: center; gap: 18px; font-size: 32px; font-weight: 650; color: var(--green); letter-spacing: -0.015em; }
+.close__flow i { width: 32px; height: 3px; background: var(--green); position: relative; flex: none; }
+.close__flow i::after { content: ''; position: absolute; right: -2px; top: -6px; border-style: solid; border-width: 7.5px 0 7.5px 11px; border-color: transparent transparent transparent var(--green); }
+.close__next { margin: 40px 0 0; font-size: 28px; font-weight: 600; color: var(--muted); letter-spacing: -0.015em; }
+.close__next b { margin-right: 18px; font-weight: 850; color: var(--green); }
+.close__words { margin: 28px 0 0; text-align: center; font-size: 80px; line-height: 1.3; font-weight: 800; letter-spacing: -0.04em; }
+
+
+/* ==================== v2 전용 ==================== */
+.pain em { display: block; margin-top: 6px; font-style: normal; font-size: 28px; font-weight: 800; color: var(--green); }
+.pain em::before { content: '→ '; }
+
+.flow { position: absolute; left: 160px; right: 160px; top: 270px; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 36px; }
+.flow li { position: relative; display: flex; flex-direction: column; align-items: flex-start; }
+.flow li:not(:last-child)::after { content: ''; position: absolute; right: -26px; top: 22px; border-style: solid; border-width: 10px 0 10px 16px; border-color: transparent transparent transparent var(--ink-2); }
+.flow__no { width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-size: 24px; font-weight: 800; }
+.flow b { margin-top: 14px; font-size: 38px; font-weight: 850; letter-spacing: -0.035em; }
+.flow small { margin-top: 4px; font-size: 24px; font-weight: 650; color: var(--muted); }
+.flow img { margin-top: 20px; height: 470px; border-radius: 26px; box-shadow: 0 0 0 5px var(--ink), 0 18px 34px rgba(29, 34, 31, .14); }
+.flow__end b, .flow__end small { color: var(--green); }
+.flow__yt { position: absolute; left: 160px; right: 160px; top: 948px; margin: 0; display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 650; color: var(--ink-2); }
+.flow__yt b { font-weight: 850; color: var(--ink); }
+.flow__yt em { margin-left: 8px; padding: 6px 18px; border-radius: 999px; font-style: normal; font-size: 26px; font-weight: 750; color: var(--urgent); background: var(--urgent-soft); }
+
+.proof { position: absolute; left: 160px; right: 160px; top: 290px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 48px; }
+.proof h3 { margin: 0 0 22px; font-size: 36px; font-weight: 850; letter-spacing: -0.03em; }
+.proof ul { list-style: none; margin: 0; padding: 0; display: grid; row-gap: 16px; }
+.proof li { padding: 22px 30px; border-radius: 24px; background: var(--paper); font-size: 28px; line-height: 1.4; font-weight: 600; color: var(--ink-2); letter-spacing: -0.02em; }
+.proof__seen li b { display: block; font-size: 32px; font-weight: 850; color: var(--green); }
+.proof__seen li { box-shadow: inset 6px 0 0 var(--green); }
+.proof__not h3 { color: var(--muted); }
+.proof__not li { background: transparent; box-shadow: inset 0 0 0 2px var(--line); color: var(--muted); font-size: 30px; font-weight: 650; }
+
+.guard { position: absolute; left: 160px; right: 160px; top: 290px; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 300px 1fr 1.5fr 1fr; column-gap: 40px; }
+.guard li { position: relative; padding: 26px 28px; border-radius: 26px; background: var(--paper); display: flex; flex-direction: column; gap: 8px; }
+.guard li:not(:last-child)::after { content: ''; position: absolute; right: -30px; top: 50%; margin-top: -10px; border-style: solid; border-width: 10px 0 10px 16px; border-color: transparent transparent transparent var(--ink-2); }
+.guard small { font-size: 22px; font-weight: 700; color: var(--muted); }
+.guard b { font-size: 34px; font-weight: 850; letter-spacing: -0.03em; }
+.guard q { quotes: '“' '”'; font-size: 36px; font-weight: 800; letter-spacing: -0.03em; }
+.guard code { font-family: inherit; font-size: 26px; font-weight: 700; color: var(--green); }
+.guard span { font-size: 25px; line-height: 1.45; font-weight: 600; color: var(--ink-2); }
+.guard__say { background: transparent !important; box-shadow: inset 0 0 0 3px var(--ink-2); }
+.guard__server { box-shadow: inset 0 0 0 4px var(--green); }
+.guard__server b { color: var(--green); }
+.guard__scope { position: absolute; left: 160px; right: 160px; top: 610px; display: grid; row-gap: 14px; }
+.guard__scope p, .guard__model { margin: 0; font-size: 28px; line-height: 1.45; font-weight: 600; color: var(--ink-2); letter-spacing: -0.015em; }
+.guard__scope b, .guard__model b { display: inline-block; margin-right: 18px; font-weight: 850; color: var(--green); }
+.guard__scope p + p b { color: var(--muted); }
+.guard__model { position: absolute; left: 160px; right: 160px; top: 800px; padding-top: 26px; border-top: 2px solid var(--line); }
+
+.slide--ai .ai { top: 270px; row-gap: 12px; }
+.slide--ai .ai li { opacity: 1; padding: 16px 36px; grid-template-columns: 280px 400px 1fr 260px; }
+.slide--ai .ai__tool { font-size: 36px; }
+.slide--ai .ai__did, .slide--ai .ai__me { font-size: 27px; }
+.case { position: absolute; left: 160px; right: 160px; top: 760px; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 40px; }
+.case li { position: relative; padding: 18px 26px; border-radius: 22px; box-shadow: inset 0 0 0 3px var(--green); font-size: 26px; line-height: 1.4; font-weight: 650; color: var(--ink-2); letter-spacing: -0.02em; }
+.case li:not(:last-child)::after { content: ''; position: absolute; right: -30px; top: 50%; margin-top: -10px; border-style: solid; border-width: 10px 0 10px 16px; border-color: transparent transparent transparent var(--green); }
+.case span { display: block; font-size: 22px; font-weight: 800; color: var(--green); }
+.slide--ai .ai__more { top: 945px; font-size: 32px; }
+
+.ask { position: absolute; left: 160px; right: 160px; top: 290px; list-style: none; margin: 0; padding: 0; display: grid; row-gap: 22px; counter-reset: ask; }
+.ask li { counter-increment: ask; position: relative; padding: 28px 40px 28px 110px; border-radius: 26px; background: var(--paper); }
+.ask li::before { content: counter(ask); position: absolute; left: 36px; top: 30px; width: 50px; height: 50px; border-radius: 50%; background: var(--green); color: var(--paper); display: grid; place-items: center; font-size: 26px; font-weight: 850; }
+.ask b { display: block; font-size: 42px; font-weight: 850; letter-spacing: -0.035em; }
+.ask small { display: block; margin-top: 8px; font-size: 26px; font-weight: 650; color: var(--muted); }
+.ask__now { position: absolute; left: 160px; right: 160px; top: 900px; margin: 0; font-size: 26px; font-weight: 650; color: var(--muted); }
+
+/* ---------- 진행 표시 ---------- */
+.progress { position: fixed; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(29, 34, 31, .06); }
+.progress span { display: block; height: 100%; width: 0; background: var(--green); transition: width .35s var(--ease); }
+.pageno { position: fixed; right: 22px; bottom: 14px; margin: 0; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+/* 시연 장에서는 영상 재생 바와 겹치지 않게 아래쪽 표시를 숨긴다. */
+.on-demo .progress, .on-demo .pageno { opacity: 0; }
+
+/* 링크로 받은 사람을 위한 조작 안내. 웹(http)에서만, 발표자 창이 없을 때만 보인다. */
+.hint {
+  position: fixed; left: 50%; bottom: 28px; z-index: 5;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 18px 10px 16px; border-radius: 999px;
+  background: rgba(251, 248, 241, .95); border: 1px solid var(--line);
+  box-shadow: 0 8px 24px rgba(29, 34, 31, .1);
+  font-size: 15px; font-weight: 600; color: var(--ink-2); white-space: nowrap;
+  opacity: 0; transform: translate(-50%, 10px); pointer-events: none;
+  transition: opacity .35s var(--ease), transform .45s var(--ease);
+}
+.hint.is-on { opacity: 1; transform: translate(-50%, 0); }
+.hint b { color: var(--green); font-weight: 750; }
+.hint kbd {
+  font: inherit; font-size: 13px; font-weight: 700; color: var(--ink);
+  padding: 2px 9px; border-radius: 6px; background: var(--paper);
+  border: 1px solid var(--line); border-bottom-width: 3px;
+}
+.hint__tap { position: relative; flex: none; width: 12px; height: 12px; margin-right: 4px; border-radius: 50%; background: var(--green); }
+.hint__tap::before, .hint__tap::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--green);
+  animation: hint-ripple 1.8s var(--ease) infinite;
+}
+.hint__tap::after { animation-delay: .9s; }
+@keyframes hint-ripple { from { transform: scale(1); opacity: .7; } to { transform: scale(2.9); opacity: 0; } }
+.hint.is-touch .hint__or, .hint.is-touch kbd { display: none; }
+@media (prefers-reduced-motion: reduce) { .hint__tap::before, .hint__tap::after { animation: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0s !important; transition-delay: 0s !important; }
+}
+
+@page { size: 1920px 1080px; margin: 0; }
+@media print {
+  html, body { height: auto; overflow: visible; background: var(--cream); }
+  .viewport { position: static; }
+  .stage { position: static; transform: none !important; height: auto; }
+  .slide { position: relative; opacity: 1 !important; visibility: visible !important; width: 1920px; height: 1080px; page-break-after: always; break-after: page; }
+  .progress, .pageno, .demo__player, .hint { display: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+<main class="viewport" id="viewport">
+  <div class="stage" id="stage">
+
+    <!-- 1 제품과 핵심 가치 -->
+    <section class="slide slide--open" data-steps="1" aria-label="오늘 뭐 먹지?">
+      <div class="open__fridge" data-fridge></div>
+      <h1 class="open__title">오늘 뭐 먹지?</h1>
+      <p class="open__line" data-step="1">재료 기록에서 끝내지 않고, 메뉴·조리·남은 재고까지</p>
+    </section>
+
+    <!-- 2 사용자 문제와 해결 방향 -->
+    <section class="slide slide--shelf" data-steps="2" aria-label="답은 냉장고 안에 있는데">
+      <div class="shelf__text">
+        <p class="who">집에서 자주 요리하는 1~2인 가구</p>
+        <h2 class="title">답은 냉장고 안에<br>있는데</h2>
+        <ol class="pain">
+          <li>무엇이 남았고, 무엇부터 써야 할지 모른다<em data-step="2">먼저 쓸 재료 표시</em></li>
+          <li>재고를 매번 적고 잔량과 맞추기 번거롭다<em data-step="2">말로 기록·보정</em></li>
+        </ol>
+      </div>
+      <ol class="shelf__list" aria-label="냉장고 재료">
+        <li class="item" style="--from:0; --to:2">
+          <span class="item__icon" data-icon="egg"></span>
+          <span class="item__name">계란</span><span class="item__qty">10개</span>
+          <span class="chip">D-3 며칠 남음</span>
+        </li>
+        <li class="item item--first" style="--from:1; --to:0">
+          <span class="item__icon" data-icon="pork"></span>
+          <span class="item__name">삼겹살</span><span class="item__qty">300g</span>
+          <span class="chip chip--urgent">D-1 기한 코앞</span>
+        </li>
+        <li class="item" style="--from:2; --to:1">
+          <span class="item__icon" data-icon="tofu"></span>
+          <span class="item__name">두부</span><span class="item__qty">2모</span>
+          <span class="chip">D-2 며칠 남음</span>
+        </li>
+        <li class="item" style="--from:3; --to:3">
+          <span class="item__icon" data-icon="onion"></span>
+          <span class="item__name">대파</span><span class="item__qty">1단</span>
+          <span class="chip chip--unknown">기한 모름</span>
+        </li>
+      </ol>
+    </section>
+
+    <!-- 3 제품의 전체 흐름 -->
+    <section class="slide slide--flow" data-steps="1" aria-label="기록에서 남은 재고까지">
+      <h2 class="title">기록에서 남은 재고까지, 한 흐름</h2>
+      <ol class="flow">
+        <li><span class="flow__no">1</span><b>말로 기록</b><small>재료·수량·기한</small><img src="assets/img/rec-egg10.png" alt="계란 10개 기록 결과"></li>
+        <li><span class="flow__no">2</span><b>먼저 쓸 재료</b><small>기한이 급한 것부터</small><img src="assets/img/home-urgent.png" alt="빨리 먹어야 해요: 삼겹살 300g"></li>
+        <li><span class="flow__no">3</span><b>메뉴와 조리</b><small>추천 → 단계 안내·타이머</small><img src="assets/img/cook-timer.png" alt="조리 모드와 3분 타이머"></li>
+        <li class="flow__end"><span class="flow__no">4</span><b>완료 후 재고 반영</b><small>추천 조리 · 조리한 인분 기준</small><img src="assets/img/cook-done.png" alt="삼겹살 300g에서 100g, 두부 2모에서 1모로 차감"></li>
+      </ol>
+      <p class="flow__yt" data-step="1"><span><b>직접 고른 유튜브 레시피</b>도 같은 조리 안내(3)로 연결</span><em>재고 자동 차감 없음</em></p>
+    </section>
+
+    <!-- 4 실제 앱 시연 -->
+    <section class="slide slide--demo" data-steps="0" aria-label="실제 앱 시연">
+      <div class="demo__head">
+        <h2 class="demo__title">실제 앱 시연</h2>
+        <p class="demo__meta">볼 것 · 말로 바뀌는 수량 · 메뉴에서 조리로 · 조리 뒤 빠지는 재고</p>
+        <p class="demo__status" id="demo-status" aria-live="polite"></p>
+      </div>
+      <!-- Space로 재생하면 영상이 무대를 가득 채운다. 받는 중이면 이 장에 머물고, 열 수 없으면 안내 뒤 다음 장. -->
+      <div class="demo__player" id="demo-player" aria-hidden="true">
+        <video id="demo-video" src="assets/video/demo.mp4" preload="metadata" playsinline></video>
+        <div class="demo__pause" aria-hidden="true"></div>
+        <div class="demo__bar" id="demo-bar" aria-hidden="true"><span class="demo__track"></span><span class="demo__fill" id="demo-fill"></span></div>
+        <span class="demo__time" id="demo-time" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <!-- 5 시연에서 확인한 결과와 범위 -->
+    <section class="slide slide--proof" data-steps="1" aria-label="시연에서 확인한 것">
+      <h2 class="title">시연에서 확인한 것</h2>
+      <div class="proof">
+        <div class="proof__seen">
+          <h3>영상과 기록으로 확인</h3>
+          <ul>
+            <li><b>등록·사용·잔량 보정</b>계란 10개 → 8개 → 4개</li>
+            <li><b>메뉴에서 조리로</b>추천 → 인분 확인 → 단계 안내·타이머</li>
+            <li><b>추천 조리 완료 후 차감</b>삼겹살 300g → 100g · 두부 2모 → 1모 (2인분)</li>
+            <li><b>유튜브 레시피 정리</b>링크 → 재료·조리 단계</li>
+          </ul>
+        </div>
+        <div class="proof__not" data-step="1">
+          <h3>이 영상이 보여주지 않는 것</h3>
+          <ul>
+            <li>안드로이드 실기기 1대 · 장면별 촬영 후 편집</li>
+            <li>처음부터 끝까지 이어진 재고 정합성</li>
+            <li>반복 사용의 안정성과 일상 사용 효과</li>
+            <li>음성 인식 품질 전반 · 정정·취소·복합 등록</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 제품 안에서 AI와 서버가 맡는 일 -->
+    <section class="slide slide--guard" data-steps="2" aria-label="AI는 해석하고, 서버가 검증한다">
+      <h2 class="title">AI는 해석하고, 서버가 검증한다</h2>
+      <ol class="guard">
+        <li class="guard__say"><small>사용자</small><q>계란 두 개 썼어</q></li>
+        <li><small>AI · Gemini</small><b>말을 해석</b><code>사용 · 계란 · 2개</code></li>
+        <li class="guard__server"><small>서버</small><b>대상과 수량 검증</b><span>재고에 있는가 · 단위가 맞는가 · 남은 양보다 많지 않은가</span></li>
+        <li><small>저장</small><b>변경과 이력</b><code>계란 10개 → 8개</code></li>
+      </ol>
+      <div class="guard__scope" data-step="1">
+        <p><b>구현</b>모르는 수량·단위·날짜는 되묻고 저장하지 않음 · 되물을 것이 있으면 아무것도 반영하지 않음 · 변경 이력과 취소·정정</p>
+        <p><b>목표</b>여러 재료를 한 번에 말할 때 명확한 것만 먼저 저장하는 부분 반영</p>
+      </div>
+      <p class="guard__model" data-step="2"><b>Gemini를 고른 이유</b>유튜브 링크를 API에 직접 넣어 분석할 수 있어서(공식 문서 기준 프리뷰 기능) · 명령 해석과 추천도 같은 모델로</p>
+    </section>
+
+    <!-- 7 개발 과정의 AI 활용과 사람의 판단 -->
+    <section class="slide slide--ai" data-steps="2" aria-label="개발 과정의 AI와 사람의 판단">
+      <h2 class="title">AI가 만든 것, 직접 판단한 것</h2>
+      <ol class="ai">
+        <li class="ai__head" aria-hidden="true"><span>단계</span><span>활용 도구</span><span>결과물</span><span>직접 판단</span></li>
+        <li><span class="ai__stage">기획·기술 검증</span><span class="ai__tool">GPT / Astra</span><span class="ai__did">선택지 비교, 구현 방향 정리</span><span class="ai__me">방향 결정</span></li>
+        <li><span class="ai__stage">디자인</span><span class="ai__tool">Claude Design</span><span class="ai__did">화면 목업, 테마 시안 4종</span><span class="ai__me">시안 선택</span></li>
+        <li><span class="ai__stage">구현·수정</span><span class="ai__tool">Claude Code</span><span class="ai__did">앱·서버, 자동 테스트</span><span class="ai__me">실기기 검수</span></li>
+        <li><span class="ai__stage">검토·검증</span><span class="ai__tool"><small>기존 개발 지원 도구 · AI 모델 아님</small>engsys</span><span class="ai__did">문서 규칙·커밋 검사 적용</span><span class="ai__me">적용 기준 결정</span></li>
+      </ol>
+      <ol class="case" data-step="1">
+        <li><span>실기기에서 발견</span>‘네?’라고 답한 뒤에야 들어 앞말이 잘림</li>
+        <li><span>수정</span>짧은 신호음 뒤 바로 듣기</li>
+        <li><span>재확인</span>시연 촬영의 호출에서 신호음 → 명령 순서 확인</li>
+      </ol>
+      <p class="ai__more" data-step="2">AI로 초안을 만들고 구현을 진행하되, 방향 선택과 실기기 검수는 직접 맡았습니다.</p>
+    </section>
+
+    <!-- 8 남은 핵심 가설과 다음 검증 -->
+    <section class="slide slide--next" data-steps="1" aria-label="이제 확인할 질문">
+      <h2 class="title">이제 확인할 질문</h2>
+      <ol class="ask">
+        <li><b>생활 속에서 기록을 계속 유지하는가?</b><small data-step="1">확인 방법(제안) · 사용 기간 동안 기록 빈도의 변화</small></li>
+        <li><b>기록과 잔량이 어긋나도 쉽게 복구하는가?</b><small data-step="1">확인 방법(제안) · 보정·정정·취소가 한 번에 끝나는 비율</small></li>
+        <li><b>추천이 실제 조리로 이어지는가?</b><small data-step="1">확인 방법(제안) · 추천 → 조리 시작 → 완료로 이어진 비율</small></li>
+      </ol>
+      <p class="ask__now">지금의 사용 범위 · 앱이 화면에 떠 있을 때만 호출 · 실기기 확인은 안드로이드(iOS 설치 검증 전)</p>
+    </section>
+
+    <!-- 9 마무리 -->
+    <section class="slide slide--close" data-steps="0" aria-label="냉장고를 비우는 한 끼">
+      <div class="close__end">
+        <div class="close__fridge" data-fridge data-mood="smile"></div>
+        <p class="close__flow">말로 기록하고 <i></i> 먼저 쓸 재료로 요리하고 <i></i> 남은 재고까지</p>
+        <p class="close__words">“오늘 뭐 먹지?”라는 고민을,<br>냉장고를 비우는 한 끼로 연결합니다.</p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<nav class="progress" aria-hidden="true"><span id="progress-bar"></span></nav>
+<p class="pageno" id="pageno" aria-hidden="true"></p>
+<p class="hint" id="hint" aria-live="polite"><span class="hint__tap" aria-hidden="true"></span><b id="hint-tap">클릭</b><span class="hint__or">또는</span><kbd>Space</kbd><span id="hint-text"></span></p>
+
+<template id="fridge-tpl">
+  <svg class="fridge" viewBox="0 0 200 200" role="img" aria-label="냉장고 캐릭터">
+    <ellipse class="f-shadow" cx="100" cy="191" rx="48" ry="6"/>
+    <rect class="f-ink" x="68" y="176" width="14" height="12" rx="4"/>
+    <rect class="f-ink" x="118" y="176" width="14" height="12" rx="4"/>
+    <rect class="f-body" x="46" y="24" width="108" height="156" rx="32"/>
+    <path class="f-light" d="M50 70 V58 A28 28 0 0 1 78 30 H122 A28 28 0 0 1 150 58 V70 Z"/>
+    <g class="f-items">
+      <path d="M58 64 H142" class="f-shelf"/>
+      <ellipse cx="86" cy="52" rx="8" ry="10" class="f-egg"/>
+      <ellipse cx="104" cy="54" rx="7" ry="8.5" class="f-egg"/>
+      <path d="M122 60 C122 48 128 42 136 40 C134 48 130 56 122 60 Z" class="f-leaf"/>
+    </g>
+    <g class="f-door">
+      <path d="M46 74 V56 A32 32 0 0 1 78 24 H122 A32 32 0 0 1 154 56 V74 Z" class="f-body"/>
+      <path d="M56 36 Q52 44 52 60" class="f-gloss"/>
+      <path d="M138 40 v18" class="f-line"/>
+      <g transform="rotate(-8 80 48)">
+        <rect x="66" y="36" width="28" height="24" rx="4" class="f-note"/>
+        <circle cx="80" cy="36" r="3.5" class="f-pin"/>
+        <path d="M71 46 h16 M71 52 h10" class="f-note-lines"/>
+      </g>
+    </g>
+    <path d="M46 74 H154" class="f-line f-line--flat"/>
+    <path d="M53 90 v12" class="f-gloss f-gloss--soft"/>
+    <path d="M138 88 v26" class="f-line"/>
+    <circle cx="72" cy="134" r="7" class="f-cheek"/>
+    <circle cx="124" cy="134" r="7" class="f-cheek"/>
+    <g class="f-face f-face--calm">
+      <path d="M79 113 a5 5 0 0 1 10 0 v6 a5 5 0 0 1 -10 0 z M107 113 a5 5 0 0 1 10 0 v6 a5 5 0 0 1 -10 0 z" class="f-ink"/>
+      <path d="M92 135 q6 5 12 0" class="f-line"/>
+    </g>
+    <g class="f-face f-face--smile">
+      <path d="M77 121 q7 -9 14 0 M105 121 q7 -9 14 0" class="f-line"/>
+      <path d="M90 131 h16 a2 2 0 0 1 2 2.4 q-2 9.6 -10 9.6 q-8 0 -10 -9.6 a2 2 0 0 1 2 -2.4 z" class="f-mouth"/>
+      <path d="M93.5 140 q4.5 -4 9 0 q-2 3 -4.5 3 q-2.5 0 -4.5 -3 z" class="f-tongue"/>
+    </g>
+  </svg>
+</template>
+
+<template id="icon-egg"><svg viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="34" rx="16" ry="21" fill="#FBF6EA" stroke="currentColor" stroke-width="3"/></svg></template>
+<template id="icon-pork"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="7" y="17" width="50" height="32" rx="9" fill="#F2C1B6" stroke="currentColor" stroke-width="3"/><path d="M10 28 H54 M10 38 H54" stroke="#FFF4EE" stroke-width="4" stroke-linecap="round"/></svg></template>
+<template id="icon-tofu"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="12" y="14" width="40" height="38" rx="7" fill="#FFFDF6" stroke="currentColor" stroke-width="3"/><path d="M15 26 H49" stroke="#E4DDCB" stroke-width="3"/></svg></template>
+<template id="icon-onion"><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="rotate(-38 32 32)"><path d="M27 34 V6 M37 34 V10" stroke="#4F9A5E" stroke-width="8" stroke-linecap="round"/><rect x="22" y="30" width="20" height="30" rx="9" fill="#FBFBF3" stroke="currentColor" stroke-width="3"/></g></svg></template>
+
+<script>
+/*
+ * 청중 화면 진행.
+ *
+ * ← / →       이전·다음 장 (← 로 돌아가면 그 장의 마지막 단계)
+ * Space       다음 단계, 마지막 단계면 다음 장 (6장에서는 영상 재생·일시정지)
+ * Shift+Space 이전 단계
+ * PageDown·↓  Space와 같음(프레젠터 리모컨용), PageUp·↑ 이전 단계
+ * 1~9 직접 이동, Home·End, F 전체 화면, P 발표자 창
+ *
+ * 발표자 창과는 창 참조 postMessage로 상태와 명령을 주고받는다(file:// 대응).
+ */
+(() => {
+  'use strict';
+
+  const STAGE_W = 1920;
+  const STAGE_H = 1080;
+
+  const stage = document.getElementById('stage');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const progressBar = document.getElementById('progress-bar');
+  const pageno = document.getElementById('pageno');
+
+  let index = 0;
+  let step = 0;
+
+  const stepsOf = (i) => Number(slides[i].dataset.steps || 0);
+  const demoSlide = document.querySelector('.slide--demo');
+  const video = document.getElementById('demo-video');
+  const player = document.getElementById('demo-player');
+  const isDemo = (i) => slides[i] === demoSlide;
+  let videoReady = false;
+  let videoFailed = false;
+  let playWhenReady = false;
+  const hint = document.getElementById('hint');
+  const hintText = document.getElementById('hint-text');
+  // 발표는 로컬 파일로 하므로 안내는 웹 링크로 열었을 때만 띄운다.
+  const SHARED = /^https?:$/.test(location.protocol);
+  const HINT_IDLE_MS = 9000;
+  let interacted = false;
+  let idle = false;
+  let idleTimer = null;
+
+  function fit() {
+    const scale = Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H);
+    stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  }
+
+  function mountTemplates() {
+    const fridge = document.getElementById('fridge-tpl');
+    document.querySelectorAll('[data-fridge]').forEach((el) => {
+      el.appendChild(fridge.content.cloneNode(true));
+    });
+    document.querySelectorAll('[data-icon]').forEach((el) => {
+      const tpl = document.getElementById(`icon-${el.dataset.icon}`);
+      if (tpl) el.appendChild(tpl.content.cloneNode(true));
+    });
+  }
+
+  function render() {
+    slides.forEach((slide, i) => {
+      const active = i === index;
+      slide.classList.toggle('is-active', active);
+      slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+      const shown = active ? step : 0;
+      for (let k = 1; k <= 6; k += 1) slide.classList.toggle(`s${k}`, k <= shown);
+    });
+    progressBar.style.width = `${((index + 1) / slides.length) * 100}%`;
+    pageno.textContent = `${index + 1} / ${slides.length}`;
+    document.body.classList.toggle('on-demo', isDemo(index));
+    updateHint();
+    publish();
+  }
+
+  function hintMessage() {
+    if (!SHARED || (presenter && !presenter.closed)) return '';
+    if (isDemo(index)) {
+      if (video.ended) return '다음 장으로';
+      if (!video.paused) return '';
+      return demoSlide.classList.contains('is-started') ? '이어서 재생' : '시연 영상 재생';
+    }
+    if (index === slides.length - 1) return '';
+    return !interacted || idle ? '다음으로' : '';
+  }
+
+  function updateHint() {
+    const message = hintMessage();
+    if (message) hintText.textContent = message;
+    hint.classList.toggle('is-on', Boolean(message));
+  }
+
+  // 한 번 넘겨 보면 안내를 숨기고, 한동안 멈춰 있으면 다시 띄운다.
+  function noteInteraction() {
+    interacted = true;
+    idle = false;
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => { idle = true; updateHint(); }, HINT_IDLE_MS);
+    updateHint();
+  }
+
+  function go(target, at = 'start') {
+    if (target < 0 || target >= slides.length) return;
+    if (target !== index && isDemo(index) && !video.paused) video.pause();
+    index = target;
+    step = at === 'end' ? stepsOf(target) : 0;
+    render();
+  }
+
+  function forward() {
+    // 6장: 영상이 끝나기 전에는 Space가 장을 넘기지 않는다. 열 수 없을 때만 안내 뒤 다음 장.
+    if (isDemo(index) && !video.ended && !videoFailed) {
+      if (videoReady) {
+        toggleVideo();
+        return;
+      }
+      // IMPORTANT: 웹에서 영상을 받는 중에 Space를 눌러도 시연을 건너뛰지 않는다. 준비되면 바로 재생한다.
+      playWhenReady = true;
+      setDemoStatus('영상 준비 중… 준비되면 바로 재생합니다');
+      return;
+    }
+    if (isDemo(index) && videoFailed && !demoSlide.classList.contains('is-failed')) {
+      demoSlide.classList.add('is-failed');
+      setDemoStatus('영상을 열 수 없습니다 · 시연 파일을 플레이어로 재생하세요 (Space: 다음 장)');
+      return;
+    }
+    if (step < stepsOf(index)) {
+      step += 1;
+      render();
+      return;
+    }
+    go(index + 1);
+  }
+
+  function backward() {
+    if (step > 0) {
+      step -= 1;
+      render();
+      return;
+    }
+    go(index - 1, 'end');
+  }
+
+  function setupVideo() {
+    // 첫 화면을 먼저 띄우고 영상은 페이지 로드 뒤에 받아 둔다.
+    window.addEventListener('load', () => { video.preload = 'auto'; video.load(); }, { once: true });
+    const ready = () => {
+      videoReady = true;
+      videoFailed = false;
+      setDemoStatus('');
+      if (playWhenReady && isDemo(index) && video.paused) toggleVideo();
+      playWhenReady = false;
+    };
+    video.addEventListener('loadedmetadata', ready);
+    video.addEventListener('error', () => {
+      videoReady = false;
+      videoFailed = true;
+      playWhenReady = false;
+      if (isDemo(index)) forward();
+    });
+    video.addEventListener('play', () => { player.classList.remove('is-paused'); demoSlide.classList.add('is-started'); });
+    setupProgress();
+    video.addEventListener('pause', () => { if (!video.ended) player.classList.add('is-paused'); });
+    ['play', 'pause', 'ended'].forEach((type) => video.addEventListener(type, updateHint));
+    if (video.readyState >= 1) ready();
+  }
+
+  function setDemoStatus(text) {
+    document.getElementById('demo-status').textContent = text;
+  }
+
+  function setupProgress() {
+    const bar = document.getElementById('demo-bar');
+    const fill = document.getElementById('demo-fill');
+    const time = document.getElementById('demo-time');
+    const clock = (sec) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+    let frame = 0;
+    const paint = () => {
+      const total = video.duration || 0;
+      fill.style.width = total ? `${(video.currentTime / total) * 100}%` : '0';
+      time.textContent = total ? `${clock(video.currentTime)} / ${clock(total)}` : '';
+    };
+    // timeupdate 는 초당 4번 정도라 바가 끊겨 보인다. 재생 중에는 매 프레임 그린다.
+    const loop = () => {
+      paint();
+      if (!video.paused) frame = requestAnimationFrame(loop);
+    };
+    video.addEventListener('play', () => { cancelAnimationFrame(frame); loop(); });
+    ['pause', 'seeked', 'loadedmetadata', 'ended'].forEach((type) => video.addEventListener(type, paint));
+    bar.addEventListener('click', (e) => {
+      // IMPORTANT: 화면 클릭은 다음 장 넘기기라서, 재생 바 클릭은 위로 전달하지 않는다.
+      e.stopPropagation();
+      if (!video.duration) return;
+      const rect = bar.getBoundingClientRect();
+      const ratio = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+      video.currentTime = ratio * video.duration;
+      paint();
+      updateHint();
+    });
+  }
+
+  function toggleVideo() {
+    if (video.paused) {
+      demoSlide.classList.add('is-started');
+      video.play().catch(() => player.classList.add('is-paused'));
+      return;
+    }
+    video.pause();
+  }
+
+  let presenter = null;
+
+  function publish() {
+    if (!presenter || presenter.closed) return;
+    presenter.postMessage({ type: 'state', index, step, steps: stepsOf(index), total: slides.length }, '*');
+  }
+
+  window.addEventListener('message', (e) => {
+    const cmd = e.data;
+    if (!cmd || cmd.type !== 'cmd') return;
+    presenter = e.source;
+    updateHint();
+    const actions = {
+      forward,
+      backward,
+      next: () => go(index + 1),
+      prev: () => go(index - 1, 'end'),
+      sync: publish,
+    };
+    const action = actions[cmd.action];
+    if (action) action();
+  });
+
+  function openPresenter() {
+    presenter = window.open('presenter.html', 'today-meal-presenter-v2', 'width=1280,height=800');
+    if (!presenter) {
+      // 팝업 차단 시 window.open 이 null 을 돌려줘 아무 반응이 없어 보인다.
+      hintText.textContent = '발표자 창이 차단됐습니다. 주소창에서 팝업을 허용한 뒤 P';
+      hint.classList.add('is-on');
+      setTimeout(updateHint, 5000);
+      return;
+    }
+    updateHint();
+    setTimeout(publish, 600);
+  }
+
+  function onKey(e) {
+    const tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey || e.altKey) return;
+
+    // IMPORTANT: 한글 입력 상태에서는 e.key 가 'ㅔ'·'ㄹ' 로 들어온다. 글자 키는 물리 키(e.code)로 본다.
+    const key = { KeyP: 'p', KeyF: 'f' }[e.code] || e.key;
+    const handlers = {
+      ArrowRight: () => go(index + 1),
+      ArrowLeft: () => go(index - 1, 'end'),
+      ' ': () => (e.shiftKey ? backward() : forward()),
+      PageDown: forward,
+      ArrowDown: forward,
+      PageUp: backward,
+      ArrowUp: backward,
+      Home: () => go(0),
+      End: () => go(slides.length - 1, 'end'),
+      f: toggleFullscreen,
+      F: toggleFullscreen,
+      p: openPresenter,
+      P: openPresenter,
+    };
+    if (/^[1-9]$/.test(key) && Number(key) <= slides.length) {
+      e.preventDefault();
+      go(Number(key) - 1);
+      return;
+    }
+    const handler = handlers[key];
+    if (!handler) return;
+    e.preventDefault();
+    handler();
+  }
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+      return;
+    }
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+
+  function beforePrint() {
+    slides.forEach((slide) => {
+      for (let k = 1; k <= stepsOf(slides.indexOf(slide)); k += 1) slide.classList.add(`s${k}`);
+    });
+  }
+
+  function readHash() {
+    const [slidePart, stepPart] = (location.hash || '').replace('#', '').split('.');
+    const fromHash = Number(slidePart);
+    if (!(fromHash >= 1 && fromHash <= slides.length)) return false;
+    const nextStep = Math.min(Math.max(Number(stepPart) || 0, 0), stepsOf(fromHash - 1));
+    if (fromHash - 1 === index && nextStep === step) return false;
+    index = fromHash - 1;
+    step = nextStep;
+    return true;
+  }
+
+  function start() {
+    mountTemplates();
+    setupVideo();
+    // IMPORTANT: 공유 링크·새로고침은 항상 1장부터. 주소에 남은 장 번호는 지운다.
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (_) { /* file:// 일부 환경 */ }
+    fit();
+    render();
+    window.addEventListener('hashchange', () => { if (readHash()) render(); });
+    window.addEventListener('resize', fit);
+    document.addEventListener('keydown', onKey);
+    if (window.matchMedia('(hover: none)').matches) {
+      hint.classList.add('is-touch');
+      document.getElementById('hint-tap').textContent = '탭';
+    }
+    document.addEventListener('keydown', noteInteraction, true);
+    document.addEventListener('pointerdown', noteInteraction, true);
+    // 무대 밖 여백을 눌러도 넘어가도록 화면 전체에서 받는다.
+    document.querySelector('.viewport').addEventListener('click', forward);
+    window.addEventListener('beforeprint', beforePrint);
+    window.addEventListener('afterprint', render);
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>
