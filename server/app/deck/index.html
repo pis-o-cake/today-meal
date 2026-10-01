@@ -824,6 +824,13 @@ body {
 
   function openPresenter() {
     presenter = window.open('presenter.html', 'today-meal-presenter', 'width=1280,height=800');
+    if (!presenter) {
+      // 팝업 차단 시 window.open 이 null 을 돌려줘 아무 반응이 없어 보인다.
+      hintText.textContent = '발표자 창이 차단됐습니다. 주소창에서 팝업을 허용한 뒤 P';
+      hint.classList.add('is-on');
+      setTimeout(updateHint, 5000);
+      return;
+    }
     updateHint();
     setTimeout(publish, 600);
   }
@@ -832,7 +839,8 @@ body {
     const tag = (e.target && e.target.tagName) || '';
     if (tag === 'INPUT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey || e.altKey) return;
 
-    const key = e.key;
+    // IMPORTANT: 한글 입력 상태에서는 e.key 가 'ㅔ'·'ㄹ' 로 들어온다. 글자 키는 물리 키(e.code)로 본다.
+    const key = { KeyP: 'p', KeyF: 'f' }[e.code] || e.key;
     const handlers = {
       ArrowRight: () => go(index + 1),
       ArrowLeft: () => go(index - 1, 'end'),
