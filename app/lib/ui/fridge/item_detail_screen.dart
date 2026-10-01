@@ -1,4 +1,4 @@
-/// 재료 상세 (UI-11).
+/// 재료 상세 (UI-08).
 ///
 /// 목업 `mockup/canvas/FridgeItem.dc.html` 을 옮긴 것이다. 냉장고 타일을 누르면 열린다.
 ///
@@ -7,6 +7,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/design/band.dart';
@@ -329,7 +330,6 @@ class _Fields extends StatelessWidget {
               // 여기 두지 않는다 — 날짜를 비우면 그대로 모르는 것이 된다.
               value: _Segmented<DateKind>(
                 options: const [
-                  DateKind.useBy,
                   DateKind.sellBy,
                   DateKind.checkReminder,
                 ],
@@ -369,29 +369,11 @@ class _Fields extends StatelessWidget {
   static String _two(int value) => value.toString().padLeft(2, '0');
 
   Future<void> _editName(BuildContext context, ItemDetailViewModel item) async {
-    final controller = TextEditingController(text: item.name);
     final next = await showDialog<String>(
       context: context,
-      builder: (dialog) => AlertDialog(
-        title: const Text(Strings.itemEditName),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          onSubmitted: (value) => Navigator.of(dialog).pop(value),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialog).pop(),
-            child: const Text(Strings.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialog).pop(controller.text),
-            child: const Text(Strings.confirm),
-          ),
-        ],
-      ),
+      builder: (_) =>
+          _InputDialog(title: Strings.itemEditName, initial: item.name),
     );
-    controller.dispose();
     if (next != null) item.rename(next);
   }
 
@@ -485,11 +467,87 @@ class _IconAction extends StatelessWidget {
       );
 }
 
-/// 수량 더하기·빼기.
+/// 한 줄을 적는 대화상자. 확인하면 적은 글을, 취소하면 `null` 을 돌려준다.
+///
+/// WARNING: 입력기를 대화상자가 닫힌 직후에 버리면 안 된다. 닫히는 동안에도 입력 칸이
+/// 그려지므로 버려진 입력기를 읽다가 터진다. 입력기의 수명을 이 위젯에 묶는다.
+class _InputDialog extends StatefulWidget {
+  const _InputDialog({
+    required this.title,
+    required this.initial,
+    this.keyboardType,
+    this.formatters = const [],
+    this.suffix,
+  });
+
+  final String title;
+  final String initial;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter> formatters;
+
+  /// 입력 칸 뒤에 붙는 말. 수량의 단위다.
+  final String? suffix;
+
+  @override
+  State<_InputDialog> createState() => _InputDialogState();
+}
+
+class _InputDialogState extends State<_InputDialog> {
+  late final TextEditingController _input =
+      TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _input.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: Text(widget.title),
+        content: TextField(
+          controller: _input,
+          autofocus: true,
+          keyboardType: widget.keyboardType,
+          inputFormatters: widget.formatters,
+          decoration: InputDecoration(suffixText: widget.suffix),
+          onSubmitted: (value) => Navigator.of(context).pop(value),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(Strings.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(_input.text),
+            child: const Text(Strings.confirm),
+          ),
+        ],
+      );
+}
+
+/// 수량 더하기·빼기와 직접 입력.
 class _Stepper extends StatelessWidget {
   const _Stepper({required this.item});
 
   final ItemDetailViewModel item;
+
+  Future<void> _editQuantity(BuildContext context) async {
+    final next = await showDialog<String>(
+      context: context,
+      builder: (_) => _InputDialog(
+        title: Strings.itemEditQuantity,
+        initial: item.quantity ?? '',
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        // 숫자와 소수점 하나만 받는다. 음수와 글자는 잔량이 될 수 없다.
+        formatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d{0,6}(\.\d{0,3})?')),
+        ],
+        suffix: Labels.unit(item.batch.unit),
+      ),
+    );
+    if (next != null) item.setQuantity(next);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -508,17 +566,32 @@ class _Stepper extends StatelessWidget {
             label: Strings.itemMinus,
             onPressed: item.decrement,
           ),
-          ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 56, maxWidth: 88),
-            child: Text(
-              // 잔량을 모르면 숫자를 지어내지 않고 모른다고 적는다.
-              item.quantity == null
-                  ? Strings.quantityUnknownShort
-                  : '${item.quantity}${Labels.unit(item.batch.unit)}',
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleSmall,
+          // 숫자를 누르면 직접 적는다. 그램은 하나씩 올려서는 맞출 수 없다.
+          Semantics(
+            button: true,
+            label: Strings.itemEditQuantity,
+            child: InkWell(
+              onTap: () => _editQuantity(context),
+              borderRadius: BorderRadius.circular(18),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                    minWidth: 56, maxWidth: 88, minHeight: 36),
+                child: Center(
+                  widthFactor: 1,
+                  child: Text(
+                    // 잔량을 모르면 숫자를 지어내지 않고 모른다고 적는다.
+                    item.quantity == null
+                        ? Strings.quantityUnknownShort
+                        : '${item.quantity}${Labels.unit(item.batch.unit)}',
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        decoration: TextDecoration.underline,
+                        decorationColor: skin.inkDim),
+                  ),
+                ),
+              ),
             ),
           ),
           _Round(

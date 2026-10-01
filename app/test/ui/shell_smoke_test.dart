@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:today_meal/core/design/motion.dart';
 import 'package:today_meal/core/design/skin.dart';
+import 'package:today_meal/core/l10n/strings.dart';
 import 'package:today_meal/core/design/tokens.dart';
 import 'package:today_meal/domain/model/change_record.dart';
 import 'package:today_meal/domain/model/inventory.dart';
@@ -57,15 +59,15 @@ void main() {
 
     // 고르지 않으면 가장 급한 등급이 잡힌다.
     expect(home.selected, Freshness.urgent);
-    expect(find.text('기한이 코앞이에요!'), findsOneWidget);
-    expect(find.text('하루이틀 안에 쓰면 좋아요'), findsNothing,
+    expect(find.text(Strings.bandUrgent), findsOneWidget);
+    expect(find.text(Strings.bandUrgentHint), findsNothing,
         reason: '등급 힌트는 개수와 한 줄로 합쳐 나온다');
-    expect(find.textContaining('하루이틀 안에 쓰면 좋아요'), findsOneWidget);
+    expect(find.textContaining(Strings.bandUrgentHint), findsOneWidget);
 
     // 고른 등급의 재료만 칩으로 나온다. 다른 등급은 아치의 배지로만 센다.
     // 단위는 한국어 표기로 나와야 하고('mo' 가 보이면 안 된다), 기한에는 종류가 붙는다 —
     // 소비기한과 점검 알림은 같은 D-1 이어도 뜻이 다르다.
-    expect(find.text('두부 2모 · 소비기한 D-1'), findsOneWidget);
+    expect(find.text('두부 2모 · 유통기한 D-1'), findsOneWidget);
     expect(find.textContaining('대파'), findsNothing);
 
     // 주 행동은 그 등급으로 만들 메뉴다.
@@ -96,9 +98,9 @@ void main() {
     home.select(Freshness.soon);
     await _settle(tester);
 
-    expect(find.text('기한이 며칠 안 남았어요'), findsOneWidget);
+    expect(find.text(Strings.bandSoon), findsOneWidget);
     expect(find.text('대파 1단 · 품질유지 D-2'), findsOneWidget);
-    expect(find.text('두부 2모 · 소비기한 D-1'), findsNothing);
+    expect(find.text('두부 2모 · 유통기한 D-1'), findsNothing);
   });
 
   testWidgets('재고를 읽지 못하면 빈 냉장고로 그리지 않는다', (tester) async {
@@ -124,8 +126,54 @@ void main() {
     await _settle(tester);
 
     expect(find.text('서버에 연결할 수 없어요'), findsOneWidget);
-    expect(find.text('기한 넉넉해요~'), findsNothing);
+    expect(find.text(Strings.bandFresh), findsNothing);
     expect(find.text('다시 시도'), findsOneWidget);
+  });
+
+  testWidgets('주 행동이 돌고 나서 글자가 제자리로 튀지 않는다', (tester) async {
+    // 알약을 뒤집힌 채로 끝내면 안쪽 여백이 좌우 비대칭이라 글자가 어긋난 자리에서
+    // 돌다가 회전이 끝나며 튄다 — 실기기에서 겪은 결함이다.
+    final home = HomeViewModel(inventory: _FakeInventory(), menu: _TwoMenus());
+    await home.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildTheme(Skins.pastel),
+        home: ChangeNotifierProvider.value(
+          value: home,
+          child: Scaffold(
+            body: HomeScreen(
+              onOpenFridge: () {},
+              onOpenMenu: (_) {},
+              showVoiceBar: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    await _settle(tester);
+    expect(find.text('두부조림'), findsOneWidget);
+
+    // 회전을 시작시키고 끝나기 직전까지 흘린다.
+    await tester.pump(Motion.menuTurn);
+    await tester.pump();
+    await tester.pump(Motion.menuFlip - const Duration(milliseconds: 8));
+
+    final next = find.text('두부김치찌개');
+    expect(next, findsOneWidget, reason: '반 바퀴를 넘기면 다음 메뉴다');
+    final turning = tester.getRect(next);
+
+    await tester.pump(const Duration(milliseconds: 100));
+    final resting = tester.getRect(next);
+    expect(turning.left, moreOrLessEquals(resting.left, epsilon: 0.5));
+    expect(turning.right, moreOrLessEquals(resting.right, epsilon: 0.5));
+
+    // 한 번 돌 때 한 칸만 넘긴다. 둘뿐이면 다음 회전에서 처음으로 돌아온다.
+    await tester.pump(Motion.menuTurn);
+    await tester.pump();
+    await tester.pump(Motion.menuFlip + const Duration(milliseconds: 100));
+    expect(find.text('두부조림'), findsOneWidget);
+    expect(next, findsNothing);
   });
 
   test('재료가 없는 등급에는 메뉴를 권하지 않는다', () async {
@@ -253,7 +301,15 @@ class _FakeInventory implements InventoryRepository {
       throw UnimplementedError();
 
   @override
-  Future<void> discardBatch(int batchId) async => throw UnimplementedError();
+  Future<void> discardBatch(int batchId, {String? commandId}) async => throw UnimplementedError();
+
+  @override
+  Future<IngredientBatch> addBatch(BatchDraft draft) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<int> discardAll({String? commandId}) async =>
+      throw UnimplementedError();
 }
 
 /// 서버가 끊긴 상황.
@@ -276,7 +332,15 @@ class _BrokenInventory implements InventoryRepository {
       throw UnimplementedError();
 
   @override
-  Future<void> discardBatch(int batchId) async => throw UnimplementedError();
+  Future<void> discardBatch(int batchId, {String? commandId}) async => throw UnimplementedError();
+
+  @override
+  Future<IngredientBatch> addBatch(BatchDraft draft) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<int> discardAll({String? commandId}) async =>
+      throw UnimplementedError();
 }
 
 class _FakeMenu implements MenuRepository {
@@ -284,6 +348,7 @@ class _FakeMenu implements MenuRepository {
   Future<List<MenuSuggestion>> createSuggestions({
     int? servings,
     int? maxMinutes,
+    List<String> focus = const [],
   }) async =>
       const [
         MenuSuggestion(
@@ -304,8 +369,42 @@ class _FakeMenu implements MenuRepository {
       const MenuDetail(recipeId: 10, name: '두부조림', servings: 2, baseServings: 2);
 
   @override
-  Future<CookedResult> markCooked(int suggestionId) async =>
+  Future<CookedResult> markCooked(int suggestionId, {int? servings}) async =>
       CookedResult(suggestionId: suggestionId, alreadyApplied: false);
+}
+
+/// 한 등급에 메뉴가 둘인 상황. 주 행동이 돌아가며 보여준다.
+class _TwoMenus extends _FakeMenu {
+  @override
+  Future<List<MenuSuggestion>> createSuggestions({
+    int? servings,
+    int? maxMinutes,
+    List<String> focus = const [],
+  }) async =>
+      const [
+        MenuSuggestion(
+          suggestionId: 1,
+          recipeId: 10,
+          name: '두부조림',
+          servings: 2,
+          estimatedMinutes: 20,
+          reason: '두부가 내일까지예요.',
+          availability: MenuAvailability.needsPurchase,
+          priorityIngredients: ['두부'],
+          missingIngredients: ['고춧가루'],
+        ),
+        MenuSuggestion(
+          suggestionId: 2,
+          recipeId: 11,
+          name: '두부김치찌개',
+          servings: 2,
+          estimatedMinutes: 25,
+          reason: '두부가 내일까지예요.',
+          availability: MenuAvailability.needsPurchase,
+          priorityIngredients: ['두부'],
+          missingIngredients: ['돼지고기'],
+        ),
+      ];
 }
 
 class _FailingMenu implements MenuRepository {
@@ -313,6 +412,7 @@ class _FailingMenu implements MenuRepository {
   Future<List<MenuSuggestion>> createSuggestions({
     int? servings,
     int? maxMinutes,
+    List<String> focus = const [],
   }) async =>
       throw StateError('upstream 502');
 
@@ -321,7 +421,7 @@ class _FailingMenu implements MenuRepository {
       throw StateError('upstream 502');
 
   @override
-  Future<CookedResult> markCooked(int suggestionId) async =>
+  Future<CookedResult> markCooked(int suggestionId, {int? servings}) async =>
       throw StateError('upstream 502');
 }
 
@@ -330,6 +430,7 @@ class _FakeCommand implements CommandRepository {
   Future<CommandOutcome> interpret({
     required String commandId,
     required String utterance,
+    String? follows,
   }) async =>
       const CommandOutcome(commandId: 'x', status: 'applied', intent: 'register');
 

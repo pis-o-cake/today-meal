@@ -101,7 +101,7 @@ String labelFor(VoiceState state) => switch (state) {
       Listening() => Strings.voiceListening,
       Processing() => Strings.voiceProcessing,
       Clarifying() => Strings.voiceClarifying,
-      Speaking() => Strings.voiceSpeaking,
+      Speaking() || Answering() => Strings.voiceSpeaking,
       Muted() => Strings.voiceMuted,
       Suspended() => Strings.voiceSuspended,
       Unavailable() => Strings.voiceUnavailable,
@@ -115,7 +115,7 @@ Color dotColor(VoiceState state, BandPalette palette, Skin skin) =>
     switch (state) {
       Waiting() => palette.accentBright,
       Listening() || Processing() => skin.listening.accentBright,
-      Clarifying() || Speaking() => skin.asking.accentBright,
+      Clarifying() || Speaking() || Answering() => skin.asking.accentBright,
       Muted() || Suspended() => skin.inkDim,
       Unavailable() => skin.band(Freshness.urgent).accent,
     };

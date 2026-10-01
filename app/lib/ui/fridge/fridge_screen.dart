@@ -1,4 +1,4 @@
-/// 냉장고 화면 (UI-06).
+/// 냉장고 화면 (UI-07).
 ///
 /// 목업 `mockup/canvas/Fridge.dc.html` 을 옮긴 것이다. 2열 타일로 재료를 늘어놓고,
 /// 타일 하나가 **상태 · 이름 · 잔량 · 남은 기한**을 한눈에 보여준다.
@@ -17,13 +17,17 @@ import '../../core/design/labels.dart';
 import '../../core/design/skin.dart';
 import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
+import '../../core/settings/app_settings.dart';
 import '../../domain/model/inventory.dart';
 import '../../domain/repository/repositories.dart';
+import '../home/home_view_model.dart';
 import '../widgets/glass.dart';
 import '../widgets/line_face.dart';
 import '../widgets/mascot.dart';
 import '../widgets/screen_scaffold.dart';
 import 'fridge_view_model.dart';
+import 'item_add_screen.dart';
+import 'item_add_view_model.dart';
 import 'item_detail_screen.dart';
 import 'item_detail_view_model.dart';
 
@@ -74,6 +78,27 @@ class _FridgeScreenState extends State<FridgeScreen> {
     );
   }
 
+  /// 재료 넣기를 연다. 목업 밖의 길이라 머리말 버튼 하나로만 둔다.
+  ///
+  /// 넣으면 오늘 화면도 다시 읽는다 — 새 재료가 추천과 기한 밴드에 바로 보여야 한다.
+  void _openAdd() {
+    final fridge = context.read<FridgeViewModel>();
+    final home = context.read<HomeViewModel>();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) => ItemAddViewModel(inventory: di<InventoryRepository>()),
+          child: ItemAddScreen(
+            onAdded: () {
+              fridge.load();
+              home.load();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final fridge = context.watch<FridgeViewModel>();
@@ -86,6 +111,7 @@ class _FridgeScreenState extends State<FridgeScreen> {
         onOpenSearch: _openSearch,
         onCloseSearch: _closeSearch,
         onQuery: fridge.search,
+        onAdd: _openAdd,
       ),
       child: switch ((fridge.loading, fridge.error)) {
         (true, _) when fridge.totalCount == 0 => const Center(
@@ -114,6 +140,7 @@ class _Header extends StatelessWidget {
     required this.onOpenSearch,
     required this.onCloseSearch,
     required this.onQuery,
+    required this.onAdd,
   });
 
   final FridgeViewModel fridge;
@@ -123,6 +150,9 @@ class _Header extends StatelessWidget {
   final VoidCallback onOpenSearch;
   final VoidCallback onCloseSearch;
   final ValueChanged<String> onQuery;
+
+  /// 재료 넣기로 보낸다.
+  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
@@ -173,6 +203,12 @@ class _Header extends StatelessWidget {
                 icon: Icons.search_rounded,
                 label: Strings.fridgeSearch,
                 onPressed: onOpenSearch,
+              ),
+              const SizedBox(width: 6),
+              HeaderButton(
+                icon: Icons.add_rounded,
+                label: Strings.fridgeAdd,
+                onPressed: onAdd,
               ),
             ],
           ),
@@ -464,6 +500,9 @@ class _Tile extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final palette = skin.band(batch.freshness);
     final expired = batch.freshness == Freshness.expired;
+    // 기한 알림을 끄면 남은 날을 **강조하지 않는다.** 날짜와 상태는 그대로 보여준다 —
+    // 끈 것은 눈에 띄게 할지이지 사실을 감출지가 아니다.
+    final alert = context.select<AppSettings, bool>((s) => s.expiryAlert);
 
     return Semantics(
       button: true,
@@ -530,8 +569,10 @@ class _Tile extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: text.labelSmall?.copyWith(
-                  color: expired ? skin.band(Freshness.urgent).accent : palette.accent,
-                  fontWeight: FontWeight.w600,
+                  color: expired
+                      ? skin.band(Freshness.urgent).accent
+                      : (alert ? palette.accent : skin.inkFaint),
+                  fontWeight: alert || expired ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
             ],

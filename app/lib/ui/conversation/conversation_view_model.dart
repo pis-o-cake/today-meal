@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
@@ -15,13 +17,16 @@ class ConversationViewModel extends ChangeNotifier {
     required VoiceSessionManager voice,
     required CommandRepository command,
     required String retryMessage,
-  })  : _voice = voice,
-        _command = command,
-        _retryMessage = retryMessage {
+  }) : _voice = voice,
+       _command = command,
+       _retryMessage = retryMessage {
     _subscribe();
   }
 
   static const _uuid = Uuid();
+
+  /// 메뉴를 묻는 의도. 서버의 `CommandIntent.RECOMMEND` 다.
+  static const _recommend = 'recommend';
 
   final VoiceSessionManager _voice;
   final CommandRepository _command;
@@ -32,6 +37,38 @@ class ConversationViewModel extends ChangeNotifier {
   CommandOutcome? _lastOutcome;
   String? _lastUtterance;
   bool _undoing = false;
+
+  final _menuRequests = StreamController<List<String>>.broadcast();
+
+  /// 물으며 지목한 재료. 메뉴를 묻지 않았으면 `null` 이다.
+  List<String>? _menuAsked;
+
+  /// 이번 대화에서 되물은 명령. 다음 답을 이 명령에 잇게 한다.
+  ///
+  /// IMPORTANT: 대화가 닫히면 버린다. 남기면 호출어로 새로 시작한 말에 지난 오인식이
+  /// 붙어 해석이 계속 틀린다.
+  String? _askedCommandId;
+
+  final _stockChanges = StreamController<List<String>>.broadcast();
+
+  /// 이번 대화에서 바뀐 재료. 대화가 끝날 때 한 번에 알린다.
+  final _changedNames = <String>[];
+  bool _stockChanged = false;
+
+  /// 말로 재고가 바뀌었다. 값은 바뀐 재료 이름이다. 셸이 홈·냉장고를 다시 읽고 홈은
+  /// 그 재료가 있는 칸을 보여준다.
+  ///
+  /// **대화가 끝난 뒤에** 알린다. 다시 읽으면 홈이 추천(모델 호출)을 부르는데, 서버가
+  /// 모델 호출 사이에 간격을 요구해 해석 직후에 부르면 거절된다.
+  Stream<List<String>> get stockChanges => _stockChanges.stream;
+
+  /// 말로 메뉴를 물었다. 셸이 조리 탭을 열고 추천을 새로 받는다.
+  ///
+  /// 값은 **지목한 재료**다("삼겹살로 뭐 해 먹지"의 삼겹살). 지목하지 않았으면 비어 있다.
+  ///
+  /// **대화가 끝난 뒤에** 알린다. 답을 읽는 동안 화면을 바꾸면 무엇이 일어났는지 놓치고,
+  /// 서버가 모델 호출 사이에 간격을 요구해 곧바로 추천을 부르면 거절된다.
+  Stream<List<String>> get menuRequests => _menuRequests.stream;
 
   VoiceState get state => _state;
 
@@ -62,8 +99,27 @@ class ConversationViewModel extends ChangeNotifier {
         _level = next.level;
       }
       if (next is Processing) _lastUtterance = next.utterance;
+      // 대화가 닫히면 되물은 질문도 끝난다. 다음 호출은 새 대화다.
+      if (next is Waiting) _askedCommandId = null;
+      if (next is Waiting && _stockChanged) {
+        _stockChanged = false;
+        _stockChanges.add(List.unmodifiable(_changedNames));
+        _changedNames.clear();
+      }
+      final asked = _menuAsked;
+      if (next is Waiting && asked != null) {
+        _menuAsked = null;
+        _menuRequests.add(asked);
+      }
       notifyListeners();
     });
+  }
+
+  @override
+  void dispose() {
+    unawaited(_menuRequests.close());
+    unawaited(_stockChanges.close());
+    super.dispose();
   }
 
   /// 마이크 버튼. 웨이크워드가 전경 한정이라 보조 경로를 상시 유지한다.
@@ -81,19 +137,35 @@ class ConversationViewModel extends ChangeNotifier {
   /// 막을 수 없다.
   Future<VoiceTurnResult> _handle(String utterance) async {
     final commandId = _uuid.v4();
+    final follows = _askedCommandId;
+    _askedCommandId = null;
     // 새 명령이 시작되면 앞 결과를 버린다. 남겨 두면 지난 변경이 이번 결과로 읽힌다.
     _lastOutcome = null;
     try {
       final outcome = await _command.interpret(
         commandId: commandId,
         utterance: utterance,
+        follows: follows,
       );
       _lastOutcome = outcome;
+      if (outcome.clarificationQuestion != null) {
+        _askedCommandId = outcome.commandId;
+      }
+      _menuAsked = outcome.intent == _recommend ? outcome.focus : null;
       notifyListeners();
 
       final question = outcome.clarificationQuestion;
       if (question != null) return TurnNeedsClarification(question);
-      return TurnAnswered(outcome.spoken ?? '');
+
+      // 반영 결과는 서버가 바꾼 것이 있을 때만 보여준다. 조회·거절·실패도 읽어줄 말은
+      // 있지만 바뀐 재고가 없다.
+      final spoken = outcome.spoken ?? '';
+      final applied = outcome.isApplied && outcome.changes.isNotEmpty;
+      if (applied) {
+        _stockChanged = true;
+        _changedNames.addAll(outcome.changes.map((c) => c.name));
+      }
+      return applied ? TurnApplied(spoken) : TurnAnswered(spoken);
     } catch (error) {
       // 실패를 완료처럼 알리지 않는다.
       return TurnFailed(spoken: _retryMessage, logDetail: '$error');
@@ -111,6 +183,12 @@ class ConversationViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       _lastOutcome = await _command.undo(token);
+      // 결과 화면의 되돌리기는 대화가 끝난 뒤에도 누를 수 있다. 그때는 바로 알린다.
+      if (_state is Waiting) {
+        _stockChanges.add(const []);
+      } else {
+        _stockChanged = true;
+      }
     } catch (error) {
       debugPrint('undo failed: $error');
     } finally {

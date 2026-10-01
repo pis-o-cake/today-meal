@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../domain/model/inventory.dart';
 import '../../domain/repository/repositories.dart';
@@ -18,8 +19,20 @@ class FridgeViewModel extends ChangeNotifier {
   String _query = '';
   StorageLocation? _storage;
   Freshness? _grade;
+  bool _emptying = false;
+
+  /// 보내는 중인 비우기의 요청 ID.
+  ///
+  /// IMPORTANT: 실패해도 버리지 않는다. 재시도가 새 ID 로 가면 그 사이 넣은 재료까지
+  /// 버려진다.
+  String? _emptyRequestId;
+
+  static const _uuid = Uuid();
 
   bool get loading => _loading;
+
+  /// 냉장고를 비우는 중인지. 버튼을 두 번 누르지 못하게 막는다.
+  bool get emptying => _emptying;
   Object? get error => _error;
   String get query => _query;
   StorageLocation? get storage => _storage;
@@ -92,6 +105,28 @@ class FridgeViewModel extends ChangeNotifier {
       _error = error;
     } finally {
       _loading = false;
+      notifyListeners();
+    }
+  }
+
+  /// 냉장고를 비운다. 성공하면 목록을 다시 읽는다.
+  ///
+  /// Returns: 버린 묶음 수. 실패하면 `null` — 화면은 비운 것처럼 그리지 않는다.
+  Future<int?> discardAll() async {
+    if (_emptying) return null;
+    _emptying = true;
+    notifyListeners();
+    try {
+      final id = _emptyRequestId ??= _uuid.v4();
+      final count = await _inventory.discardAll(commandId: id);
+      _emptyRequestId = null;
+      await load();
+      return count;
+    } catch (error) {
+      debugPrint('discard all failed: $error');
+      return null;
+    } finally {
+      _emptying = false;
       notifyListeners();
     }
   }

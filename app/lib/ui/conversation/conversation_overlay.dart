@@ -3,12 +3,23 @@
 /// 목업 `Listening`·`Clarify`·`Result` 세 화면이다. **머리말의 단계 막대와 닫기 버튼은
 /// 공통**이고 본문만 단계마다 다르다. 셋의 골격이 같아야 어디까지 진행됐는지 읽힌다.
 ///
+/// **글래스 테마는 한 화면에서 끝낸다.** 단계 막대가 없고, 반영 결과도 듣던 화면에서
+/// 알린다. 사용자는 말하기만 하므로 화면이 바뀌며 단계를 세어줄 이유가 없다. 다른 테마는
+/// 목업의 세 화면을 그대로 쓴다.
+///
 /// 호출어는 어느 탭에서나 받으므로 탭이 아니라 화면 전체를 덮는 층으로 둔다.
 ///
 /// ```
 /// 듣기(Listening) → 확인(Processing·Clarifying) → 반영(Speaking) → 대기
 ///                                   ↓
 ///                    후속 응답 창(Listening.followUpTo)
+/// ```
+///
+/// **반영 화면은 재고가 바뀌었을 때만 뜬다.** 조회의 답이나 거절·실패 안내([Answering])는
+/// 듣기 화면에 머문 채 읽어주고 닫는다. 말이 없었으면 아무것도 읽지 않고 닫는다.
+///
+/// ```
+/// 듣기(Listening) → 확인(Processing) → 답(Answering) → 대기
 /// ```
 library;
 
@@ -65,7 +76,8 @@ class _Frame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final skin = context.skin;
-    final stage = _Stage.of(state, skin);
+    final single = skin.frosted;
+    final stage = _Stage.of(state, skin, single: single);
 
     return AnimatedContainer(
       duration: context.reduceMotion ? Duration.zero : Motion.skinFade,
@@ -81,27 +93,29 @@ class _Frame extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
-                    child: StepBar(
-                      steps: ConversationOverlay.steps,
-                      current: stage.step,
-                      accent: stage.palette.accent,
-                      accentBright: stage.palette.accentBright,
-                      doneAtLast: stage.finished,
-                    ),
+                    child: single
+                        ? const SizedBox.shrink()
+                        : StepBar(
+                            steps: ConversationOverlay.steps,
+                            current: stage.step,
+                            accent: stage.palette.accent,
+                            accentBright: stage.palette.accentBright,
+                            doneAtLast: stage.finished,
+                          ),
                   ),
                   const SizedBox(width: 14),
                   CloseCircle(onPressed: vm.cancel, label: Strings.close),
                 ],
               ),
             ),
-            Expanded(child: _body(stage)),
+            Expanded(child: _body(stage, single: single)),
           ],
         ),
       ),
     );
   }
 
-  Widget _body(_Stage stage) => switch (state) {
+  Widget _body(_Stage stage, {required bool single}) => switch (state) {
         // 후속 응답 창은 확인 화면을 유지한다. 질문이 사라지면 무엇에 답하는지 모른다.
         Listening(:final followUpTo?, :final partialText) => ClarifyView(
             question: followUpTo,
@@ -134,6 +148,27 @@ class _Frame extends StatelessWidget {
             onUndo: vm.canUndo ? vm.undo : null,
             onCancel: vm.cancel,
           ),
+        Answering(:final text) => ListeningView(
+            partial: vm.lastUtterance,
+            palette: stage.palette,
+            level: 0,
+            processing: true,
+            answer: text,
+            onCancel: vm.cancel,
+          ),
+        Speaking(:final text) when single => ListeningView(
+            partial: vm.lastUtterance,
+            palette: stage.palette,
+            level: 0,
+            processing: true,
+            answer: text,
+            applied: AppliedResult(
+              changes: vm.appliedChanges,
+              onUndo: vm.canUndo ? vm.undo : null,
+              onConfirm: vm.cancel,
+            ),
+            onCancel: vm.cancel,
+          ),
         Speaking(:final text) => ResultView(
             spoken: text,
             changes: vm.appliedChanges,
@@ -162,13 +197,19 @@ class _Stage {
   /// 마지막 단계가 끝난 상태인지. 막대의 빛을 멈춘다.
   final bool finished;
 
-  static _Stage of(VoiceState state, Skin skin) => switch (state) {
+  static _Stage of(VoiceState state, Skin skin, {required bool single}) =>
+      switch (state) {
         // 후속 응답은 확인 단계다. 듣고 있어도 듣기 단계로 되돌리지 않는다.
         Listening(followUpTo: final String _) =>
           _Stage(step: 1, palette: skin.asking),
         Listening() => _Stage(step: 0, palette: skin.listening),
         Processing() => _Stage(step: 1, palette: skin.listening),
         Clarifying() => _Stage(step: 1, palette: skin.asking),
+        // 반영한 것이 없으므로 마지막 단계로 넘기지 않는다.
+        Answering() => _Stage(step: 1, palette: skin.listening),
+        // 한 화면에서는 배색을 바꾸지 않는다. 같은 자리에서 끝난 것으로 읽혀야 한다.
+        Speaking() when single =>
+          _Stage(step: 2, palette: skin.listening, finished: true),
         Speaking() => _Stage(step: 2, palette: skin.done, finished: true),
         Unavailable() => _Stage(step: 0, palette: skin.neutral),
         _ => _Stage(step: 0, palette: skin.neutral),

@@ -1,4 +1,4 @@
-/// 오늘 화면 (UI-02).
+/// 오늘 화면 (UI-05).
 ///
 /// 목업 `mockup/canvas/Main.dc.html` 을 옮긴 것이다. 위에서 아래로 인사(오른쪽 위에
 /// 날짜 칩) → 호출 상태 칩 → 캐릭터와 등급 → 주 행동 → 타원 유리면(얼굴 다섯 + 탭
@@ -348,7 +348,9 @@ class _Focus extends StatelessWidget {
   final Skin skin;
 
   /// 칩으로 보여줄 재료 수. 넘치면 접는다 — 여기서 목록을 다 읽게 하지 않는다.
-  static const _chipLimit = 3;
+  ///
+  /// 셋을 두면 작은 화면에서 줄이 늘어 아래가 잘린다. 실기기에서 겪었다.
+  static const _chipLimit = 2;
 
   /// 등급 이름이 한 줄에 들어가는 글자 크기의 경계. 목업의 값이다.
   static const _longName = 9;
@@ -397,7 +399,8 @@ class _Focus extends StatelessWidget {
                     children: [
                       for (final batch in shown)
                         FloatingChip(label: _describe(batch)),
-                      if (hidden > 0) FloatingChip(label: '+$hidden'),
+                      if (hidden > 0)
+                        FloatingChip(label: Strings.otherIngredients(hidden)),
                     ],
                   ),
                 ),
@@ -468,6 +471,8 @@ class _ActionState extends State<_Action>
   int _at = 0;
 
   /// 한 번의 회전. 0 → 1 이 반 바퀴이며, 0.5 를 지날 때 다음 메뉴로 바뀐다.
+  ///
+  /// 각도는 [_angle] 이 정한다 — 진행도를 그대로 각도로 쓰지 않는다.
   late final AnimationController _spin = AnimationController(
     vsync: this,
     duration: Motion.menuFlip,
@@ -483,8 +488,8 @@ class _ActionState extends State<_Action>
   Timer? _turn;
   bool _armed = false;
 
-  /// 회전이 반을 넘겼는지. 넘긴 뒤부터 다음 메뉴를 그린다.
-  bool _flipped = false;
+  /// 이번 회전에서 메뉴를 이미 넘겼는지. 한 회전에 한 번만 넘긴다.
+  bool _swapped = false;
 
   @override
   void didChangeDependencies() {
@@ -503,23 +508,32 @@ class _ActionState extends State<_Action>
     if (old.grade != widget.grade || old.menus.length != widget.menus.length) {
       _at = 0;
       _spin.reset();
-      _flipped = false;
+      _swapped = false;
       _rearm();
     }
   }
 
-  /// 반 바퀴를 돌아 뒷면이 보이는 순간에 내용을 바꾼다.
+  /// 알약이 모로 서서 면이 보이지 않는 순간에 내용을 바꾼다.
   ///
-  /// 그래야 글자가 바뀌는 장면이 보이지 않는다 — 앞면에서 바꾸면 결국 글자만 바뀌는
-  /// 것으로 보인다.
+  /// 그래야 글자가 바뀌는 장면이 보이지 않는다 — 면이 보일 때 바꾸면 결국 글자만 바뀌는
+  /// 것으로 보인다. 알약의 너비가 달라지는 것도 이 순간에 묻힌다.
   void _halfway() {
-    final past = _turned.value >= 0.5;
-    if (past == _flipped) return;
+    if (_swapped || _turned.value < 0.5) return;
     setState(() {
-      _flipped = past;
-      if (past) _at = (_at + 1) % widget.menus.length;
+      _swapped = true;
+      _at = (_at + 1) % widget.menus.length;
     });
   }
+
+  /// 회전 진행도(0 → 1)에 따른 알약의 각도.
+  ///
+  /// 앞 절반은 0 → 90° 로 돌아 나가고 뒤 절반은 -90° → 0 으로 돌아 들어온다. 눈에는 한
+  /// 방향으로 반 바퀴 도는 것으로 보이지만 뒷면을 그리지 않는다.
+  ///
+  /// IMPORTANT: 180° 까지 돌리면 알약이 좌우로 뒤집힌 채 끝난다. 안쪽 여백이 좌우
+  /// 비대칭이라 글자가 어긋난 자리에서 돌다가 회전이 끝나며 제자리로 튄다.
+  static double _angle(double turned) =>
+      (turned < 0.5 ? turned : turned - 1) * math.pi;
 
   /// 메뉴가 둘 이상일 때만 돌린다.
   ///
@@ -530,7 +544,7 @@ class _ActionState extends State<_Action>
     if (widget.menus.length < 2 || context.reduceMotion) return;
     _turn = Timer.periodic(Motion.menuTurn, (_) {
       if (!mounted || _spin.isAnimating) return;
-      _flipped = false;
+      _swapped = false;
       _spin.forward(from: 0);
     });
   }
@@ -584,7 +598,7 @@ class _ActionState extends State<_Action>
               // 원근을 살짝 준다. 없으면 가로로 납작해지기만 하고 도는 것으로 안 보인다.
               transform: Matrix4.identity()
                 ..setEntry(3, 2, 0.0012)
-                ..rotateY(_turned.value * math.pi),
+                ..rotateY(_angle(_turned.value)),
               child: child,
             ),
             child: _pill(context, text, skin, palette, glyph, label, meta, action),
@@ -609,9 +623,6 @@ class _ActionState extends State<_Action>
   }
 
   /// 알약 한 개. 회전은 바깥에서 건다.
-  ///
-  /// 반 바퀴를 넘기면 글자가 뒤집혀 보이므로 그 구간만 한 번 더 뒤집는다. 판과 그림자는
-  /// 뒤집지 않는다 — 그림자까지 뒤집히면 빛이 반대에서 오는 것으로 보인다.
   Widget _pill(
     BuildContext context,
     TextTheme text,
@@ -639,44 +650,39 @@ class _ActionState extends State<_Action>
           child: Container(
             constraints: const BoxConstraints(minHeight: 62),
             padding: const EdgeInsets.fromLTRB(8, 8, 18, 8),
-            child: Transform(
-              alignment: Alignment.center,
-              // 뒷면에서는 글자가 거울처럼 보인다. 그 구간만 되뒤집어 바로 세운다.
-              transform: Matrix4.identity()..rotateY(_flipped ? math.pi : 0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _Badge(palette: palette, glyph: glyph),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _Badge(palette: palette, glyph: glyph),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.titleMedium?.copyWith(height: 1.3),
+                      ),
+                      if (meta.isNotEmpty)
                         Text(
-                          label,
+                          meta,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: text.titleMedium?.copyWith(height: 1.3),
+                          style: text.labelMedium?.copyWith(
+                              height: 1.3,
+                              color: skin.inkFaint,
+                              fontWeight: FontWeight.w500),
                         ),
-                        if (meta.isNotEmpty)
-                          Text(
-                            meta,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: text.labelMedium?.copyWith(
-                                height: 1.3,
-                                color: skin.inkFaint,
-                                fontWeight: FontWeight.w500),
-                          ),
-                      ],
-                    ),
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                  Icon(Icons.arrow_forward_rounded,
-                      size: 20, color: palette.accent),
-                ],
-              ),
+                ),
+                const SizedBox(width: 16),
+                Icon(Icons.arrow_forward_rounded,
+                    size: 20, color: palette.accent),
+              ],
             ),
           ),
         ),

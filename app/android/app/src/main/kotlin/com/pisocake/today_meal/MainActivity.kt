@@ -44,6 +44,15 @@ class MainActivity : FlutterActivity() {
                 // 이미 걷혔으면 바로 답하고, 아니면 걷힐 때 답한다.
                 if (splashGone) result.success(null) else waiting = result
             }
+        MethodChannel(engine.dartExecutor.binaryMessenger, CUE_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                if (call.method != PLAY_CUE) {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                ListeningCue.play()
+                result.success(ListeningCue.lengthMs)
+            }
     }
 
     /**
@@ -94,5 +103,7 @@ class MainActivity : FlutterActivity() {
     private companion object {
         const val CHANNEL = "today_meal/launch"
         const val AWAIT_SPLASH = "awaitSystemSplash"
+        const val CUE_CHANNEL = "today_meal/cue"
+        const val PLAY_CUE = "playListening"
     }
 }

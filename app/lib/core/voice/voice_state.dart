@@ -4,8 +4,8 @@
 /// 알고 있으며, 상태를 색만으로 구분하지 않고 문구와 함께 표시한다.
 ///
 /// ```
-/// Waiting → Listening → Processing → Speaking → Waiting
-///                          ↓
+/// Waiting → Listening → Processing → Speaking(반영함) → Waiting
+///                          ↓       ↘ Answering(반영 없음) → Waiting
 ///                      Clarifying → Listening
 /// ```
 sealed class VoiceState {
@@ -53,11 +53,21 @@ final class Clarifying extends VoiceState {
   final String question;
 }
 
-/// 응답을 읽는 중.
+/// 반영 결과를 읽는 중. 화면은 이 상태를 **반영 결과**로 그린다.
 ///
 /// 이 동안 전사를 멈춘다. 멈추지 않으면 자기 응답을 다시 명령으로 처리한다.
 final class Speaking extends VoiceState {
   const Speaking(this.text);
+
+  final String text;
+}
+
+/// 반영한 것이 없는 응답을 읽는 중. 조회의 답이나 거절·실패 안내다.
+///
+/// 화면은 듣기 화면에 머문다. 바뀐 것이 없는데 반영 결과로 그리면 사용자는 재고가
+/// 바뀐 것으로 안다.
+final class Answering extends VoiceState {
+  const Answering(this.text);
 
   final String text;
 }

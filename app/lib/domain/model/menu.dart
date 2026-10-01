@@ -109,12 +109,28 @@ enum IngredientStatus {
 
 /// 조리 확인 결과.
 ///
+/// 조리로 줄어든 재료 하나.
+class CookedChange {
+  const CookedChange({
+    required this.name,
+    required this.before,
+    required this.after,
+    this.unit,
+  });
+
+  final String name;
+  final String before;
+  final String after;
+  final String? unit;
+}
+
 /// [alreadyApplied] 가 참이면 이번 호출이 **아무것도 바꾸지 않았다.** 버튼을 두 번 눌러도
 /// 재고가 두 번 줄지 않는다.
 class CookedResult {
   const CookedResult({
     required this.suggestionId,
     required this.alreadyApplied,
+    this.changes = const [],
     this.skippedIngredients = const [],
     this.clarificationQuestion,
     this.undoToken,
@@ -123,6 +139,9 @@ class CookedResult {
 
   final int suggestionId;
   final bool alreadyApplied;
+
+  /// 실제로 뺀 재료와 그 앞뒤의 양. 같은 재료는 한 줄로 합쳐 온다.
+  final List<CookedChange> changes;
 
   /// 차감하지 못한 재료. 분량을 모르거나 단위를 맞출 수 없는 것 — 숫자를 지어내지 않는다.
   final List<String> skippedIngredients;

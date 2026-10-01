@@ -9,10 +9,12 @@ import '../ui/fridge/fridge_view_model.dart';
 import '../ui/history/history_view_model.dart';
 import '../ui/home/home_view_model.dart';
 import 'config.dart';
+import 'settings/app_settings.dart';
 import 'l10n/strings.dart';
 import 'network/api_client.dart';
 import 'voice/device_speech.dart';
 import 'voice/device_wake_word_detector.dart';
+import 'voice/listening_cue.dart';
 import 'voice/speech_engine.dart';
 import 'voice/voice_ports.dart';
 import 'voice/wake_listen_source.dart';
@@ -25,9 +27,17 @@ import 'voice/voice_session_manager.dart';
 final GetIt di = GetIt.instance;
 
 /// 앱 기동 시 한 번 부른다.
-Future<void> registerDependencies(AppConfig config) async {
+///
+/// [settings] 는 기기에 저장된 설정이다. 낭독 여부·기본 인분처럼 **동작을 바꾸는 설정**이
+/// 있어 음성·추천이 이 값을 읽어야 한다 — 저장만 하고 아무것도 바꾸지 않으면 사용자에게
+/// 거짓말이 된다.
+Future<void> registerDependencies(
+  AppConfig config, {
+  required AppSettings settings,
+}) async {
   di
     ..registerSingleton<AppConfig>(config)
+    ..registerSingleton<AppSettings>(settings)
     ..registerLazySingleton<ApiClient>(() => ApiClient(di<AppConfig>()))
     ..registerLazySingleton<InventoryRepository>(
       () => RemoteInventoryRepository(di<ApiClient>()),
@@ -70,20 +80,28 @@ Future<void> registerDependencies(AppConfig config) async {
         detector: di<WakeWordDetector>(),
         transcriber: DeviceSpeechTranscriber(engine: di<SpeechEngine>()),
         speaker: DeviceSpeechSpeaker(),
-        retryMessage: Strings.voiceRetry,
-        ackMessage: Strings.voiceAck,
+        retryMessage: Strings.voiceNotApplied,
+        // IMPORTANT: 호출 응답을 말("네?")로 하지 않는다. 낭독이 끝나야 듣기 시작하므로
+        // 호출 직후 바로 말한 앞부분이 잘렸다. 짧은 신호음으로 대신한다.
+        listeningCue: ListeningCue().play,
+        checkingMessage: Strings.voiceChecking,
+        restartMessage: Strings.voiceSayAgain,
+        // 음성 응답 설정이 실제로 낭독을 끈다. 마이크 음소거와 다른 설정이다.
+        spokenReply: () => di<AppSettings>().spokenReply,
       ),
     )
     ..registerLazySingleton<HomeViewModel>(
       () => HomeViewModel(
         inventory: di<InventoryRepository>(),
         menu: di<MenuRepository>(),
+        defaultServings: () => di<AppSettings>().defaultServings,
       ),
     )
     ..registerLazySingleton<CookViewModel>(
       () => CookViewModel(
         menu: di<MenuRepository>(),
         video: di<VideoRepository>(),
+        defaultServings: () => di<AppSettings>().defaultServings,
       ),
     )
     ..registerLazySingleton<FridgeViewModel>(
@@ -96,7 +114,7 @@ Future<void> registerDependencies(AppConfig config) async {
       () => ConversationViewModel(
         voice: di<VoiceSessionManager>(),
         command: di<CommandRepository>(),
-        retryMessage: Strings.voiceRetry,
+        retryMessage: Strings.voiceNotApplied,
       ),
     );
 }

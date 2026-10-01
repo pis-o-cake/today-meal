@@ -1,4 +1,4 @@
-/// 반영 결과 (UI-05).
+/// 반영 결과 (UI-16).
 ///
 /// 목업 `Result.dc.html` 이다 — 캐릭터, "반영했어요", 읽어준 문장, 바뀐 재고 카드,
 /// 되돌리기와 확인.
@@ -19,6 +19,7 @@ import '../../../core/voice/voice_session_manager.dart';
 import '../../../domain/repository/repositories.dart';
 import '../../widgets/glass.dart';
 import '../../widgets/mascot.dart';
+import '../../widgets/seconds_left.dart';
 
 class ResultView extends StatelessWidget {
   const ResultView({
@@ -64,8 +65,10 @@ class ResultView extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  Strings.voiceHeroDone,
-                  style: Tokens.hero(46, height: 1.15).copyWith(color: palette.accent),
+                  // 목업의 46 은 옛 문구("싱싱해요!") 길이에 맞춘 값이다. 새 문구가
+                  // 길어져 40 으로 내린다.
+                  Strings.voiceDone,
+                  style: Tokens.hero(40, height: 1.15).copyWith(color: palette.accent),
                 ),
                 if (spoken.isNotEmpty) ...[
                   const SizedBox(height: 12),
@@ -109,11 +112,13 @@ class ResultView extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-          child: Text(
-            Strings.resultReturnHint(
-                VoiceSessionManager.resultMinimum.inSeconds),
-            style: text.labelMedium
-                ?.copyWith(color: skin.inkDim, fontWeight: FontWeight.w500),
+          child: SecondsLeft(
+            from: VoiceSessionManager.resultMinimum.inSeconds,
+            builder: (context, seconds) => Text(
+              Strings.resultReturnHint(seconds),
+              style: text.labelMedium
+                  ?.copyWith(color: skin.inkDim, fontWeight: FontWeight.w500),
+            ),
           ),
         ),
       ],
@@ -216,7 +221,9 @@ class _Row extends StatelessWidget {
                 Text(change.name, style: text.titleLarge),
                 const SizedBox(height: 6),
                 Text(
-                  Labels.changeAction(change.action),
+                  [Labels.changeAction(change.action), Labels.changeExpiry(change)]
+                      .where((part) => part.isNotEmpty)
+                      .join(' · '),
                   style: text.labelMedium?.copyWith(color: skin.inkFaint),
                 ),
               ],

@@ -1,7 +1,8 @@
-/// 기록 화면 (UI-08).
+/// 기록 화면 (UI-12).
 ///
 /// 목업 `mockup/canvas/History.dc.html` 을 옮긴 것이다. **말한 문장(오른쪽) → 바뀐 결과
-/// (왼쪽)** 의 대화로 보여준다. 목록이 아니라 대화인 이유는, 이 앱에서 재고가 바뀌는
+/// (왼쪽)** 의 대화로 보여준다. 전체를 최근순으로 받아 아래가 가장 최근이며, 열 때 그
+/// 끝을 보여준다 — 되돌릴 수 있는 것은 전체에서 가장 최근의 변경이다. 목록이 아니라 대화인 이유는, 이 앱에서 재고가 바뀌는
 /// 유일한 길이 말이기 때문이다. 내가 뭐라고 했더니 뭐가 바뀌었는지가 한 쌍으로 읽혀야
 /// 잘못된 것을 찾아낼 수 있다.
 ///
@@ -71,8 +72,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
             style: text.bodyMedium
                 ?.copyWith(color: skin.inkFaint, fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 12),
-          _DayPicker(history: history),
         ],
       ),
       child: switch ((history.loading, history.error)) {
@@ -80,155 +79,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
           const Center(child: CircularProgressIndicator(strokeWidth: 3)),
         (_, final Object error?) => _Failed(error: error, onRetry: history.load),
         _ => _Conversation(
-            key: ValueKey(history.day),
             records: history.records,
             onUndo: history.undo,
             undoing: history.undoing,
-            today: history.isToday,
           ),
       },
     );
   }
 }
 
-/// 날짜 고르개.
-///
-/// 오늘로 열고 달력에서 다른 날을 고른다. **기록이 있는 날만** 고를 수 있다 — 없는 날을
-/// 고르면 빈 화면이 나오고, 사용자는 자기가 잘못 골랐는지 기록이 없는지 알 수 없다.
-///
-/// 좌우 화살표로 기록이 있는 앞뒤 날로 건너뛴다. 달력을 열지 않고도 하루씩 넘길 수 있어야
-/// 한다 — 어제를 보는 일이 가장 잦다.
-class _DayPicker extends StatelessWidget {
-  const _DayPicker({required this.history});
-
-  final HistoryViewModel history;
-
-  @override
-  Widget build(BuildContext context) {
-    final skin = context.skin;
-    final days = history.days;
-    final at = days.indexWhere((d) => _sameDay(d, history.day));
-    // 목록은 최근 것이 앞이다. 다음 날은 앞쪽(index-1), 이전 날은 뒤쪽(index+1)이다.
-    final older = at >= 0 && at + 1 < days.length ? days[at + 1] : null;
-    final newer = at > 0 ? days[at - 1] : null;
-
-    return Row(
-      children: [
-        _Step(
-          icon: Icons.chevron_left_rounded,
-          label: Strings.historyOlderDay,
-          onPressed: older == null ? null : () => history.selectDay(older),
-        ),
-        Expanded(
-          child: GestureDetector(
-            onTap: () => _pick(context),
-            child: Container(
-              height: 40,
-              alignment: Alignment.center,
-              decoration: ShapeDecoration(
-                color: skin.fillOf(skin.glass),
-                gradient: skin.sheen,
-                shape: StadiumBorder(side: BorderSide(color: skin.edge)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.calendar_today_rounded,
-                      size: 14, color: skin.inkFaint),
-                  const SizedBox(width: 6),
-                  Text(
-                    _label(history),
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  Icon(Icons.expand_more_rounded, size: 18, color: skin.inkDim),
-                ],
-              ),
-            ),
-          ),
-        ),
-        _Step(
-          icon: Icons.chevron_right_rounded,
-          label: Strings.historyNewerDay,
-          onPressed: newer == null ? null : () => history.selectDay(newer),
-        ),
-      ],
-    );
-  }
-
-  /// 고른 날. 오늘은 "오늘" 이라고 적는다 — 날짜보다 빨리 읽힌다.
-  String _label(HistoryViewModel history) {
-    if (history.isToday) return Strings.historyToday;
-    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-    final day = history.day;
-    return '${day.month}월 ${day.day}일 (${weekdays[day.weekday - 1]})';
-  }
-
-  Future<void> _pick(BuildContext context) async {
-    final days = history.days;
-    final today = DateTime.now();
-    final oldest = days.isEmpty ? today : days.last;
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: history.day,
-      firstDate: DateTime(oldest.year, oldest.month, oldest.day),
-      lastDate: DateTime(today.year, today.month, today.day),
-      // 기록이 있는 날만 고르게 한다. 오늘은 비어 있어도 열 수 있어야 한다 —
-      // 지금 말하면 바로 쌓이는 날이다.
-      selectableDayPredicate: (day) =>
-          _sameDay(day, today) || days.any((d) => _sameDay(d, day)),
-    );
-    if (picked != null) await history.selectDay(picked);
-  }
-
-  static bool _sameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
-}
-
-/// 앞뒤 날로 건너뛰는 단추. 갈 곳이 없으면 꺼진다.
-class _Step extends StatelessWidget {
-  const _Step({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-
-  /// 스크린리더 이름. 아이콘만 있는 버튼이라 반드시 둔다.
-  final String label;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-        width: Tokens.tap,
-        height: Tokens.tap,
-        child: IconButton(
-          onPressed: onPressed,
-          iconSize: 22,
-          color: context.skin.inkFaint,
-          tooltip: label,
-          icon: Icon(icon),
-        ),
-      );
-}
-
-/// 하루치 대화.
-///
-/// **가장 최근이 맨 아래**이고 화면은 거기서 열린다. 메신저와 같은 순서다 — 위에서
-/// 시작하면 방금 한 말을 보려고 매번 끝까지 내려야 한다.
 class _Conversation extends StatefulWidget {
   const _Conversation({
     required this.records,
     required this.onUndo,
     required this.undoing,
-    required this.today,
-    super.key,
   });
 
   final List<ChangeRecord> records;
-
-  /// 오늘을 보고 있는지. 비어 있을 때의 안내가 달라진다.
-  final bool today;
   final Future<void> Function(ChangeRecord record) onUndo;
   final bool undoing;
 
@@ -269,9 +136,9 @@ class _ConversationState extends State<_Conversation> {
   @override
   Widget build(BuildContext context) {
     final records = widget.records;
-    if (records.isEmpty) return _Empty(today: widget.today);
+    if (records.isEmpty) return const _Empty();
 
-    // 되돌리기는 **그 날의 마지막 줄**에만 준다. 중간을 되돌리면 그 뒤가 무슨 뜻인지
+    // 되돌리기는 **전체에서 가장 최근 줄**에만 준다. 중간을 되돌리면 그 뒤가 무슨 뜻인지
     // 알 수 없어진다.
     final last = records.length - 1;
 
@@ -579,10 +446,7 @@ class _UndoButton extends StatelessWidget {
 /// 오늘과 지난 날의 안내가 다르다 — 오늘은 지금 말하면 쌓이지만, 지난 날은 더 할 수 있는
 /// 것이 없고 다른 날을 골라야 한다.
 class _Empty extends StatelessWidget {
-  const _Empty({this.today = true});
-
-  /// 오늘을 보고 있는지.
-  final bool today;
+  const _Empty();
 
   @override
   Widget build(BuildContext context) {
@@ -596,7 +460,7 @@ class _Empty extends StatelessWidget {
             const Mascot(mood: MascotMood.unknown, size: 112),
             const SizedBox(height: 12),
             Text(
-              today ? Strings.emptyHint : Strings.historyEmptyDay,
+              Strings.emptyHint,
               textAlign: TextAlign.center,
               style: Theme.of(context)
                   .textTheme

@@ -50,6 +50,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # 실기기 통합 검증. 실제 기기에서 앱 전체를 띄워 서버와 왕복한다 —
+  # 위젯 테스트는 가짜 저장소를 쓰므로 배선과 플랫폼 채널을 확인하지 못한다.
+  integration_test:
+    sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.4.14
   json_serializable: ^6.9.5

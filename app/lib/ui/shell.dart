@@ -18,15 +18,15 @@ import 'package:provider/provider.dart';
 import '../core/design/breakpoints.dart';
 import '../core/di.dart';
 import '../core/l10n/strings.dart';
+import '../core/voice/voice_session_manager.dart';
 import '../domain/model/menu.dart';
 import '../domain/repository/repositories.dart';
 import 'conversation/conversation_overlay.dart';
 import 'conversation/conversation_view_model.dart';
-import 'cook/cook_done_screen.dart';
+import 'cook/cook_flow.dart';
 import 'cook/cook_home_screen.dart';
 import 'cook/cook_session.dart';
 import 'cook/cook_view_model.dart';
-import 'cook/cooking_screen.dart';
 import 'cook/cooking_view_model.dart';
 import 'fridge/fridge_screen.dart';
 import 'fridge/fridge_view_model.dart';
@@ -54,6 +54,8 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   int _index = 0;
+  StreamSubscription<List<String>>? _menuAsked;
+  StreamSubscription<List<String>>? _stockChanged;
 
   /// 탭 정의. 첫 탭 아이콘은 목업 TabIcons 의 A 수저다.
   static const _items = [
@@ -74,14 +76,47 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     // 웨이크워드는 전경 한정이다. 앱이 떠 있는 동안만 감지한다.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _resumeVoice());
-    context.read<HomeViewModel>().load();
+    //
+    // IMPORTANT: 첫 읽기도 프레임 뒤로 미룬다. `initState` 는 부모(AppRoot)의 빌드
+    // 도중에 돌고, `load` 는 시작하자마자 알림을 보내므로 그 자리에서 부르면
+    // 프레임워크가 "setState() called during build" 로 막는다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _resumeVoice();
+      unawaited(context.read<HomeViewModel>().load());
+    });
+    _menuAsked = context
+        .read<ConversationViewModel>()
+        .menuRequests
+        .listen((focus) => unawaited(_openPicks(focus)));
+    // 말로 바꾼 재고가 지금 보고 있는 화면에 바로 보여야 한다.
+    _stockChanged = context.read<ConversationViewModel>().stockChanges.listen((names) {
+      if (!mounted) return;
+      unawaited(context.read<HomeViewModel>().load(focus: names));
+      unawaited(context.read<FridgeViewModel>().load());
+    });
   }
 
   @override
   void dispose() {
+    unawaited(_menuAsked?.cancel());
+    unawaited(_stockChanged?.cancel());
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  /// 말로 메뉴를 물었다. 조리 탭을 열고 추천을 새로 받는다.
+  ///
+  /// 받아 둔 추천이 있어도 다시 받는다 — 방금 물은 것의 답이어야 한다. 재료를 지목했으면
+  /// 그 재료를 실어 보내므로 후보가 그것을 쓰는 것으로 온다([CookViewModel.loadPicks]).
+  ///
+  /// IMPORTANT: 지목했더라도 **고르는 것은 사용자다.** 이전 판본은 첫 후보로 바로 조리를
+  /// 시작했는데, 그러면 무엇을 만들지 보지도 못한 채 조리 화면에 들어가고 인분을 고칠
+  /// 자리가 없다.
+  Future<void> _openPicks(List<String> focus) async {
+    if (!mounted) return;
+    setState(() => _index = _cookTab);
+    await context.read<CookViewModel>().loadPicks(force: true, focus: focus);
   }
 
   @override
@@ -129,7 +164,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
         onTab: _select,
       ),
       const FridgeScreen(),
-      CookHomeScreen(onStart: _startCook),
+      CookHomeScreen(onStart: _startCook, onOpenMenu: _openMenu),
       const HistoryScreen(),
       MyPageScreen(onSignIn: widget.onSignIn, onSignOut: widget.onSignOut),
     ];
@@ -223,41 +258,29 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     }
   }
 
-  /// 조리 진행 화면을 띄우고, 마치면 완료 화면으로 바꾼다.
+  /// 조리를 연다. 진행과 완료는 **한 route** 안에서 바뀐다.
   ///
-  /// 진행 화면을 완료 화면으로 **교체**한다(`pushReplacement`). 남겨 두면 완료 화면에서
-  /// 뒤로 가 이미 끝난 조리로 되돌아간다.
+  /// IMPORTANT: ViewModel 의 주인은 그 route 다([CookFlow]). 셸이 들고 있다가 닫으면
+  /// 닫히는 애니메이션 중에 완료 화면이 이미 닫힌 ViewModel 을 다시 그린다.
   Future<void> _runCook(CookPlan plan) async {
-    final started = DateTime.now();
-    final cooking = CookingViewModel(plan: plan, menu: di<MenuRepository>());
+    final voice = di<VoiceSessionManager>();
 
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (route) => ChangeNotifierProvider.value(
-          value: cooking,
-          child: CookingScreen(
-            onDone: () async {
-              // 서버 확인이 끝난 뒤에 넘어간다. 먼저 넘기면 "뺐어요" 를 확인 전에 보인다.
-              await cooking.finish();
-              if (!route.mounted) return;
-              await Navigator.of(route).pushReplacement(
-                MaterialPageRoute<void>(
-                  builder: (done) => CookDoneScreen(
-                    plan: plan,
-                    result: cooking.result,
-                    error: cooking.finishError,
-                    minutes: _elapsed(started),
-                    onClose: () => Navigator.of(done).pop(),
-                    onCookAgain: () => Navigator.of(done).pop(),
-                  ),
-                ),
-              );
-            },
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) => CookingViewModel(
+            plan: plan,
+            menu: di<MenuRepository>(),
+            command: di<CommandRepository>(),
+            // 마이크를 누가 쥐는지는 세션 매니저만 안다. 낭독을 따로 돌리면 감지기와 부딪힌다.
+            narrate: voice.narrate,
+            hush: voice.stopNarration,
+            heard: voice.heard,
           ),
+          child: CookFlow(plan: plan),
         ),
       ),
     );
-    cooking.dispose();
 
     if (!mounted) return;
     // 조리가 재고를 줄였다. 냉장고와 오늘 화면이 옛 수를 들고 있으면 안 된다.
@@ -265,11 +288,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     unawaited(context.read<FridgeViewModel>().load());
   }
 
-  /// 조리에 걸린 시간(분). 1분 미만도 1분으로 적는다 — 0분 걸렸다고 쓸 수는 없다.
-  int _elapsed(DateTime started) {
-    final minutes = DateTime.now().difference(started).inMinutes;
-    return minutes < 1 ? 1 : minutes;
-  }
+
 
   void _tell(String message) => ScaffoldMessenger.of(context)
       .showSnackBar(SnackBar(content: Text(message)));

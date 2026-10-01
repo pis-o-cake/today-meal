@@ -1,4 +1,4 @@
-/// 조리 탭 (UI-08).
+/// 조리 탭 (UI-09).
 ///
 /// 목업 `mockup/canvas/CookHome.dc.html` 을 옮긴 것이다. 조리로 들어가는 길이 둘이다 —
 /// **냉장고 재료로 하는 추천**과 **영상 링크로 하는 정리**다. 위아래로 나란히 두는 것이
@@ -27,10 +27,21 @@ import '../widgets/screen_scaffold.dart';
 import 'cook_view_model.dart';
 
 class CookHomeScreen extends StatefulWidget {
-  const CookHomeScreen({required this.onStart, super.key});
+  const CookHomeScreen({
+    required this.onStart,
+    required this.onOpenMenu,
+    super.key,
+  });
 
   /// 조리를 시작한다. 추천에서 왔는지 영상에서 왔는지는 셸이 가른다.
   final void Function(CookRequest request) onStart;
+
+  /// 메뉴 상세(UI-06)를 연다.
+  ///
+  /// IMPORTANT: 후보 카드는 **몸통과 시작 알약이 다른 일을 한다.** 몸통을 누르면 무엇을
+  /// 만드는지 먼저 보고 인분을 고를 수 있고, 알약을 누르면 그대로 조리에 들어간다. 카드
+  /// 전체가 시작이었을 때는 재료와 인분을 보지 못한 채 조리 화면에 들어갔다.
+  final void Function(MenuSuggestion suggestion) onOpenMenu;
 
   @override
   State<CookHomeScreen> createState() => _CookHomeScreenState();
@@ -87,7 +98,11 @@ class _CookHomeScreenState extends State<CookHomeScreen> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
         children: [
-          _Picks(cook: cook, onStart: widget.onStart),
+          _Picks(
+            cook: cook,
+            onStart: widget.onStart,
+            onOpenMenu: widget.onOpenMenu,
+          ),
           const SizedBox(height: 14),
           _VideoSection(cook: cook, link: _link, onStart: widget.onStart),
           const SizedBox(height: 14),
@@ -100,10 +115,15 @@ class _CookHomeScreenState extends State<CookHomeScreen> {
 
 /// 냉장고 재료로 만들 수 있는 추천.
 class _Picks extends StatelessWidget {
-  const _Picks({required this.cook, required this.onStart});
+  const _Picks({
+    required this.cook,
+    required this.onStart,
+    required this.onOpenMenu,
+  });
 
   final CookViewModel cook;
   final void Function(CookRequest request) onStart;
+  final void Function(MenuSuggestion suggestion) onOpenMenu;
 
   /// 화면에 올릴 추천 수. 더 많으면 고르는 것이 일이 된다.
   static const _limit = 3;
@@ -128,13 +148,25 @@ class _Picks extends StatelessWidget {
                 foreground: skin.primary,
               ),
               const SizedBox(width: 8),
-              Flexible(
+              Expanded(
                 child: Text(Strings.cookPicksTitle,
                     style: text.titleMedium, overflow: TextOverflow.ellipsis),
               ),
+              // 추천은 한 번 받으면 다시 부르지 않는다. 재고를 바꾼 뒤 새로 받을 길이다.
+              IconButton(
+                onPressed:
+                    cook.loadingPicks ? null : () => cook.loadPicks(force: true),
+                tooltip: Strings.cookPicksRefresh,
+                iconSize: 22,
+                color: skin.inkMuted,
+                disabledColor: skin.inkDim,
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.refresh_rounded),
+              ),
             ],
           ),
-          if (_reason(picks) case final String why) ...[
+          if (!cook.loadingPicks)
+            if (_reason(picks) case final String why) ...[
             const SizedBox(height: 4),
             Text(
               why,
@@ -143,7 +175,8 @@ class _Picks extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 6),
-          if (cook.loadingPicks && picks.isEmpty)
+          // 새로 받는 동안 앞의 추천을 남기지 않는다. 남겨 두면 새 답으로 읽힌다.
+          if (cook.loadingPicks)
             const _Thinking()
           else if (cook.picksError != null)
             // 못 고른 것과 부르지 못한 것은 다른 상황이다. 다시 시도할 수 있어야 한다.
@@ -177,7 +210,8 @@ class _Picks extends StatelessWidget {
               _PickRow(
                 pick: pick,
                 divided: index > 0,
-                onTap: () => onStart(CookRequest.menu(pick)),
+                onOpen: () => onOpenMenu(pick),
+                onStart: () => onStart(CookRequest.menu(pick)),
               ),
         ],
       ),
@@ -194,12 +228,18 @@ class _PickRow extends StatelessWidget {
   const _PickRow({
     required this.pick,
     required this.divided,
-    required this.onTap,
+    required this.onOpen,
+    required this.onStart,
   });
 
   final MenuSuggestion pick;
   final bool divided;
-  final VoidCallback onTap;
+
+  /// 카드 몸통. 메뉴 상세를 연다.
+  final VoidCallback onOpen;
+
+  /// 시작 알약. 바로 조리로 들어간다.
+  final VoidCallback onStart;
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +254,7 @@ class _PickRow extends StatelessWidget {
             : const Border(),
       ),
       child: InkWell(
-        onTap: onTap,
+        onTap: onOpen,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
@@ -252,7 +292,8 @@ class _PickRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              _StartPill(skin: skin),
+              // 알약만 조리로 간다. 몸통 탭과 겹치지 않게 자기 제스처를 갖는다.
+              _StartPill(skin: skin, onTap: onStart, dish: pick.name),
             ],
           ),
         ),
@@ -271,31 +312,44 @@ class _PickRow extends StatelessWidget {
 }
 
 class _StartPill extends StatelessWidget {
-  const _StartPill({required this.skin});
+  const _StartPill({
+    required this.skin,
+    required this.onTap,
+    required this.dish,
+  });
 
   final Skin skin;
+  final VoidCallback onTap;
+
+  /// 어떤 메뉴를 시작하는지. 아이콘과 두 글자만으로는 스크린리더가 구분하지 못한다.
+  final String dish;
 
   @override
-  Widget build(BuildContext context) => Container(
-        height: 34,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: ShapeDecoration(
-          color: skin.strong,
-          shape: const StadiumBorder(),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.play_arrow_rounded, size: 14, color: skin.onStrong),
-            const SizedBox(width: 4),
-            Text(
-              Strings.cookStart,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelMedium
-                  ?.copyWith(color: skin.onStrong, fontWeight: FontWeight.w700),
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: '$dish ${Strings.cookStart}',
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            height: 34,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: ShapeDecoration(
+              color: skin.strong,
+              shape: const StadiumBorder(),
             ),
-          ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.play_arrow_rounded, size: 14, color: skin.onStrong),
+                const SizedBox(width: 4),
+                Text(
+                  Strings.cookStart,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: skin.onStrong, fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
         ),
       );
 }

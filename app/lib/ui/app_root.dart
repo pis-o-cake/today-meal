@@ -23,6 +23,7 @@ import '../core/settings/app_settings.dart';
 import '../domain/repository/repositories.dart';
 import 'account/login_screen.dart';
 import 'account/signup_screen.dart';
+import 'home/home_view_model.dart';
 import 'permission/permission_screen.dart';
 import 'shell.dart';
 import 'splash/splash_screen.dart';
@@ -69,7 +70,9 @@ class _AppRootState extends State<AppRoot> {
         );
       }
     }
-    await widget.prepare?.call();
+    // IMPORTANT: 곧장 홈으로 갈 때만 미리 읽는다. 로그인 전에 읽으면 토큰이 없어 서버가
+    // 게스트 가구를 돌려주고, 가입 직후 홈에 남의 재료가 잠깐 떴다가 사라진다.
+    if (_next() == _Step.home) await widget.prepare?.call();
   }
 
   /// 스플래시가 끝났다. 저장된 상태에 따라 갈 곳을 정한다.
@@ -83,6 +86,8 @@ class _AppRootState extends State<AppRoot> {
 
   Future<void> _enter(Account account, {String? token}) async {
     await _settings.signIn(account, token: token);
+    // 앞 계정(또는 게스트)의 재고를 들고 들어가지 않는다.
+    if (mounted) context.read<HomeViewModel>().clear();
     if (!mounted) return;
     setState(() => _step = _settings.onboarded ? _Step.home : _Step.permission);
   }
@@ -98,6 +103,7 @@ class _AppRootState extends State<AppRoot> {
     await widget.auth.signOut();
     await _settings.signOut();
     if (!mounted) return;
+    context.read<HomeViewModel>().clear();
     setState(() => _step = _Step.login);
   }
 

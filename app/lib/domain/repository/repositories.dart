@@ -154,7 +154,54 @@ abstract interface class InventoryRepository {
   Future<IngredientBatch> editBatch(int batchId, BatchEdit edit);
 
   /// 묶음을 버린다. 행을 지우지 않고 버린 것으로 표시한다.
-  Future<void> discardBatch(int batchId);
+  Future<void> discardBatch(int batchId, {String? commandId});
+
+  /// 재료를 손으로 넣는다. 말로 넣을 때와 같이 기록에 남는다.
+  Future<IngredientBatch> addBatch(BatchDraft draft);
+
+  /// 냉장고를 비운다. 살아 있는 묶음을 모두 버리고 **버린 수**를 돌려준다.
+  ///
+  /// 한 명령으로 묶이므로 기록 화면에서 한 번 되돌리면 모두 돌아온다.
+  Future<int> discardAll({String? commandId});
+}
+
+/// 화면에서 손으로 넣는 재료.
+///
+/// 수량과 단위는 반드시 있다 — 서버는 잔량 없는 묶음을 저장하지 않는다. 기한은 모르면 비운다.
+class BatchDraft {
+  const BatchDraft({
+    required this.name,
+    required this.quantity,
+    required this.unit,
+    required this.storage,
+    required this.dateKind,
+    this.dateValue,
+    this.commandId,
+  });
+
+  /// 이 넣기의 요청 ID. 재시도할 때 같은 값을 보내면 서버가 한 번만 넣는다.
+  final String? commandId;
+
+  final String name;
+  final String quantity;
+
+  /// 단위 기호. `ea`·`g` 처럼 `Strings.units` 의 키다.
+  final String unit;
+  final StorageLocation storage;
+
+  /// [dateValue] 의 종류. 서버가 서로 변환하지 않는다.
+  final DateKind dateKind;
+  final DateTime? dateValue;
+
+  Map<String, dynamic> toJson() => {
+        if (commandId != null) 'command_id': commandId,
+        'name': name,
+        'quantity': quantity,
+        'unit': unit,
+        'storage_location': storage.wire,
+        'date_kind': dateKind.wire,
+        if (dateValue != null) 'date_value': BatchEdit._ymd(dateValue!),
+      };
 }
 
 /// 화면에서 고친 재고.
@@ -163,6 +210,7 @@ abstract interface class InventoryRepository {
 /// 값으로 되돌려라" 를 구별할 수 없다.
 class BatchEdit {
   const BatchEdit({
+    this.commandId,
     this.name,
     this.quantity,
     this.clearQuantity = false,
@@ -172,6 +220,11 @@ class BatchEdit {
     this.dateValue,
     this.clearDate = false,
   });
+
+  /// 이 수정의 요청 ID. 재시도할 때 같은 값을 보내면 서버가 한 번만 적용한다.
+  ///
+  /// IMPORTANT: 서버가 만들게 두면 재시도마다 다른 명령이 되어 같은 수정이 두 번 쌓인다.
+  final String? commandId;
 
   final String? name;
   final String? quantity;
@@ -192,6 +245,7 @@ class BatchEdit {
 
   /// 서버가 받는 형태. **값이 있는 칸만 담는다.**
   Map<String, dynamic> toJson() => {
+        if (commandId != null) 'command_id': commandId,
         if (name != null) 'name': name,
         if (quantity != null) 'quantity': quantity,
         if (clearQuantity) 'clear_quantity': true,
@@ -209,7 +263,9 @@ class BatchEdit {
       '${value.day.toString().padLeft(2, '0')}';
 
   /// 바꿀 것이 하나라도 있는지. 없으면 서버를 부르지 않는다.
-  bool get isEmpty => toJson().isEmpty;
+  /// 바꿀 것이 없는지. **요청 ID 는 바꿀 값이 아니다** — 그것만 담긴 수정은 빈 수정이다.
+  bool get isEmpty =>
+      toJson().keys.where((key) => key != 'command_id').isEmpty;
 }
 
 abstract interface class CommandRepository {
@@ -217,9 +273,12 @@ abstract interface class CommandRepository {
   ///
   /// [commandId] 는 발화마다 새로 만드는 멱등 키다. 재시도할 때는 같은 값을 보낸다 —
   /// 서버가 만들면 재고가 두 번 바뀐다.
+  ///
+  /// [follows] 는 같은 대화에서 되물은 명령이다. 줄 때만 서버가 그 발화에 이어 해석한다.
   Future<CommandOutcome> interpret({
     required String commandId,
     required String utterance,
+    String? follows,
   });
 
   /// 명령 묶음 전체를 되돌린다.
@@ -237,13 +296,19 @@ abstract interface class CommandRepository {
 
 abstract interface class MenuRepository {
   /// 추천을 새로 받는다. 재고를 바꾸지 않는다.
-  Future<List<MenuSuggestion>> createSuggestions({int? servings, int? maxMinutes});
+  ///
+  /// [focus] 는 사용자가 지목한 재료다. 있으면 그 재료가 주재료인 메뉴만 온다.
+  Future<List<MenuSuggestion>> createSuggestions({
+    int? servings,
+    int? maxMinutes,
+    List<String> focus,
+  });
 
   /// 메뉴 상세. 인분에 맞춰 환산된 값이 온다.
   Future<MenuDetail> detail(int recipeId, {int? servings});
 
   /// 조리 확인. 같은 추천에 두 번 보내도 재고가 두 번 줄지 않는다.
-  Future<CookedResult> markCooked(int suggestionId);
+  Future<CookedResult> markCooked(int suggestionId, {int? servings});
 }
 
 /// 영상 레시피.
@@ -302,6 +367,7 @@ class CommandOutcome {
     this.clarificationQuestion,
     this.undoToken,
     this.changes = const [],
+    this.focus = const [],
   });
 
   final String commandId;
@@ -320,6 +386,9 @@ class CommandOutcome {
   /// 화면에 보여줄 변경 요약.
   final List<CommandChange> changes;
 
+  /// 메뉴를 물으며 지목한 재료. "삼겹살로 뭐 해 먹지"의 삼겹살이다.
+  final List<String> focus;
+
   bool get isApplied => status == 'applied';
 
   bool get needsClarification => clarificationQuestion != null;
@@ -333,6 +402,8 @@ class CommandChange {
     this.before,
     this.after,
     this.unit,
+    this.dateKind,
+    this.dateValue,
   });
 
   final String name;
@@ -340,6 +411,13 @@ class CommandChange {
   final String? before;
   final String? after;
   final String? unit;
+
+  /// 이 변화와 함께 말한 기한. 말하지 않았으면 둘 다 `null` 이다.
+  final DateKind? dateKind;
+  final DateTime? dateValue;
+
+  /// 새로 넣은 것인지. 기한은 넣을 때 말하는 값이라 이때만 묻는다.
+  bool get isStockIn => action == 'stock_in' || action == 'stocked_in';
 
   String get afterLabel => after == null ? '' : '$after${unit ?? ''}';
 }

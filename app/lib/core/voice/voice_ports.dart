@@ -5,6 +5,11 @@
 /// 있어야** 한다. 호출어 수단을 두 번 갈아치우는 동안 이 계약은 그대로였다.
 library;
 
+/// 감지기가 들은 말 한 토막.
+///
+/// 한 번 말한 것이 중간 결과와 후보로 여러 번 온다. [segment] 가 같으면 같은 말이다.
+typedef Heard = ({int segment, String transcript});
+
 /// 웨이크워드 감지기.
 ///
 /// **이 감지기와 [SpeechTranscriber] 는 마이크를 동시에 점유할 수 없다.** 소유권을
@@ -13,6 +18,12 @@ library;
 abstract interface class WakeWordDetector {
   /// 감지 이벤트. 구독하는 동안만 마이크를 점유한다.
   Stream<void> get detections;
+
+  /// 듣는 동안 받아 적은 말. 호출어가 아닌 말도 흘린다.
+  ///
+  /// 조리 화면처럼 **호출어 없이 짧은 말을 알아들어야 하는 화면**이 쓴다. 감지기가 도는
+  /// 동안에만 흐르므로 대화나 낭독 중에는 아무것도 오지 않는다.
+  Stream<Heard> get heard;
 
   /// 감지를 시작한다.
   ///
@@ -49,8 +60,12 @@ abstract interface class SpeechTranscriber {
   /// 인식 실패·오디오 중단 시 [TranscriptionException] 을 던진다.
   /// [onLevel] 은 마이크 입력 크기다. 0 에 가까우면 조용하고 1 에 가까우면 크다.
   /// 듣는 중 연출이 목소리에 반응하려면 이 값이 필요하다.
+  ///
+  /// [patience] 는 말을 시작하기까지 기다려 주는 시간이다. 질문에 답할 때는 생각할
+  /// 시간이 필요해 명령보다 길게 준다. 주지 않으면 구현의 기본값을 쓴다.
   Future<String> transcribeOnce({
     String localeId = 'ko_KR',
+    Duration? patience,
     void Function(String partial)? onPartial,
     void Function(double level)? onLevel,
   });
@@ -98,7 +113,16 @@ sealed class VoiceTurnResult {
   const VoiceTurnResult();
 }
 
-/// 처리를 마쳤다. [spoken] 을 읽고 대기로 돌아간다.
+/// 서버가 재고 변경을 반영했다. [spoken] 을 읽고 반영 결과를 보여준다.
+final class TurnApplied extends VoiceTurnResult {
+  const TurnApplied(this.spoken);
+
+  final String spoken;
+}
+
+/// 바뀐 것 없이 처리를 마쳤다. 조회의 답이나 거절 안내다.
+///
+/// [spoken] 을 읽고 대기로 돌아간다. 반영 결과로 보여주지 않는다.
 final class TurnAnswered extends VoiceTurnResult {
   const TurnAnswered(this.spoken);
 

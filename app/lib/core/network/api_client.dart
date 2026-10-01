@@ -13,16 +13,17 @@ import '../config.dart';
 /// 더는 그 헤더를 읽지 않는다. 가구를 고르는 유일한 방법은 로그인이다.
 class ApiClient {
   ApiClient(AppConfig config, {Dio? dio})
-      : _dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: config.apiBaseUrl,
-                connectTimeout: const Duration(seconds: 10),
-                // 명령 한 번이 모델 호출을 포함하므로 읽기 타임아웃을 넉넉히 둔다.
-                receiveTimeout: const Duration(seconds: 60),
-                contentType: Headers.jsonContentType,
-              ),
-            );
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              baseUrl: config.apiBaseUrl,
+              connectTimeout: const Duration(seconds: 10),
+              // 명령 한 번이 모델 호출을 포함하므로 읽기 타임아웃을 넉넉히 둔다.
+              receiveTimeout: const Duration(seconds: 60),
+              contentType: Headers.jsonContentType,
+            ),
+          );
 
   final Dio _dio;
 
@@ -109,15 +110,17 @@ class ApiClient {
 
   /// 냉장고 전체 컨디션. 등급 계산은 서버가 한다.
   Future<Map<String, dynamic>> condition() async {
-    final response =
-        await _dio.get<Map<String, dynamic>>('api/inventory/condition');
+    final response = await _dio.get<Map<String, dynamic>>(
+      'api/inventory/condition',
+    );
     return response.data ?? const {};
   }
 
   /// 먼저 쓸 재료.
   Future<List<dynamic>> listPriorityBatches() async {
-    final response =
-        await _dio.get<List<dynamic>>('api/inventory/batches/expiring');
+    final response = await _dio.get<List<dynamic>>(
+      'api/inventory/batches/expiring',
+    );
     return response.data ?? const [];
   }
 
@@ -128,18 +131,25 @@ class ApiClient {
   Future<Map<String, dynamic>> interpret({
     required String commandId,
     required String utterance,
+    String? follows,
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       'api/command/interpret',
-      data: {'command_id': commandId, 'utterance': utterance, 'locale': 'ko'},
+      data: {
+        'command_id': commandId,
+        'utterance': utterance,
+        'locale': 'ko',
+        'follows': ?follows,
+      },
     );
     return response.data ?? const {};
   }
 
   /// 명령 묶음 전체를 되돌린다.
   Future<Map<String, dynamic>> undo(String commandId) async {
-    final response =
-        await _dio.post<Map<String, dynamic>>('api/command/$commandId/undo');
+    final response = await _dio.post<Map<String, dynamic>>(
+      'api/command/$commandId/undo',
+    );
     return response.data ?? const {};
   }
 
@@ -170,29 +180,49 @@ class ApiClient {
       '${value.month.toString().padLeft(2, '0')}-'
       '${value.day.toString().padLeft(2, '0')}';
 
-
   /// 메뉴 추천을 새로 받는다.
-  Future<List<dynamic>> createSuggestions({int? servings, int? maxMinutes}) async {
+  ///
+  /// [focus] 는 사용자가 지목한 재료다. 있으면 그 재료가 주재료인 메뉴만 온다.
+  Future<List<dynamic>> createSuggestions({
+    int? servings,
+    int? maxMinutes,
+    List<String> focus = const [],
+  }) async {
     final response = await _dio.post<List<dynamic>>(
       'api/menu/suggestions',
       queryParameters: <String, dynamic>{
         if (servings != null) 'servings': servings,
         if (maxMinutes != null) 'max_minutes': maxMinutes,
+        // 같은 이름을 되풀이해 보낸다(`focus=a&focus=b`). 서버가 목록으로 받는다.
+        if (focus.isNotEmpty)
+          'focus': ListParam<String>(focus, ListFormat.multi),
       },
     );
     return response.data ?? const [];
   }
 
   /// 조리 확인. 같은 추천에 두 번 보내도 재고가 두 번 줄지 않는다.
-  Future<Map<String, dynamic>> markCooked(int suggestionId) async {
+  ///
+  /// [servings] 는 **화면에서 조리한 인분**이다. 서버는 이 값으로 환산해 뺀다 — 저장된
+  /// 인분으로 빼면 4인분을 만든 사람에게 2인분이 빠진다.
+  Future<Map<String, dynamic>> markCooked(
+    int suggestionId, {
+    int? servings,
+  }) async {
     final response = await _dio.post<Map<String, dynamic>>(
       'api/menu/suggestions/$suggestionId/cooked',
+      queryParameters: <String, dynamic>{
+        if (servings != null) 'servings': servings,
+      },
     );
     return response.data ?? const {};
   }
 
   /// 메뉴 상세.
-  Future<Map<String, dynamic>> recipeDetail(int recipeId, {int? servings}) async {
+  Future<Map<String, dynamic>> recipeDetail(
+    int recipeId, {
+    int? servings,
+  }) async {
     final response = await _dio.get<Map<String, dynamic>>(
       'api/menu/recipes/$recipeId',
       queryParameters: {if (servings != null) 'servings': servings},
@@ -212,9 +242,32 @@ class ApiClient {
     return response.data ?? const {};
   }
 
+  /// 재료를 손으로 넣는다. 새 묶음을 돌려준다.
+  Future<Map<String, dynamic>> addBatch(Map<String, dynamic> draft) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      'api/inventory/batches',
+      data: draft,
+    );
+    return response.data ?? const {};
+  }
+
+  /// 가구의 재고를 모두 버린다. 한 명령으로 묶여 한 번에 되돌릴 수 있다.
+  Future<Map<String, dynamic>> discardAll({String? commandId}) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      'api/inventory/batches/discard-all',
+      data: {'command_id': ?commandId},
+    );
+    return response.data ?? const {};
+  }
+
   /// 재고 묶음을 버린다.
-  Future<void> discardBatch(int batchId) =>
-      _dio.delete<void>('api/inventory/batches/$batchId');
+  Future<void> discardBatch(int batchId, {String? commandId}) =>
+      _dio.delete<void>(
+        'api/inventory/batches/$batchId',
+        queryParameters: <String, dynamic>{
+          if (commandId != null) 'command_id': commandId,
+        },
+      );
 
   /// 유튜브 링크를 조리 단계로 정리한다.
   ///

@@ -1,4 +1,4 @@
-/// 확인 질문 (UI-04).
+/// 확인 질문 (UI-15).
 ///
 /// 목업 `Clarify.dc.html` 이다 — 먼저 반영한 항목, 캐릭터, 질문, 후속 응답 창.
 ///
@@ -19,6 +19,7 @@ import '../../../core/voice/voice_session_manager.dart';
 import '../../../domain/repository/repositories.dart';
 import '../../widgets/glass.dart';
 import '../../widgets/mascot.dart';
+import '../../widgets/seconds_left.dart';
 
 class ClarifyView extends StatelessWidget {
   const ClarifyView({
@@ -262,13 +263,19 @@ class _Window extends StatelessWidget {
                     skin: skin),
               const SizedBox(width: 10),
               Flexible(
-                child: Text(
-                  speaking
-                      ? Strings.voiceSpeaking
-                      : Strings.clarifyWindowHint(
-                          VoiceSessionManager.clarifyWindow.inSeconds),
-                  style: text.labelLarge?.copyWith(color: skin.inkMuted),
-                ),
+                child: speaking
+                    ? Text(
+                        Strings.voiceSpeaking,
+                        style: text.labelLarge?.copyWith(color: skin.inkMuted),
+                      )
+                    : SecondsLeft(
+                        from: VoiceSessionManager.clarifyWindow.inSeconds,
+                        builder: (context, seconds) => Text(
+                          Strings.clarifyWindowHint(seconds),
+                          style:
+                              text.labelLarge?.copyWith(color: skin.inkMuted),
+                        ),
+                      ),
               ),
             ],
           ),

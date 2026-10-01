@@ -123,6 +123,7 @@ class _MascotState extends State<Mascot> with SingleTickerProviderStateMixin {
                   energy: widget.energy,
                   body: palette.mascotBody,
                   deep: palette.mascotDeep,
+                  frosted: context.skin.frosted,
                   beat: beat,
                 ),
               ),
@@ -240,6 +241,7 @@ class _MascotPainter extends CustomPainter {
     required this.energy,
     required this.body,
     required this.deep,
+    this.frosted = false,
     this.beat = 0,
   });
 
@@ -247,6 +249,12 @@ class _MascotPainter extends CustomPainter {
   final double energy;
   final Color body;
   final Color deep;
+
+  /// 유리 테마인지. 몸통을 반투명 유리로 그리고 검은 외곽선을 밝은 림으로 바꾼다.
+  ///
+  /// IMPORTANT: 색만 바꾸면 화이트 테마와 구분되지 않는다. 목업의 글래스 캐릭터는 몸통이
+  /// **단색이 아니라 반투명 그라데이션**이고 테두리가 빛을 받는다 — 그 질감이 이 테마의 정체다.
+  final bool frosted;
 
   /// 한 박자 안의 위치(0~1). 그림자 크기와 땀방울이 이 값을 따른다.
   final double beat;
@@ -339,16 +347,86 @@ class _MascotPainter extends CustomPainter {
   }
 
   /// 냉장고 몸통.
+  ///
+  /// 유리 테마에서는 채움과 테두리가 모두 그라데이션이다. 목업 `Mascot2` 의 `gidB`·`gidR`
+  /// 을 옮긴 것이다.
   void _body(Canvas canvas) {
-    final rect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(46, 24, 108, 156), const Radius.circular(32));
-    canvas.drawRRect(rect, Paint()..color = body);
+    final bounds = Rect.fromLTWH(46, 24, 108, 156);
+    final rect = RRect.fromRectAndRadius(bounds, const Radius.circular(32));
+
+    if (!frosted) {
+      canvas.drawRRect(rect, Paint()..color = body);
+      canvas.drawRRect(
+        rect,
+        Paint()
+          ..color = _outline
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5,
+      );
+      return;
+    }
+
+    // 위는 밝고 투명하게, 아래로 짙게. 유리가 빛을 받는 방향이다.
     canvas.drawRRect(
       rect,
       Paint()
-        ..color = _outline
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: const Alignment(0.8, 1),
+          colors: [
+            Color.lerp(body, Colors.white, 0.55)!.withValues(alpha: 0.82),
+            body.withValues(alpha: 0.6),
+          ],
+        ).createShader(bounds),
+    );
+    // 검은 외곽선 대신 빛을 받는 림. 유리에 먹선을 두르면 스티커가 된다.
+    canvas.drawRRect(
+      rect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withValues(alpha: 0.95),
+            Color.lerp(deep, Colors.black, 0.2)!.withValues(alpha: 0.85),
+          ],
+        ).createShader(bounds)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 5,
+    );
+    _frostedSheen(canvas);
+  }
+
+  /// 유리 전용 광택. 흰 타원·안쪽 림·오른쪽 아래 그늘 셋이다.
+  void _frostedSheen(Canvas canvas) {
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(80, 68), width: 44, height: 64),
+      Paint()..color = Colors.white.withValues(alpha: 0.3),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(52.5, 30.5, 95, 143),
+        const Radius.circular(26),
+      ),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+    // 오른쪽 아래를 따라 도는 그늘. 유리의 두께가 보이는 자리다.
+    final shade = Path()
+      ..moveTo(150, 124)
+      ..lineTo(150, 148)
+      ..arcToPoint(const Offset(122, 176),
+          radius: const Radius.circular(28), clockwise: true)
+      ..lineTo(86, 176);
+    canvas.drawPath(
+      shade,
+      Paint()
+        ..color = deep.withValues(alpha: 0.28)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 6
+        ..strokeCap = StrokeCap.round,
     );
   }
 
@@ -559,5 +637,6 @@ class _MascotPainter extends CustomPainter {
       old.energy != energy ||
       old.beat != beat ||
       old.body != body ||
-      old.deep != deep;
+      old.deep != deep ||
+      old.frosted != frosted;
 }

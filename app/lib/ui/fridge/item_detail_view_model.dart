@@ -8,6 +8,7 @@
 library;
 
 import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../core/design/labels.dart';
 import '../../domain/model/inventory.dart';
@@ -36,6 +37,14 @@ class ItemDetailViewModel extends ChangeNotifier {
   bool _saved = false;
   bool _discarded = false;
   Object? _error;
+
+  /// 보내는 중인 수정·버리기의 요청 ID.
+  ///
+  /// 실패해도 버리지 않는다. 재시도가 새 ID 로 가면 서버에 같은 변경이 두 번 쌓인다.
+  String? _editRequestId;
+  String? _discardRequestId;
+
+  static const _uuid = Uuid();
 
   /// 서버가 아는 묶음. 저장에 성공하면 갱신된다.
   IngredientBatch get batch => _batch;
@@ -79,6 +88,18 @@ class ItemDetailViewModel extends ChangeNotifier {
     _setQuantity((current ?? 0) + 1);
   }
 
+  /// 잔량을 직접 적는다.
+  ///
+  /// 그램이나 밀리리터는 하나씩 올리고 내려서는 맞출 수 없다. 소수도 받는다("0.5").
+  ///
+  /// Returns: 받아들였는지. 숫자가 아니거나 음수면 아무것도 바꾸지 않는다.
+  bool setQuantity(String raw) {
+    final value = num.tryParse(raw.trim());
+    if (value == null || value.isNaN || value.isInfinite || value < 0) return false;
+    _setQuantity(value);
+    return true;
+  }
+
   void rename(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty || trimmed == _name) return;
@@ -104,6 +125,9 @@ class ItemDetailViewModel extends ChangeNotifier {
   }
 
   /// 고친 내용을 저장한다.
+  ///
+  /// IMPORTANT: 요청 ID 를 만들어 보내고 **실패해도 그 ID 를 버리지 않는다.** 재시도가
+  /// 새 ID 로 가면 서버에 같은 수정이 두 번 쌓인다.
   Future<void> save() async {
     if (_saving) return;
     final edit = _edit();
@@ -117,7 +141,22 @@ class ItemDetailViewModel extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _batch = await _inventory.editBatch(_batch.batchId, edit);
+      final id = _editRequestId ??= _uuid.v4();
+      _batch = await _inventory.editBatch(
+        _batch.batchId,
+        BatchEdit(
+          commandId: id,
+          name: edit.name,
+          quantity: edit.quantity,
+          clearQuantity: edit.clearQuantity,
+          unit: edit.unit,
+          storage: edit.storage,
+          dateKind: edit.dateKind,
+          dateValue: edit.dateValue,
+          clearDate: edit.clearDate,
+        ),
+      );
+      _editRequestId = null;
       _reset();
       _saved = true;
     } catch (error) {
@@ -136,7 +175,9 @@ class ItemDetailViewModel extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await _inventory.discardBatch(_batch.batchId);
+      final id = _discardRequestId ??= _uuid.v4();
+      await _inventory.discardBatch(_batch.batchId, commandId: id);
+      _discardRequestId = null;
       _discarded = true;
     } catch (error) {
       _error = error;
@@ -170,8 +211,9 @@ class ItemDetailViewModel extends ChangeNotifier {
     return stored == null || !_sameDay(stored, _dateValue!);
   }
 
-  void _setQuantity(int value) {
-    _quantity = value.toString();
+  void _setQuantity(num value) {
+    // `3.0` 으로 적으면 서버가 준 `3` 과 달라 바꾸지 않았는데도 저장 대상이 된다.
+    _quantity = Labels.number(value.toString());
     notifyListeners();
   }
 
@@ -183,7 +225,9 @@ class ItemDetailViewModel extends ChangeNotifier {
     _name = _batch.name;
     _quantity = _stored;
     _storage = _batch.storage;
-    _dateKind = _batch.expiryKind ?? _firstKind() ?? DateKind.useBy;
+    // 소비기한은 고를 수 없는 갈래다. 같은 말(유통기한)로 보여준다.
+    final kind = _batch.expiryKind ?? _firstKind() ?? DateKind.sellBy;
+    _dateKind = kind == DateKind.useBy ? DateKind.sellBy : kind;
     _dateValue = _storedDate(_dateKind);
   }
 
@@ -204,11 +248,6 @@ class ItemDetailViewModel extends ChangeNotifier {
   static bool _sameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
-  /// 잔량 문자열을 정수로. 소수 잔량(`0.5`)은 버튼으로 다루지 않는다.
-  static int? _asNumber(String? raw) {
-    if (raw == null) return null;
-    final value = num.tryParse(raw);
-    if (value == null || value != value.roundToDouble()) return null;
-    return value.toInt();
-  }
+  /// 잔량 문자열을 수로. 소수 잔량(`0.5`)도 하나씩 올리고 내린다.
+  static num? _asNumber(String? raw) => raw == null ? null : num.tryParse(raw);
 }

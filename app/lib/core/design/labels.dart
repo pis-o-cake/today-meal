@@ -1,6 +1,7 @@
 import '../../domain/model/change_record.dart';
 import '../../domain/model/inventory.dart';
 import '../../domain/model/menu.dart';
+import '../../domain/repository/repositories.dart';
 import '../l10n/strings.dart';
 import '../settings/app_settings.dart';
 import 'skin.dart';
@@ -83,7 +84,8 @@ abstract final class Labels {
   /// **추정값을 확정값처럼 쓰지 않는다** — 확실하지 않은 수량은 여기서 내보내지 않고
   /// 호출자가 [Strings.quantityUnknown] 을 붙인다.
   static String amount(IngredientBatch batch) {
-    if (batch.quantityUncertain) return batch.qualitativeAmount ?? '';
+    // IMPORTANT: 추정 잔량도 숫자가 있으면 숫자로 보인다. 조리 완료 차감은 추정으로 남아
+    // 숫자를 지우면 "잔량 미확인" 이 됐다. 추정이라는 표시는 화면이 칩으로 붙인다.
     final quantity = batch.quantity;
     if (quantity == null) return batch.qualitativeAmount ?? '';
     return '${number(quantity)}${unit(batch.unit)}';
@@ -139,6 +141,23 @@ abstract final class Labels {
         MenuAvailability.needsCheck => Strings.menuStockCheck,
         MenuAvailability.needsPurchase => Strings.menuStockShort,
       };
+
+  /// 날짜를 화면 표기(`2026.10.03`)로. 연도를 빼지 않는다.
+  static String date(DateTime value) =>
+      '${value.year}.${_two(value.month)}.${_two(value.day)}';
+
+  static String _two(int value) => value.toString().padLeft(2, '0');
+
+  /// 변경 한 줄의 기한. 넣은 것이 아니면 빈 문자열이다.
+  ///
+  /// 기한은 넣을 때 말하는 값이다. 말하지 않았으면 **입력되지 않았다고** 적는다.
+  static String changeExpiry(CommandChange change) {
+    if (!change.isStockIn) return '';
+    final kind = change.dateKind;
+    final value = change.dateValue;
+    if (kind == null || value == null) return Strings.expiryNotGiven;
+    return '${dateKind(kind)} ${date(value)}';
+  }
 
   /// 명령이 만든 변경 한 줄의 동작. 이력과 같은 표를 쓴다.
   static String changeAction(String action) => switch (action) {

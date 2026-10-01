@@ -97,6 +97,17 @@ RecipeIngredient _ingredientFromJson(Map<String, dynamic> json) => RecipeIngredi
 CookedResult cookedFromJson(Map<String, dynamic> json) => CookedResult(
       suggestionId: json['suggestion_id'] as int,
       alreadyApplied: json['already_applied'] as bool? ?? false,
+      changes: (json['changes'] as List<dynamic>? ?? const [])
+          .map((e) => e as Map<String, dynamic>)
+          .map(
+            (e) => CookedChange(
+              name: e['name'] as String? ?? '',
+              before: e['before'] as String? ?? '',
+              after: e['after'] as String? ?? '',
+              unit: e['unit'] as String?,
+            ),
+          )
+          .toList(growable: false),
       skippedIngredients: _strings(json['skipped_ingredients']),
       clarificationQuestion: json['clarification_question'] as String?,
       undoToken: json['undo_token'] as String?,

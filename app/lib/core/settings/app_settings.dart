@@ -70,9 +70,9 @@ class AppSettings extends ChangeNotifier {
 
   final SharedPreferences? _store;
 
-  SkinName _skin = SkinName.pastel;
+  SkinName _skin = SkinName.glass;
   bool _spokenReply = true;
-  bool _expiryAlert = true;
+  bool _expiryAlert = false;
   int _defaultServings = 2;
   bool _onboarded = false;
   Account? _account;
@@ -87,6 +87,9 @@ class AppSettings extends ChangeNotifier {
   /// 기한이 다가온 재료를 앱에서 눈에 띄게 표시할지.
   ///
   /// IMPORTANT: OS 푸시가 아니다. 앱 안의 표시만 켜고 끈다.
+  ///
+  /// 신규 사용자는 **꺼짐**이다 — 가입 화면의 기한 알림 동의가 선택 항목이고 기본 해제이므로,
+  /// 켜 둔 채로 시작하면 동의하지 않은 표시를 보여주게 된다.
   bool get expiryAlert => _expiryAlert;
 
   /// 추천의 기본 인분.
@@ -113,10 +116,10 @@ class AppSettings extends ChangeNotifier {
     if (store == null) return;
     _skin = SkinName.values.firstWhere(
       (value) => value.name == store.getString(_keySkin),
-      orElse: () => SkinName.pastel,
+      orElse: () => SkinName.glass,
     );
     _spokenReply = store.getBool(_keySpokenReply) ?? true;
-    _expiryAlert = store.getBool(_keyExpiryAlert) ?? true;
+    _expiryAlert = store.getBool(_keyExpiryAlert) ?? false;
     _defaultServings = store.getInt(_keyServings) ?? 2;
     _onboarded = store.getBool(_keyOnboarded) ?? false;
 
@@ -133,31 +136,65 @@ class AppSettings extends ChangeNotifier {
 
   Future<void> chooseSkin(SkinName next) async {
     if (_skin == next) return;
+    final before = _skin;
     _skin = next;
     notifyListeners();
-    await _store?.setString(_keySkin, next.name);
+    await _save(() => _store?.setString(_keySkin, next.name), () => _skin = before);
   }
 
   Future<void> setSpokenReply(bool on) async {
     if (_spokenReply == on) return;
+    final before = _spokenReply;
     _spokenReply = on;
     notifyListeners();
-    await _store?.setBool(_keySpokenReply, on);
+    await _save(
+      () => _store?.setBool(_keySpokenReply, on),
+      () => _spokenReply = before,
+    );
   }
 
   Future<void> setExpiryAlert(bool on) async {
     if (_expiryAlert == on) return;
+    final before = _expiryAlert;
     _expiryAlert = on;
     notifyListeners();
-    await _store?.setBool(_keyExpiryAlert, on);
+    await _save(
+      () => _store?.setBool(_keyExpiryAlert, on),
+      () => _expiryAlert = before,
+    );
   }
 
   Future<void> setDefaultServings(int value) async {
     final next = value.clamp(1, 8);
     if (_defaultServings == next) return;
+    final before = _defaultServings;
     _defaultServings = next;
     notifyListeners();
-    await _store?.setInt(_keyServings, next);
+    await _save(
+      () => _store?.setInt(_keyServings, next),
+      () => _defaultServings = before,
+    );
+  }
+
+  /// 설정 하나를 저장한다. **실패하면 이전 값으로 되돌린다.**
+  ///
+  /// IMPORTANT: 화면은 이미 새 값을 그렸다. 저장이 실패했는데 그대로 두면 다음 실행에서
+  /// 슬그머니 옛 값으로 돌아가고, 사용자는 자기가 바꾼 것이 왜 사라졌는지 알 수 없다.
+  ///
+  /// Returns: 저장에 성공했는지. 화면이 실패를 알릴 수 있다.
+  Future<bool> _save(
+    Future<bool?>? Function() write,
+    void Function() rollback,
+  ) async {
+    try {
+      await write();
+      return true;
+    } catch (error) {
+      rollback();
+      notifyListeners();
+      debugPrint('settings save failed: $error');
+      return false;
+    }
   }
 
   Future<void> markOnboarded() async {

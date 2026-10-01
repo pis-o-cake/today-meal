@@ -1,4 +1,4 @@
-/// 스플래시 (UI-00).
+/// 스플래시 (UI-01).
 ///
 /// 목업 `Splash.dc.html` 이다 — 냉장고가 위에서 **착지하고**, 문이 열리고, 웃고, 제목이
 /// 떠오른다.
@@ -69,7 +69,13 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _startWhenVisible() async {
     await LaunchScreen.gone();
     if (!mounted) return;
-    unawaited(_run());
+    // IMPORTANT: 준비 작업은 ViewModel 을 건드린다. 빌드가 도는 중에 알림이 오면
+    // 프레임워크가 "setState() called during build" 로 막는다 — 네이티브가 즉시
+    // 답하거나 채널이 없는 환경에서는 이 지점이 아직 첫 빌드 안이다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_run());
+    });
   }
 
   Future<void> _run() async {

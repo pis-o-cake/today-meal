@@ -1,4 +1,4 @@
-/// 조리 완료 (UI-10).
+/// 조리 완료 (UI-11).
 ///
 /// 목업 `mockup/canvas/CookDone.dc.html` 을 옮긴 것이다.
 ///
@@ -26,7 +26,10 @@ class CookDoneScreen extends StatelessWidget {
     required this.result,
     required this.minutes,
     required this.onClose,
-    required this.onCookAgain,
+    this.onUndo,
+    this.undoing = false,
+    this.undone = false,
+    this.undoError,
     this.error,
     super.key,
   });
@@ -40,13 +43,25 @@ class CookDoneScreen extends StatelessWidget {
   final int minutes;
 
   final VoidCallback onClose;
-  final VoidCallback onCookAgain;
+
+  /// 차감을 되돌린다. 되돌릴 것이 없으면 `null` 이며 버튼이 꺼진다.
+  ///
+  /// IMPORTANT: 화면을 닫는 동작이 아니다. 서버의 그 명령을 실제로 역산한다.
+  final VoidCallback? onUndo;
+
+  final bool undoing;
+
+  /// 되돌렸는지. 뺐다는 표시를 거두고 되돌린 사실을 말한다.
+  final bool undone;
+
+  /// 되돌리기가 실패한 이유. 실패를 성공으로 표시하지 않는다.
+  final Object? undoError;
 
   /// 조리 확인이 실패했다. **성공한 것처럼 그리지 않는다.**
   final Object? error;
 
   /// 서버가 실제로 재고를 빼고 기록을 남겼는지.
-  bool get _logged => error == null && (result?.didApply ?? false);
+  bool get _logged => error == null && !undone && (result?.didApply ?? false);
 
   @override
   Widget build(BuildContext context) {
@@ -118,10 +133,25 @@ class CookDoneScreen extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _Deducted(plan: plan, result: result, error: error),
+                child: _Deducted(
+                  plan: plan,
+                  result: result,
+                  error: error,
+                  undone: undone,
+                  undoError: undoError,
+                ),
               ),
+              if (undoError != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                  child: const _Notice(
+                    icon: Icons.error_outline_rounded,
+                    grade: Freshness.urgent,
+                    text: Strings.historyUndoFailed,
+                  ),
+                ),
               const SizedBox(height: 10),
-              _VoiceHint(skin: skin, canDeduct: plan.canDeduct),
+              _VoiceHint(skin: skin, canDeduct: plan.canDeduct && !undone),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
                 child: Row(
@@ -130,14 +160,25 @@ class CookDoneScreen extends StatelessWidget {
                       child: SizedBox(
                         height: 56,
                         child: OutlinedButton.icon(
-                          onPressed: onCookAgain,
+                          onPressed: undoing ? null : onUndo,
                           style: OutlinedButton.styleFrom(
                             foregroundColor: skin.ink,
                             side: BorderSide(color: skin.divider),
                             shape: const StadiumBorder(),
                           ),
-                          icon: const Icon(Icons.undo_rounded, size: 18),
-                          label: const Text(Strings.undo),
+                          icon: undoing
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: skin.inkMuted,
+                                  ),
+                                )
+                              : const Icon(Icons.undo_rounded, size: 18),
+                          label: Text(
+                            undone ? Strings.cookDoneUndone : Strings.undo,
+                          ),
                         ),
                       ),
                     ),
@@ -186,16 +227,32 @@ class _Deducted extends StatelessWidget {
     required this.plan,
     required this.result,
     required this.error,
+    this.undone = false,
+    this.undoError,
   });
 
   final CookPlan plan;
   final CookedResult? result;
   final Object? error;
 
+  /// 차감을 되돌렸는지. 뺐다는 목록을 그대로 두면 지금 재고와 다른 말을 한다.
+  final bool undone;
+
+  /// 되돌리기가 실패했다. 뺀 상태가 그대로이므로 목록은 유지하고 실패만 알린다.
+  final Object? undoError;
+
   @override
   Widget build(BuildContext context) {
     final skin = context.skin;
     final text = Theme.of(context).textTheme;
+
+    if (undone) {
+      return const _Notice(
+        icon: Icons.undo_rounded,
+        grade: Freshness.fresh,
+        text: Strings.cookDoneUndoneBody,
+      );
+    }
 
     // 확인이 실패했거나 차감 단위가 없다. 뺐다고 말하지 않는다.
     if (error != null || result == null || !plan.canDeduct) {
@@ -235,20 +292,32 @@ class _Deducted extends StatelessWidget {
               ],
             ),
           ),
-          // 양을 몰라 빼지 못한 재료. **숫자를 지어내지 않았다는 사실을 밝힌다.**
+          // 실제로 뺀 재료. **무엇을 얼마나 뺐는지** 보여야 틀린 것을 알아본다.
+          for (final (index, change) in cooked.changes.indexed)
+            _Row(
+              name: change.name,
+              meta: Strings.cookDoneDelta(
+                '${Labels.number(change.before)}${Labels.unit(change.unit)}',
+                '${Labels.number(change.after)}${Labels.unit(change.unit)}',
+              ),
+              chip: Strings.cookDoneAuto,
+              used: true,
+              divided: index > 0,
+            ),
+          // 빼지 못한 재료. 숫자를 지어내지 않았다는 사실을 밝힌다.
           for (final (index, name) in cooked.skippedIngredients.indexed)
             _Row(
               name: name,
-              meta: Strings.quantityUnknown,
+              meta: Strings.cookDoneSkipped,
               chip: Strings.cookDoneKept,
               used: false,
-              divided: index > 0,
+              divided: index > 0 || cooked.changes.isNotEmpty,
             ),
-          if (cooked.skippedIngredients.isEmpty)
+          if (cooked.changes.isEmpty && cooked.skippedIngredients.isEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
               child: Text(
-                Labels.availability(MenuAvailability.ready),
+                Strings.cookDoneNothing,
                 style: text.labelMedium?.copyWith(
                     color: skin.inkSubtle, fontWeight: FontWeight.w500),
               ),

@@ -15,8 +15,10 @@ import '../remote/social_sign_in.dart';
 ///
 /// CAUTION: 비밀번호와 토큰을 로그에 남기지 않는다.
 class RemoteAuthRepository implements AuthRepository {
-  RemoteAuthRepository(this._api, {SocialSignIn social = const NoSocialSignIn()})
-      : _social = social;
+  RemoteAuthRepository(
+    this._api, {
+    SocialSignIn social = const NoSocialSignIn(),
+  }) : _social = social;
 
   final ApiClient _api;
   final SocialSignIn _social;
@@ -26,12 +28,9 @@ class RemoteAuthRepository implements AuthRepository {
     required String email,
     required String password,
     required String nickname,
-  }) =>
-      _open(() => _api.signUp(
-            email: email,
-            password: password,
-            nickname: nickname,
-          ));
+  }) => _open(
+    () => _api.signUp(email: email, password: password, nickname: nickname),
+  );
 
   @override
   Future<EmailAvailability> checkEmail(String email) async {
@@ -53,8 +52,7 @@ class RemoteAuthRepository implements AuthRepository {
   Future<AuthResult> signIn({
     required String email,
     required String password,
-  }) =>
-      _open(() => _api.signIn(email: email, password: password));
+  }) => _open(() => _api.signIn(email: email, password: password));
 
   @override
   Future<AuthResult> signInWith(SocialProvider provider) async {
@@ -71,10 +69,12 @@ class RemoteAuthRepository implements AuthRepository {
       return const AuthResult.failed(AuthFailure.unreachable);
     }
 
-    return _open(() => _api.signInWithProvider(
-          provider: provider.path,
-          accessToken: accessToken,
-        ));
+    return _open(
+      () => _api.signInWithProvider(
+        provider: provider.path,
+        accessToken: accessToken,
+      ),
+    );
   }
 
   @override
@@ -102,8 +102,7 @@ class RemoteAuthRepository implements AuthRepository {
   }
 
   /// 세션을 여는 두 경로가 같은 응답을 준다. 실패 해석도 한곳에 둔다.
-  Future<AuthResult> _open(
-      Future<Map<String, dynamic>> Function() call) async {
+  Future<AuthResult> _open(Future<Map<String, dynamic>> Function() call) async {
     try {
       final body = await call();
       final token = body['access_token'] as String?;
@@ -121,17 +120,18 @@ class RemoteAuthRepository implements AuthRepository {
   }
 
   AuthAccount _accountFrom(Map<String, dynamic> json) => AuthAccount(
-        userId: json['user_id'] as int,
-        householdId: json['household_id'] as int,
-        provider: json['provider'] as String? ?? 'email',
-        email: json['email'] as String?,
-        nickname: json['display_name'] as String?,
-      );
+    userId: json['user_id'] as int,
+    householdId: json['household_id'] as int,
+    provider: json['provider'] as String? ?? 'email',
+    email: json['email'] as String?,
+    nickname: json['display_name'] as String?,
+  );
 
   /// 서버 응답을 사용자가 고칠 수 있는 상태로 옮긴다.
   ///
   /// 상태 코드가 정본이다 — 본문 문구는 로케일에 따라 바뀌므로 분기의 근거로 쓰지 않는다.
-  AuthFailure _failureOf(DioException error) => switch (error.response?.statusCode) {
+  AuthFailure _failureOf(DioException error) =>
+      switch (error.response?.statusCode) {
         409 => AuthFailure.emailTaken,
         401 => AuthFailure.wrongCredentials,
         422 || 400 => AuthFailure.invalidInput,
@@ -175,7 +175,18 @@ class RemoteInventoryRepository implements InventoryRepository {
       batchFromJson(await _api.editBatch(batchId, edit.toJson()));
 
   @override
-  Future<void> discardBatch(int batchId) => _api.discardBatch(batchId);
+  Future<void> discardBatch(int batchId, {String? commandId}) =>
+      _api.discardBatch(batchId, commandId: commandId);
+
+  @override
+  Future<IngredientBatch> addBatch(BatchDraft draft) async =>
+      batchFromJson(await _api.addBatch(draft.toJson()));
+
+  @override
+  Future<int> discardAll({String? commandId}) async {
+    final body = await _api.discardAll(commandId: commandId);
+    return body['discarded_count'] as int? ?? 0;
+  }
 }
 
 class RemoteCommandRepository implements CommandRepository {
@@ -187,8 +198,13 @@ class RemoteCommandRepository implements CommandRepository {
   Future<CommandOutcome> interpret({
     required String commandId,
     required String utterance,
+    String? follows,
   }) async {
-    final body = await _api.interpret(commandId: commandId, utterance: utterance);
+    final body = await _api.interpret(
+      commandId: commandId,
+      utterance: utterance,
+      follows: follows,
+    );
     return _outcome(body);
   }
 
@@ -207,11 +223,8 @@ class RemoteCommandRepository implements CommandRepository {
   @override
   Future<List<DateTime>> historyDays({int limit = 60}) async {
     final rows = await _api.historyDays(limit: limit);
-    return rows
-        .map((e) => DateTime.parse(e as String))
-        .toList(growable: false);
+    return rows.map((e) => DateTime.parse(e as String)).toList(growable: false);
   }
-
 
   CommandOutcome _outcome(Map<String, dynamic> body) {
     final screen = body['screen'] as Map<String, dynamic>? ?? const {};
@@ -224,6 +237,8 @@ class RemoteCommandRepository implements CommandRepository {
             before: e['before'] as String?,
             after: e['after'] as String?,
             unit: e['unit'] as String?,
+            dateKind: DateKind.parse(e['date_kind'] as String?),
+            dateValue: DateTime.tryParse(e['date_value'] as String? ?? ''),
           ),
         )
         .toList(growable: false);
@@ -231,6 +246,9 @@ class RemoteCommandRepository implements CommandRepository {
       commandId: body['command_id'] as String? ?? '',
       status: body['status'] as String? ?? 'failed',
       intent: body['intent'] as String? ?? 'unknown',
+      focus: (screen['focus'] as List<dynamic>? ?? const [])
+          .whereType<String>()
+          .toList(growable: false),
       spoken: body['spoken'] as String?,
       clarificationQuestion: body['clarification_question'] as String?,
       undoToken: body['undo_token'] as String?,
@@ -248,10 +266,12 @@ class RemoteMenuRepository implements MenuRepository {
   Future<List<MenuSuggestion>> createSuggestions({
     int? servings,
     int? maxMinutes,
+    List<String> focus = const [],
   }) async {
     final rows = await _api.createSuggestions(
       servings: servings,
       maxMinutes: maxMinutes,
+      focus: focus,
     );
     return rows
         .map((e) => suggestionFromJson(e as Map<String, dynamic>))
@@ -263,8 +283,8 @@ class RemoteMenuRepository implements MenuRepository {
       detailFromJson(await _api.recipeDetail(recipeId, servings: servings));
 
   @override
-  Future<CookedResult> markCooked(int suggestionId) async =>
-      cookedFromJson(await _api.markCooked(suggestionId));
+  Future<CookedResult> markCooked(int suggestionId, {int? servings}) async =>
+      cookedFromJson(await _api.markCooked(suggestionId, servings: servings));
 }
 
 /// 영상 레시피.

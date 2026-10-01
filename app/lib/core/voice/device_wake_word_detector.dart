@@ -50,13 +50,18 @@ class DeviceSpeechWakeWordDetector implements WakeWordDetector {
   final String _phrase;
   final Logger _logger;
   final _detections = StreamController<void>.broadcast();
+  final _heard = StreamController<Heard>.broadcast();
 
   bool _running = false;
   int _failures = 0;
+  int _segment = 0;
   Future<void>? _loop;
 
   @override
   Stream<void> get detections => _detections.stream;
+
+  @override
+  Stream<Heard> get heard => _heard.stream;
 
   @override
   Future<void> start() async {
@@ -85,6 +90,7 @@ class DeviceSpeechWakeWordDetector implements WakeWordDetector {
   Future<void> dispose() async {
     await stop();
     await _detections.close();
+    await _heard.close();
   }
 
   Future<void> _run() async {
@@ -104,9 +110,13 @@ class DeviceSpeechWakeWordDetector implements WakeWordDetector {
   /// Returns: 이 구간에서 호출어를 찾았는지.
   Future<bool> _listenSegment() async {
     var matched = false;
+    final segment = ++_segment;
     try {
       await _source.listenOnce((transcript) {
         if (matched || !_running) return;
+        if (transcript.isNotEmpty && !_heard.isClosed) {
+          _heard.add((segment: segment, transcript: transcript));
+        }
         if (matchWakePhrase(transcript, phrase: _phrase) == null) return;
         matched = true;
         _logger.i('Wake phrase detected');
@@ -136,6 +146,9 @@ class DisabledWakeWordDetector implements WakeWordDetector {
 
   @override
   Stream<void> get detections => _detections.stream;
+
+  @override
+  Stream<Heard> get heard => const Stream.empty();
 
   @override
   Future<void> start() async {

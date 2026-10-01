@@ -85,7 +85,12 @@ class DeviceWakeListenSource implements WakeListenSource {
           pauseFor: silence,
           listenFor: segment,
         ),
-        onResult: (result) => onTranscript(result.recognizedWords),
+        // 1순위 후보만 보면 "헤이"가 다르게 받아써진 구간을 놓친다. 후보를 모두 넘긴다.
+        onResult: (result) {
+          for (final heard in result.alternates) {
+            onTranscript(heard.recognizedWords);
+          }
+        },
       );
       // 구간이 끝나는 경로가 상태 콜백뿐이면 콜백이 오지 않는 기기에서 영구 대기한다.
       await ended.future.timeout(segment + silence, onTimeout: () {

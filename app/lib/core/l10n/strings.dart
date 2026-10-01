@@ -25,6 +25,19 @@ class Strings {
   static const voiceSuspended = '앱을 열어두면 불러서 쓸 수 있어요';
   static const voiceUnavailable = '마이크를 쓸 수 없어요';
   static const voiceRetry = '다시 말해주세요';
+
+  /// 빠진 내용을 알린 뒤 덧붙이는 말. 그 자리에서 답을 듣지 않는다.
+  static const voiceSayAgain = '다시 불러서 처음부터 말해주세요';
+
+  /// 서버에 보내는 동안 읽는 말.
+  static const voiceChecking = '말씀하신 내용을 확인 중이에요';
+
+  /// 반영하지 못했을 때 읽는 말. 읽고 나면 화면이 닫히므로 **다시 부르라고** 한다.
+  static const voiceNotApplied = '반영하지 못했어요. 다시 불러주세요';
+  /// 반영을 마쳤다는 한마디.
+  ///
+  /// 듣던 화면(글래스)과 전용 결과 화면이 **같은 말**을 쓴다. 따로 두었을 때 한쪽만
+  /// 고쳐져 화면마다 다른 말을 했다.
   static const voiceDone = '반영했어요';
   static const voiceTranscribing = '받아 적는 중';
 
@@ -32,7 +45,6 @@ class Strings {
   // 상태를 알리고, 이쪽은 화면을 가득 채워 캐릭터가 말을 거는 자리다.
   static const voiceHeroListening = '쫑긋, 듣고 있어요';
   static const voiceHeroClarifying = '하나만 물어볼게요!';
-  static const voiceHeroDone = '싱싱해요!';
 
   /// 아직 아무 말도 들리지 않았을 때. **예시 문장을 채우지 않는다.**
   static const voiceNothingHeard = '말씀하시면 여기에 적어요';
@@ -89,19 +101,19 @@ class Strings {
   static const tabMyPage = '마이페이지';
 
   // 신선도 밴드. 등급은 서버가 판정하고 문구만 여기 있다.
-  static const bandExpired = '앗, 기한이 지났어요';
+  static const bandExpired = '앗, 때를 놓쳤어요';
   static const bandExpiredHint = '먹기 전에 상태를 확인해 주세요';
-  static const bandUrgent = '기한이 코앞이에요!';
-  static const bandUrgentHint = '하루이틀 안에 쓰면 좋아요';
-  static const bandSoon = '기한이 며칠 안 남았어요';
-  static const bandSoonHint = '이번 주 안에 쓰면 좋아요';
-  static const bandFresh = '기한 넉넉해요~';
+  static const bandUrgent = '빨리 먹어야 해요!';
+  static const bandUrgentHint = '지금 요리하면 딱 좋아요';
+  static const bandSoon = '며칠 안에 먹어요';
+  static const bandSoonHint = '이번 주 메뉴로 챙겨 둘게요';
+  static const bandFresh = '천천히 먹어도 돼요~';
   static const bandFreshHint = '아직 여유 있어요';
-  static const bandUnknown = '기한이 언제예요?';
-  static const bandUnknownHint = '기한을 말해 주시면 챙길게요';
+  static const bandUnknown = '언제까지 먹어야 해요?';
+  static const bandUnknownHint = '날짜를 말해 주시면 챙길게요';
   static String bandCount(int n) => '$n가지';
 
-  // 냉장고 타일의 상태 칩. 밴드 한마디("기한이 코앞이에요!")는 타일에 들어가지 않고,
+  // 냉장고 타일의 상태 칩. 밴드 한마디("빨리 먹어야 해요!")는 타일에 들어가지 않고,
   // 거르개의 짧은 이름("코앞")만으로는 무엇의 코앞인지 알 수 없다.
   static const bandWordExpired = '기한 지남';
   static const bandWordUrgent = '기한 코앞';
@@ -147,8 +159,8 @@ class Strings {
   static String menuServingsBasis(int n) => '$n인분 기준';
   static String menuOthers(int n) => '다른 메뉴 $n개';
   static const fridgeOpen = '냉장고에서 확인하기';
-  static const dateTell = '기한 말하기';
-  static const dateTellExample = '“계란 기한은 10월 20일”';
+  static const dateTell = '날짜 말하기';
+  static const dateTellExample = '“계란은 10월 20일까지야”';
   static const menuIngredients = '재료';
   static const menuSteps = '조리 순서';
   static const menuHave = '있어요';
@@ -168,6 +180,7 @@ class Strings {
   static const fridgeSearchEmptyHint = '검색이나 보관 위치 필터를 해제해 보세요';
   static const fridgeAll = '전체';
   static const fridgeStatusFilter = '기한 상태로 거르기';
+  static const fridgeAdd = '재료 넣기';
 
   /// 기한이 지난 등급의 주 행동에 붙는 한 줄. 무엇을 하러 가는지 말한다.
   static String fridgeCheckHint(String name) => '$name · 상태 보고 정리해요';
@@ -212,7 +225,11 @@ class Strings {
   };
 
   // 기한 종류. 서로 다른 정보이므로 문구도 구분한다.
-  static const dateUseBy = '소비기한';
+  /// 기한을 말하지 않고 넣었다. 없는 날짜를 채우지 않고 그대로 알린다.
+  static const expiryNotGiven = '기한 미입력';
+
+  // IMPORTANT: 제품 용어는 "유통기한" 하나다. 소비기한으로 저장된 값도 같은 말로 보인다.
+  static const dateUseBy = '유통기한';
   static const dateSellBy = '유통기한';
   static const dateBestBefore = '품질유지';
   static const dateManufactured = '제조일';
@@ -222,11 +239,7 @@ class Strings {
   // 기록 화면
   static const historyTitle = '기록';
   static const historyUndoHint = '말한 대로 바뀐 내역이에요. 잘못되면 되돌릴 수 있어요';
-  static const historyToday = '오늘';
   static const historyUndoFailed = '되돌리지 못했어요';
-  static const historyOlderDay = '이전 기록';
-  static const historyNewerDay = '다음 기록';
-  static const historyEmptyDay = '이 날은 기록이 없어요';
   static const historyStockIn = '입고';
   static const historyConsume = '사용';
   static const historyAdjust = '보정';
@@ -251,11 +264,11 @@ class Strings {
   /// 수량을 바꾸지 않은 변경. 개봉·이동처럼 상태만 바뀐 기록에 쓴다.
   static const historyNoQuantityChange = '수량 변화 없음';
 
-  // UI-00 스플래시
+  // UI-01 스플래시
   static const splashLabel = '오늘 뭐 먹지? 앱을 여는 중';
   static const splashFailed = '앱을 여는 데 실패했어요';
 
-  // UI-01 권한 안내
+  // UI-04 권한 안내
   static const permissionTitle = '말로 쓰려면\n마이크가 필요해요';
   static const permissionSubtitle = '냉장고 기록을 손 대신 말로 남겨요';
   static const permissionSectionLabel = '필요한 권한';
@@ -278,7 +291,7 @@ class Strings {
   static const permissionDeniedHint = '설정에서 허용하면 말로 쓸 수 있어요. 지금은 조회만 돼요';
   static const permissionOpenSettings = '설정 열기';
 
-  // UI-09 로그인
+  // UI-02 로그인
   static const loginEmail = '이메일';
   static const loginEmailHint = 'example@email.com';
   static const loginPassword = '비밀번호';
@@ -308,7 +321,7 @@ class Strings {
   static const loginProviderPending = '아직 연결하지 않은 로그인이에요';
   static const loginProviderPendingHint = '지금은 이메일 가입이나 둘러보기로 시작할 수 있어요';
 
-  // UI-10 회원가입
+  // UI-03 회원가입
   static const signUpTitle = '회원가입';
   static const signUpBack = '뒤로';
   static const signUpNickname = '닉네임';
@@ -341,7 +354,7 @@ class Strings {
   /// 목업의 링크는 자기 화면을 다시 열지만, 그것을 "본문을 보여줬다" 로 쓰지 않는다.
   static const termsPending = '약관 본문은 아직 준비 중이에요';
 
-  // UI-11 마이페이지
+  // UI-13 마이페이지
   static const myPageTitle = '마이페이지';
   static String myPageKitchen(String nickname) => '$nickname님의 부엌';
   static const myPageGuestKitchen = '게스트로 둘러보는 중';
@@ -367,6 +380,16 @@ class Strings {
   static const myPageAlertSection = '알림';
   static const myPageExpiryAlert = '기한 알림';
   static const myPageAlertTiming = '알림 시점';
+  static const myPageFridgeSection = '냉장고';
+  static const myPageEmptyFridge = '냉장고 비우기';
+  static const emptyFridgeTitle = '냉장고를 비울까요?';
+  static const emptyFridgeBody = '모든 재료를 버려요. 기록에서 한 번에 되돌릴 수 있어요.';
+  static const emptyFridgeConfirm = '비우기';
+  static const emptyFridgeFailed = '냉장고를 비우지 못했어요. 다시 해 주세요.';
+
+  /// 비운 결과. 버릴 것이 없었으면 그렇다고 말한다 — "0개를 버렸어요" 는 어색하다.
+  static String emptyFridgeDone(int n) =>
+      n == 0 ? '비울 재료가 없어요' : '재료 $n가지를 버렸어요';
   static const myPageAccountSection = '계정';
   static const myPageSignOut = '로그아웃';
 
@@ -379,6 +402,7 @@ class Strings {
   static const cookPicksBadge = 'AI 추천';
   static const cookPicksTitle = '냉장고 재료로 요리하기';
   static const cookPicksEmpty = '추천할 요리를 아직 못 골랐어요';
+  static const cookPicksRefresh = '추천 새로 받기';
 
   /// 추천을 기다리는 동안 돌려 보여주는 말.
   ///
@@ -418,6 +442,21 @@ class Strings {
   static const cookingClose = '조리 모드 닫기';
   static const cookingAllSteps = '전체 단계 보기';
   static const cookingReading = '읽어 주는 중';
+  static const cookingReadAgain = '다시 듣기';
+
+  /// 말로 건 타이머가 걸렸음을 알리는 말.
+  static String cookingTimerStarted(int seconds) {
+    final minutes = seconds ~/ 60;
+    final rest = seconds % 60;
+    final length = [
+      if (minutes > 0) '$minutes분',
+      if (rest > 0) '$rest초',
+    ].join(' ');
+    return '$length 타이머를 시작할게요';
+  }
+
+  /// 오늘 화면에서 접어 둔 재료 수.
+  static String otherIngredients(int n) => '다른 재료 $n개';
   static const cookingNext = '다음 단계';
   static const cookingPrev = '이전';
   static const cookingNextLabel = '다음';
@@ -440,9 +479,17 @@ class Strings {
   static const cookDoneUsedTitle = '쓴 재료를 냉장고에서 뺐어요';
   static const cookDoneAuto = '자동 차감';
   static const cookDoneKept = '그대로';
+
+  /// 빼지 못한 재료. 재고에 없거나 단위를 맞출 수 없었다.
+  static const cookDoneSkipped = '빼지 못했어요';
+
+  /// 뺀 것도 못 뺀 것도 없다. 레시피의 재료가 모두 기본 양념이었다.
+  static const cookDoneNothing = '냉장고에서 뺄 재료가 없었어요';
   static const cookDoneVoiceHint = '틀렸으면 “계란은 3개 썼어”라고 말해 주세요';
   static const cookDoneLogged = '기록에도 남겼어요';
   static const cookDoneConfirm = '확인';
+  static const cookDoneUndone = '되돌렸어요';
+  static const cookDoneUndoneBody = '뺀 재료를 냉장고에 되돌려 놨어요';
   static String cookDoneSummary(String name, int servings, int minutes) =>
       '$name · $servings인분 · $minutes분 걸렸어요';
   static String cookDoneDelta(String before, String after) => '$before → $after';
@@ -454,6 +501,7 @@ class Strings {
   static const itemBack = '뒤로';
   static const itemFieldName = '이름';
   static const itemFieldQuantity = '수량';
+  static const itemEditQuantity = '수량 직접 입력';
   static const itemFieldStorage = '보관';
   static const itemFieldDateKind = '날짜 종류';
   static const itemFieldDate = '날짜';
@@ -471,6 +519,16 @@ class Strings {
       '$name${Particles.ro(name)} 만들 수 있어요';
   static String itemDetail(String kind, String date, String remain) =>
       '$kind $date · $remain';
+
+  // 재료 넣기
+  static const addTitle = '재료 넣기';
+  static const addFieldUnit = '단위';
+  static const addNameHint = '예: 두부';
+  static const addQuantityHint = '예: 2';
+  static const addDateNone = '모르면 비워 두세요';
+  static const addDateClear = '날짜 지우기';
+  static const addSave = '넣기';
+  static const addVoiceHint = '말로도 넣어요 · “두부 두 모 넣었어”';
 
   // 공통
   static const empty = '아직 등록한 재료가 없어요';

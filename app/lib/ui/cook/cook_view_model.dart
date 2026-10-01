@@ -11,16 +11,24 @@ import '../../domain/model/menu.dart';
 import '../../domain/repository/repositories.dart';
 
 class CookViewModel extends ChangeNotifier {
-  CookViewModel({required MenuRepository menu, required VideoRepository video})
-      : _menu = menu,
-        _video = video;
+  CookViewModel({
+    required MenuRepository menu,
+    required VideoRepository video,
+    int Function()? defaultServings,
+  })  : _menu = menu,
+        _video = video,
+        _defaultServings = defaultServings;
 
   final MenuRepository _menu;
   final VideoRepository _video;
 
+  /// 마이페이지에서 고른 기본 인분. 추천 요청에 실어 보낸다.
+  final int Function()? _defaultServings;
+
   bool _loadingPicks = false;
   List<MenuSuggestion> _picks = const [];
   Object? _picksError;
+  List<String> _focus = const [];
 
   bool _summarizing = false;
   VideoRecipe? _recipe;
@@ -32,6 +40,9 @@ class CookViewModel extends ChangeNotifier {
   List<MenuSuggestion> get picks => _picks;
 
   Object? get picksError => _picksError;
+
+  /// 지금 추천이 따른 재료. 말로 지목했을 때만 있다.
+  List<String> get focus => _focus;
 
   /// 영상 링크를 정리하는 중인지. 모델 호출이라 몇 초 걸린다.
   bool get summarizing => _summarizing;
@@ -52,15 +63,23 @@ class CookViewModel extends ChangeNotifier {
   ///
   /// Args:
   ///   force: 이미 받아 둔 것이 있어도 다시 받는다. 사용자가 다시 시도를 누를 때다.
-  Future<void> loadPicks({bool force = false}) async {
+  ///   focus: 사용자가 지목한 재료. 있으면 그 재료가 주재료인 메뉴만 받는다.
+  Future<void> loadPicks({
+    bool force = false,
+    List<String> focus = const [],
+  }) async {
     if (_loadingPicks) return;
     // 탭을 오갈 때마다 모델을 다시 부르지 않는다. 다시 받고 싶으면 force 로 부른다.
     if (!force && _picks.isNotEmpty) return;
     _loadingPicks = true;
     _picksError = null;
+    _focus = focus;
     notifyListeners();
     try {
-      _picks = await _menu.createSuggestions();
+      _picks = await _menu.createSuggestions(
+        servings: _defaultServings?.call(),
+        focus: focus,
+      );
     } catch (error) {
       _picks = const [];
       _picksError = error;

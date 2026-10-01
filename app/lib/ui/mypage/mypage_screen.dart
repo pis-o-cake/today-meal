@@ -1,6 +1,8 @@
-/// 마이페이지 (UI-11).
+/// 마이페이지 (UI-13).
 ///
 /// 목업 `MyPage.dc.html` 이다 — 프로필, 화면 테마, 음성·식사·알림 설정, 로그아웃.
+/// 냉장고 비우기는 목업 밖의 항목이다. 되돌리기 전까지 모든 재료가 사라지는 일이라 냉장고
+/// 화면에 두지 않고 로그아웃처럼 설정 끝에 둔다.
 ///
 /// **실제 닉네임과 로그인 경로를 표시한다.** 목업의 "철님", "카카오 계정"을 하드코딩하지
 /// 않는다. 게스트는 게스트라고 적고 로그인 진입을 준다.
@@ -8,6 +10,8 @@
 /// 음성 응답 토글은 TTS 만 제어한다 — 마이크 음소거와 다른 설정이다. 기한 알림은 앱 안의
 /// 표시이며 OS 푸시가 아니다.
 library;
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +23,8 @@ import '../../core/design/tokens.dart';
 import '../../core/l10n/strings.dart';
 import '../../core/settings/app_settings.dart';
 import '../../domain/model/inventory.dart';
+import '../fridge/fridge_view_model.dart';
+import '../home/home_view_model.dart';
 import '../widgets/glass.dart';
 import '../widgets/mascot.dart';
 import '../widgets/screen_scaffold.dart';
@@ -131,6 +137,23 @@ class MyPageScreen extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           _Section(
+            title: Strings.myPageFridgeSection,
+            skin: skin,
+            padded: false,
+            child: _Rows(
+              skin: skin,
+              rows: [
+                _Row.value(
+                  label: Strings.myPageEmptyFridge,
+                  value: '',
+                  danger: true,
+                  onTap: () => _confirmEmpty(context),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          _Section(
             title: Strings.myPageAccountSection,
             skin: skin,
             padded: false,
@@ -150,6 +173,43 @@ class MyPageScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 냉장고 비우기를 확인받는다. 모든 재료를 한 번에 버리는 일이라 반드시 한 번 묻는다.
+///
+/// 비운 뒤 냉장고와 오늘 화면을 다시 읽는다 — 옛 재고로 추천이 나가면 안 된다.
+Future<void> _confirmEmpty(BuildContext context) async {
+  final fridge = context.read<FridgeViewModel>();
+  final home = context.read<HomeViewModel>();
+  final messenger = ScaffoldMessenger.of(context);
+  final sure = await showDialog<bool>(
+    context: context,
+    builder: (dialog) => AlertDialog(
+      title: const Text(Strings.emptyFridgeTitle),
+      content: const Text(Strings.emptyFridgeBody),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialog).pop(false),
+          child: const Text(Strings.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialog).pop(true),
+          child: const Text(Strings.emptyFridgeConfirm),
+        ),
+      ],
+    ),
+  );
+  if (sure != true) return;
+
+  final count = await fridge.discardAll();
+  if (count != null && count > 0) unawaited(home.load());
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(
+        count == null ? Strings.emptyFridgeFailed : Strings.emptyFridgeDone(count),
+      ),
+    ),
+  );
 }
 
 /// 프로필. 게스트와 로그인한 사람을 구분한다.

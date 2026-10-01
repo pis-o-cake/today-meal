@@ -22,6 +22,15 @@ class DeviceSpeechTranscriber implements SpeechTranscriber {
       : _engine = engine,
         _logger = logger ?? Logger(printer: SimplePrinter());
 
+  /// 명령을 말하기 시작할 때까지 기다리는 시간.
+  static const defaultPatience = Duration(seconds: 4);
+
+  /// 말이 멎은 뒤 명령이 끝났다고 보는 시간.
+  ///
+  /// 인식기의 자체 종료 판정에 맡기면 문장 중간의 짧은 쉼에서 끊긴다. 받아쓰기 모드로
+  /// 계속 듣게 두고, 전사가 이 시간 동안 늘지 않으면 여기서 끝낸다.
+  static const endSilence = Duration(milliseconds: 1800);
+
   final SpeechEngine _engine;
   final Logger _logger;
 
@@ -33,6 +42,7 @@ class DeviceSpeechTranscriber implements SpeechTranscriber {
   @override
   Future<String> transcribeOnce({
     String localeId = 'ko_KR',
+    Duration? patience,
     void Function(String partial)? onPartial,
     void Function(double level)? onLevel,
   }) async {
@@ -42,6 +52,7 @@ class DeviceSpeechTranscriber implements SpeechTranscriber {
 
     final completer = Completer<String>();
     var latest = '';
+    Timer? quiet;
 
     // IMPORTANT: 인식 오류를 보지 않으면 최종 결과를 기다리며 타임아웃까지 버틴다.
     // 실기기에서 error_client 하나에 26초를 허비했다. 오류가 오면 곧바로 끝낸다.
@@ -56,28 +67,41 @@ class DeviceSpeechTranscriber implements SpeechTranscriber {
         localeId: localeId,
         partialResults: true,
         cancelOnError: true,
-        // 명령이 짧으므로 받아쓰기 모드가 아니라 확정 모드를 쓴다.
-        listenMode: ListenMode.confirmation,
+        // IMPORTANT: 확정 모드는 문장 중간의 짧은 쉼에서 최종 결과를 내 명령이 반으로
+        // 잘렸다. 잘린 앞부분이 되묻기를 부르고 뒷부분이 답으로 들어갔다. 받아쓰기 모드로
+        // 듣고 끝은 [endSilence] 로 정한다.
+        listenMode: ListenMode.dictation,
         // WARNING: `pauseFor` 는 발화 뒤 침묵만이 아니라 **말을 시작하기까지의 대기**
         // 에도 쓰인다. 2초로 두었더니 사용자가 입을 떼기 전에 error_speech_timeout 으로
         // 끊겼다. 실기기에서 확인한 값이다.
         //
         // 길게 두면 말이 끝난 뒤 기다리는 시간도 함께 길어진다. 4초가 타협점이고,
         // 실제 사용에서 답답하면 줄인다.
-        pauseFor: const Duration(seconds: 4),
+        pauseFor: patience ?? defaultPatience,
         listenFor: const Duration(seconds: 15),
       ),
       // 플러그인은 대략 -2..10 범위의 dB 유사값을 준다. 기기마다 달라 정확한 크기로
       // 쓰지 않고 **연출의 세기**로만 쓴다.
+      // 끝난 뒤에 오는 값은 버린다. 다음 단계의 화면을 듣기로 되돌리면 안 된다.
       onSoundLevelChange: onLevel == null
           ? null
-          : (level) => onLevel(((level + 2) / 12).clamp(0.0, 1.0)),
+          : (level) {
+              if (completer.isCompleted) return;
+              onLevel(((level + 2) / 12).clamp(0.0, 1.0));
+            },
       onResult: (result) {
+        if (completer.isCompleted) return;
         latest = result.recognizedWords;
         onPartial?.call(latest);
         if (result.finalResult && !completer.isCompleted) {
           completer.complete(latest);
+          return;
         }
+        if (latest.trim().isEmpty) return;
+        quiet?.cancel();
+        quiet = Timer(endSilence, () {
+          if (!completer.isCompleted) completer.complete(latest);
+        });
       },
     );
 
@@ -89,6 +113,7 @@ class DeviceSpeechTranscriber implements SpeechTranscriber {
     );
 
     final text = await completer.future;
+    quiet?.cancel();
     await errorSub.cancel();
     await _speech.stop();
     if (text.trim().isEmpty) {

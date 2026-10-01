@@ -8,11 +8,10 @@ import '../../domain/repository/repositories.dart';
 /// 수량 변경과 상태 변경을 한 타임라인에 섞어 받는다. 상태 변경은 잔량 칸이 비어 있어
 /// **개봉과 이동이 수량을 바꾸지 않는다는 사실**이 화면에 드러난다.
 ///
-/// 기록은 **하루 단위**로 본다. 오늘로 열고 달력에서 다른 날을 고른다 — 대화가 길어지면
-/// 하나의 긴 목록에서 "어제 뭐라고 했더라" 를 찾을 수 없다.
+/// 기록은 **전체를 최근순으로** 받는다. 날짜로 자르지 않는다 — 되돌릴 수 있는 것은 전체에서
+/// 가장 최근의 변경이고, 날짜를 골라 보면 그 날의 마지막 줄을 최신으로 착각하게 된다.
 ///
-/// IMPORTANT: 날짜를 앱에서 자르지 않는다. 가구의 시간대로 잘라야 밤 늦게 한 일이 다음
-/// 날로 넘어가지 않으며, 그 시간대는 서버가 안다.
+/// 화면은 대화처럼 쌓아 아래가 가장 최근이며, 열 때 그 끝을 보여준다.
 class HistoryViewModel extends ChangeNotifier {
   HistoryViewModel({required CommandRepository command}) : _command = command;
 
@@ -22,30 +21,16 @@ class HistoryViewModel extends ChangeNotifier {
   Object? _error;
   List<ChangeRecord> _records = const [];
 
-  /// 지금 보고 있는 날. 처음에는 오늘이다.
-  DateTime _day = _todayOnly();
-
-  /// 기록이 남은 날짜. 달력이 고를 수 있는 날이다.
-  List<DateTime> _days = const [];
-
   bool _undoing = false;
   Object? _undoError;
 
   bool get loading => _loading;
   Object? get error => _error;
 
-  /// 그 날의 기록. **오래된 것이 위**다 — 대화처럼 읽고 맨 아래가 가장 최근이다.
+  /// 전체 기록. **오래된 것이 위**다 — 대화처럼 읽고 맨 아래가 가장 최근이다.
   List<ChangeRecord> get records => _records;
 
-  DateTime get day => _day;
-
-  /// 기록이 남은 날짜. 최근 것부터다.
-  List<DateTime> get days => _days;
-
-  /// 오늘을 보고 있는지. 머리말 문구가 달라진다.
-  bool get isToday => _sameDay(_day, _todayOnly());
-
-  /// 고른 날에 기록이 있는지. 없으면 화면이 그 사실을 말한다.
+  /// 기록이 하나도 없는지. 없으면 화면이 그 사실을 말한다.
   bool get isEmpty => !_loading && _error == null && _records.isEmpty;
 
   /// 되돌리기가 실패한 이유. 한 번 보여주고 [clearUndoError] 로 지운다.
@@ -85,23 +70,15 @@ class HistoryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 다른 날을 고른다.
-  Future<void> selectDay(DateTime value) async {
-    final next = DateTime(value.year, value.month, value.day);
-    if (_sameDay(next, _day)) return;
-    _day = next;
-    await load();
-  }
-
   Future<void> load() async {
     _loading = true;
     _error = null;
     notifyListeners();
     try {
-      _records = await _command.history(limit: 200, on: _day);
+      // 날짜로 자르지 않는다. 되돌릴 수 있는 것은 **전체에서 가장 최근**의 변경이다.
+      _records = await _command.history(limit: _limit);
       // 서버는 최근 순으로 준다. 화면은 대화라서 오래된 것이 위다.
       _records = _records.reversed.toList(growable: false);
-      await _loadDays();
     } catch (error) {
       _error = error;
     } finally {
@@ -110,20 +87,6 @@ class HistoryViewModel extends ChangeNotifier {
     }
   }
 
-  /// 달력이 고를 수 있는 날. 실패해도 그 날의 기록은 이미 읽었으므로 막지 않는다.
-  Future<void> _loadDays() async {
-    try {
-      _days = await _command.historyDays(limit: 120);
-    } catch (error) {
-      debugPrint('history days failed: $error');
-    }
-  }
-
-  static DateTime _todayOnly() {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day);
-  }
-
-  static bool _sameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
+  /// 한 번에 읽는 줄 수. 서버가 허용하는 최대다.
+  static const _limit = 200;
 }

@@ -30,9 +30,10 @@ Future<void> main() async {
   // `.env` 가 없어도 앱이 떠야 한다. 없으면 설정이 비어 있다고 화면이 말한다.
   await dotenv.load(fileName: '.env', isOptional: true);
   await initializeDateFormatting('ko');
-  await registerDependencies(AppConfig.fromEnv());
-
+  // 설정을 먼저 읽는다. 음성·추천이 이 값을 보고 동작하므로 등록보다 앞서야 한다.
   final settings = await AppSettings.load();
+  await registerDependencies(AppConfig.fromEnv(), settings: settings);
+
   runApp(TodayMealApp(settings: settings));
 }
 

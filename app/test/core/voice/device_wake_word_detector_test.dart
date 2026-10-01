@@ -13,7 +13,7 @@ void main() {
     test('호출어가 섞인 전사에서 감지를 한 번 낸다', () async {
       final source = _FakeSource(segments: [
         ['오늘 날씨', '오늘 날씨 좋네'],
-        ['자비스', '자비스 계란 두 개 썼어'],
+        ['헤이 키친', '헤이 키친 계란 두 개 썼어'],
       ]);
       final detector = DeviceSpeechWakeWordDetector(source: source);
       final seen = detector.detections.take(1).toList();
@@ -29,10 +29,37 @@ void main() {
       await detector.dispose();
     });
 
+    test('들은 말을 구간 번호와 함께 흘린다', () async {
+      // 호출어 없이 알아들어야 하는 화면이 쓴다. 같은 구간의 말은 같은 말이다.
+      final source = _FakeSource(segments: [
+        ['다음', '다음 단계'],
+        ['타이머 3분'],
+        ['헤이 키친'],
+      ]);
+      final detector = DeviceSpeechWakeWordDetector(source: source);
+      final heard = <(int, String)>[];
+      final sub =
+          detector.heard.listen((h) => heard.add((h.segment, h.transcript)));
+      final woke = detector.detections.first;
+
+      await detector.start();
+      await woke;
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(heard, [
+        (1, '다음'),
+        (1, '다음 단계'),
+        (2, '타이머 3분'),
+        (3, '헤이 키친'),
+      ]);
+      await sub.cancel();
+      await detector.dispose();
+    });
+
     test('감지 후에는 루프를 멈춘다 — 재기동은 세션 매니저가 부른다', () async {
       final source = _FakeSource(segments: [
-        ['자비스'],
-        ['자비스'],
+        ['헤이 키친'],
+        ['헤이 키친'],
       ]);
       final detector = DeviceSpeechWakeWordDetector(source: source);
       final events = <void>[];
@@ -50,7 +77,7 @@ void main() {
     test('구간이 실패해도 감지를 포기하지 않는다', () async {
       final source = _FakeSource(segments: [
         null, // 실패
-        ['자비스'],
+        ['헤이 키친'],
       ]);
       final detector = DeviceSpeechWakeWordDetector(source: source);
       final seen = detector.detections.take(1).toList();

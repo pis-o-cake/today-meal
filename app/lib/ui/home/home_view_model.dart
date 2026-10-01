@@ -13,11 +13,16 @@ class HomeViewModel extends ChangeNotifier {
   HomeViewModel({
     required InventoryRepository inventory,
     required MenuRepository menu,
-  })  : _inventory = inventory,
-        _menu = menu;
+    int Function()? defaultServings,
+  }) : _inventory = inventory,
+       _menu = menu,
+       _defaultServings = defaultServings;
 
   final InventoryRepository _inventory;
   final MenuRepository _menu;
+
+  /// 마이페이지에서 고른 기본 인분. 추천 요청에 실어 보낸다.
+  final int Function()? _defaultServings;
 
   bool _loading = false;
   Object? _error;
@@ -37,9 +42,9 @@ class HomeViewModel extends ChangeNotifier {
   /// 아치는 등급 5칸을 항상 같은 자리에 두므로 빈 칸을 빼면 위치가 흔들린다. 목록으로
   /// 쌓는 [bands] 와 규칙이 다른 이유다.
   Map<Freshness, int> get counts => {
-        for (final grade in Bands.ordered)
-          grade: _batches.where((b) => b.freshness == grade).length,
-      };
+    for (final grade in Bands.ordered)
+      grade: _batches.where((b) => b.freshness == grade).length,
+  };
 
   /// 지금 고른 등급. 고르지 않았으면 가장 급한 등급이 잡힌다.
   Freshness get selected => _selected ?? _mostUrgent();
@@ -107,13 +112,31 @@ class HomeViewModel extends ChangeNotifier {
         if (_batches.any((b) => b.freshness == grade))
           FreshnessBand(
             grade: grade,
-            batches: _batches.where((b) => b.freshness == grade).toList(growable: false),
+            batches: _batches
+                .where((b) => b.freshness == grade)
+                .toList(growable: false),
           ),
     ];
   }
 
-  /// 재고와 컨디션, 추천을 함께 읽는다.
-  Future<void> load({bool withMenus = true}) async {
+  /// 읽은 것을 모두 버린다. 계정이 바뀌면 앞 계정의 재고를 보여주면 안 된다.
+  void clear() {
+    _batches = const [];
+    _menus = const [];
+    _condition = const FridgeCondition.empty();
+    _selected = null;
+    _error = null;
+    notifyListeners();
+  }
+
+  /// 재고와 컨디션을 읽고, 추천은 그 뒤에 따로 채운다.
+  ///
+  /// [focus] 는 방금 바뀐 재료 이름이다. 주면 그 재료가 있는 칸으로 옮긴다 — 말로 넣은
+  /// 재료가 화면에 보여야 반영된 것을 안다.
+  Future<void> load({
+    bool withMenus = true,
+    Iterable<String> focus = const [],
+  }) async {
     _loading = true;
     _error = null;
     notifyListeners();
@@ -124,23 +147,39 @@ class HomeViewModel extends ChangeNotifier {
       ]);
       _batches = results[0] as List<IngredientBatch>;
       _condition = results[1] as FridgeCondition;
-      // 추천은 모델 호출이라 느리고 실패할 수 있다. 재고 표시를 막지 않는다.
-      if (withMenus) await _loadMenus();
+      _focusOn(focus);
     } catch (error) {
       _error = error;
     } finally {
       _loading = false;
       notifyListeners();
     }
+    // IMPORTANT: 추천은 모델 호출이라 수 초~수십 초 걸린다. 재고를 먼저 그린 뒤에 기다린다.
+    // 함께 기다리면 첫 등록 직후 홈이 추천이 올 때까지 대기 화면에 머문다.
+    if (withMenus && _error == null) await _loadMenus();
+  }
+
+  void _focusOn(Iterable<String> names) {
+    // 마지막에 말한 재료를 보여준다. 여러 번 말했으면 가장 최근 것이 관심사다.
+    for (final name in names.toList().reversed) {
+      final hit = _batches.where((b) => b.name == name).firstOrNull;
+      if (hit == null) continue;
+      _selected = hit.freshness;
+      return;
+    }
   }
 
   Future<void> _loadMenus() async {
     try {
-      _menus = await _menu.createSuggestions(servings: null);
+      _menus = await _menu.createSuggestions(
+        servings: _defaultServings?.call(),
+      );
     } catch (error) {
       // 추천 실패를 전체 실패로 만들지 않는다. 재고는 이미 읽었다.
       _menus = const [];
       debugPrint('menu suggestion failed: $error');
+    } finally {
+      notifyListeners();
     }
   }
 }

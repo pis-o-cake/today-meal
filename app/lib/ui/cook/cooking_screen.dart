@@ -1,4 +1,4 @@
-/// 조리 진행 (UI-09).
+/// 조리 진행 (UI-10).
 ///
 /// 목업 `mockup/canvas/Cooking.dc.html` 을 옮긴 것이다. 손이 젖어 있는 상태에서 보는
 /// 화면이므로 지금 단계의 글자가 화면에서 가장 크고, 버튼은 아래쪽 엄지 범위에 모여 있다.
@@ -272,7 +272,18 @@ class _Progress extends StatelessWidget {
                     color: skin.inkDim, fontWeight: FontWeight.w600),
               ),
               const Spacer(),
-              _Reading(palette: palette),
+              // 읽는 동안에만 읽는 중이라고 한다. 다 읽었으면 다시 들을 길을 준다.
+              if (cooking.reading)
+                _Reading(palette: palette)
+              else
+                IconButton(
+                  onPressed: cooking.readAgain,
+                  tooltip: Strings.cookingReadAgain,
+                  iconSize: 20,
+                  color: skin.inkSubtle,
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.volume_up_rounded),
+                ),
             ],
           ),
         ],
@@ -620,28 +631,27 @@ class _Commands extends StatelessWidget {
     final palette = skin.band(Freshness.urgent);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 8,
-        runSpacing: 6,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.graphic_eq_rounded, size: 14, color: palette.accent),
-              const SizedBox(width: 5),
-              Text(
-                Strings.cookingHandsFree,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: palette.accent, fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
-          const FloatingChip(label: Strings.cookingSayNext),
-          const FloatingChip(label: Strings.cookingSayAgain),
-          const FloatingChip(label: Strings.cookingSayTimer),
-        ],
+      // 한 줄에 둔다. 줄이 나뉘면 안내와 예시가 따로 읽힌다. 좁은 화면에서는 줄여 맞춘다.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.graphic_eq_rounded, size: 14, color: palette.accent),
+            const SizedBox(width: 5),
+            Text(
+              Strings.cookingHandsFree,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: palette.accent, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(width: 8),
+            const FloatingChip(label: Strings.cookingSayNext),
+            const SizedBox(width: 8),
+            const FloatingChip(label: Strings.cookingSayAgain),
+            const SizedBox(width: 8),
+            const FloatingChip(label: Strings.cookingSayTimer),
+          ],
+        ),
       ),
     );
   }
@@ -678,7 +688,6 @@ class _Controls extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            flex: 2,
             child: SizedBox(
               height: 56,
               child: cooking.isLast

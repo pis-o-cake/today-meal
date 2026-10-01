@@ -19,13 +19,13 @@ import 'band.dart';
 ///
 /// 내부 키는 목업의 `theme` prop 과 같다 — 저장값을 목업 파일 이름으로 바로 잇는다.
 enum SkinName {
-  /// 등급 색이 배경까지 물드는 기본 테마.
+  /// 등급 색이 배경까지 물드는 테마.
   pastel,
 
   /// 배경을 평면으로 두고 카드만 세우는 테마.
   white,
 
-  /// 흰 유리를 겹쳐 세우는 테마. 흐림과 안쪽 광택을 쓴다.
+  /// 흰 유리를 겹쳐 세우는 **기본 테마**. 흐림과 안쪽 광택을 쓴다.
   glass,
 
   /// 어두운 테마.
@@ -248,8 +248,8 @@ class Skin {
 
   /// 화면 전체 배경.
   ///
-  /// 테마마다 배경이 등급을 말하는 방식이 다르다 — 파스텔은 화면을 물들이고, 화이트는
-  /// 꼭대기에만 얇게 비치며, 글래스와 다크는 등급과 무관한 고정 배경이다.
+  /// 테마마다 배경이 등급을 말하는 방식이 다르다 — 파스텔은 화면을 물들이고, 화이트와
+  /// 글래스는 꼭대기에만 얇게 비치며, 다크는 등급과 무관한 고정 배경이다.
   ///
   /// [focusY] 는 빛의 중심 높이다. CSS `at 50% 20%` 가 `-0.6` 이다.
   Gradient background(BandPalette palette, {double focusY = -0.6}) =>
@@ -273,11 +273,24 @@ class Skin {
                 ],
                 stops: const [0, 0.7],
               ),
-        SkinName.glass => const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, Color(0xFFEEF0F4)],
-          ),
+        // 유리 아래로 등급 색이 비친다. 화이트와 같은 8% 다 — 유리의 흐림과 광택이
+        // 주인공이므로 색이 세면 그 질감을 덮는다.
+        SkinName.glass => palette.tint == null
+            ? const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.white, _glassEdge],
+              )
+            : RadialGradient(
+                center: const Alignment(0, -1),
+                radius: 1.2,
+                colors: [
+                  Color.alphaBlend(
+                      palette.tint!.withValues(alpha: 0.08), Colors.white),
+                  _glassEdge,
+                ],
+                stops: const [0, 0.75],
+              ),
         SkinName.dark => const LinearGradient(colors: [_darkBase, _darkBase]),
       };
 
@@ -300,6 +313,7 @@ class Skin {
         )
       : listBackground;
 
+  static const _glassEdge = Color(0xFFEEF0F4);
   static const _whiteFlat = Color(0xFFF4F5F7);
   static const _whiteBase = Color(0xFFF6F7F9);
   static const _darkBase = Color(0xFF202124);
