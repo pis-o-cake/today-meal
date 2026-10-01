@@ -47,13 +47,14 @@ class LlmGateway(Protocol):
         ...
 
     async def analyze_video(self, request: VideoSource) -> VideoResult:
-        """요리 영상의 글을 조리 단계로 정리한다.
+        """요리 영상을 조리 단계로 정리한다.
 
-        **모델은 영상을 보지 못한다.** 제목·설명·자막만 받으므로 글에 없는 것은 비워 둔
-        결과가 온다(`is_recipe` 가 거짓일 수도 있다). 빠진 것을 코드가 채우지 않는다.
+        [VideoSource.video_url] 이 있으면 모델이 **영상을 직접 본다.** 없으면 제목·설명·
+        자막만 받으므로 글에 없는 것은 비워 둔 결과가 온다(`is_recipe` 가 거짓일 수도
+        있다). 어느 쪽이든 빠진 것을 코드가 채우지 않는다.
 
         Args:
-            request: 영상의 제목·채널·길이와 설명·자막 원문.
+            request: 영상의 제목·채널·길이와 설명·자막 원문, 그리고 보낼 영상 주소.
 
         Returns:
             정리 결과와 사용량.
@@ -107,7 +108,9 @@ class MenuRequest:
     하기 때문이다. 목록을 하나로 합치면 모델이 그 우선순위를 알 수 없다.
     """
 
-    __slots__ = ("available", "avoided", "max_minutes", "priority", "servings", "tools")
+    __slots__ = (
+        "available", "avoided", "focus", "max_minutes", "priority", "servings", "tools",
+    )
 
     def __init__(
         self,
@@ -118,6 +121,7 @@ class MenuRequest:
         max_minutes: int | None = None,
         avoided: list[str] | None = None,
         tools: list[str] | None = None,
+        focus: list[str] | None = None,
     ) -> None:
         self.available = available
         self.priority = priority
@@ -125,10 +129,14 @@ class MenuRequest:
         self.max_minutes = max_minutes
         self.avoided = avoided or []
         self.tools = tools or []
+        self.focus = focus or []
 
     def as_prompt_block(self) -> str:
         """프롬프트에 넣을 재고 블록."""
         lines = []
+        if self.focus:
+            lines.append("꼭 쓸 재료 (사용자가 지목했다. 모든 메뉴의 주재료로 쓴다):")
+            lines.extend(f"- {item}" for item in self.focus)
         if self.priority:
             lines.append("먼저 쓸 재료 (이걸 쓰는 메뉴를 우선):")
             lines.extend(f"- {item}" for item in self.priority)
@@ -153,11 +161,14 @@ class MenuRequest:
 class VideoSource:
     """영상 정리 호출의 입력.
 
-    **글이 전부다.** 영상의 화면과 소리는 모델에 닿지 않으므로, 여기 담기지 않은 것은 결과에도
-    없어야 한다.
+    [video_url] 이 있으면 **모델이 영상을 직접 본다.** 한국 요리 채널의 설명글은 재료와
+    계량만 적고 조리 순서는 영상 안에만 두는 경우가 많아, 글만으로는 대부분의 영상을
+    정리할 수 없었다.
+
+    설명글은 영상과 **함께** 보낸다. 계량은 글에 적힌 것이 화면에서 읽은 것보다 정확하다.
     """
 
-    __slots__ = ("body", "channel", "duration_seconds", "title")
+    __slots__ = ("body", "channel", "duration_seconds", "title", "video_url")
 
     def __init__(
         self,
@@ -166,11 +177,13 @@ class VideoSource:
         *,
         channel: str | None = None,
         duration_seconds: int | None = None,
+        video_url: str | None = None,
     ) -> None:
         self.title = title
         self.body = body
         self.channel = channel
         self.duration_seconds = duration_seconds
+        self.video_url = video_url
 
     @property
     def has_body(self) -> bool:
@@ -180,6 +193,14 @@ class VideoSource:
         없고, 그것이 곧 지어낸 레시피다.
         """
         return len(self.body.strip()) >= _MIN_BODY_CHARS
+
+    @property
+    def can_analyze(self) -> bool:
+        """정리를 시도할 수 있는지.
+
+        영상을 보내거나 읽을 글이 있어야 한다. 둘 다 없으면 모델이 지어내는 수밖에 없다.
+        """
+        return self.video_url is not None or self.has_body
 
 
 #: 정리를 시도할 최소 글자 수. 이보다 짧으면 재료·순서가 들어 있을 수 없다.

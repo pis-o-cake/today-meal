@@ -2,8 +2,11 @@
 
 from datetime import date, datetime
 from decimal import Decimal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from app.core.enums import DateKind, StorageLocation
 
 
 class BatchDateRead(BaseModel):
@@ -83,3 +86,54 @@ class ConditionRead(BaseModel):
         description="잔량을 모르는 묶음 수. 신선도 등급과 섞지 않는다"
     )
     total_count: int
+
+
+class BatchCreateRequest(BaseModel):
+    """화면에서 손으로 넣는 재료.
+
+    말로 넣는 경로와 같은 새 묶음이 된다 — 같은 재료가 이미 있어도 합치지 않는다.
+
+    수량과 단위는 반드시 받는다. 묶음은 잔량 없이 저장할 수 없다(DB 제약) — 말로 넣을 때도
+    수량을 모르면 되묻는다.
+    """
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    name: str = Field(min_length=1, max_length=100)
+    quantity: Decimal = Field(gt=0, le=100_000)
+    unit: str = Field(
+        min_length=1,
+        max_length=20,
+        description="`ea`·`g` 같은 기호나 `개`·`큰술` 같은 표기. 모르는 단위는 422",
+    )
+    storage_location: StorageLocation = StorageLocation.FRIDGE
+    date_kind: DateKind = Field(
+        default=DateKind.SELL_BY, description="`date_value` 의 종류. 제품 용어는 유통기한 하나다"
+    )
+    date_value: date | None = Field(default=None, description="모르면 null")
+    command_id: UUID | None = Field(
+        default=None,
+        description="앱이 만든 요청 ID. 같은 ID 로 다시 보내도 한 번만 넣는다",
+    )
+
+
+class DiscardAllRequest(BaseModel):
+    """냉장고 비우기."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    command_id: UUID | None = Field(
+        default=None,
+        description="앱이 만든 요청 ID. 같은 ID 로 다시 보내도 한 번만 비운다",
+    )
+
+
+class DiscardAllRead(BaseModel):
+    """냉장고 비우기 결과.
+
+    `command_id` 하나로 되돌리면 버린 묶음이 **모두** 돌아온다. 버릴 것이 없었으면 명령을
+    남기지 않으므로 `null` 이다.
+    """
+
+    command_id: UUID | None = None
+    discarded_count: int = Field(description="이번에 버린 묶음 수")

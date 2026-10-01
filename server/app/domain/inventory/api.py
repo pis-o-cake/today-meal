@@ -3,6 +3,7 @@
 from datetime import date
 from decimal import Decimal
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field
@@ -15,7 +16,14 @@ from app.core.identity import CallerDep
 from app.domain.household import service as household_service
 from app.domain.inventory import edit as edit_service
 from app.domain.inventory import service
-from app.domain.inventory.schemas import BatchRead, ConditionRead, PriorityBatchRead
+from app.domain.inventory.schemas import (
+    BatchCreateRequest,
+    BatchRead,
+    ConditionRead,
+    DiscardAllRead,
+    DiscardAllRequest,
+    PriorityBatchRead,
+)
 
 router = APIRouter()
 
@@ -44,6 +52,10 @@ class BatchEditRequest(BaseModel):
     date_value: date | None = None
     clear_date: bool = Field(
         default=False, description="`date_kind` 의 날짜를 미확인으로 되돌린다"
+    )
+    command_id: UUID | None = Field(
+        default=None,
+        description="앱이 만든 요청 ID. 같은 ID 로 다시 보내도 한 번만 적용된다",
     )
 
 
@@ -137,6 +149,65 @@ def _to_batch_read(batch: object, *, today: date) -> BatchRead:
     )
 
 
+@router.post(
+    "/batches",
+    response_model=BatchRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="재료 손으로 넣기",
+)
+async def add_batch(
+    caller: CallerDep,
+    session: SessionDep,
+    body: Annotated[BatchCreateRequest, Body()],
+) -> BatchRead:
+    """화면에서 적은 재료를 새 묶음으로 넣는다.
+
+    말로 넣을 때와 같은 기록을 남긴다 — 기록 화면에 나타나고, 되돌리면 묶음이 빠진다.
+    같은 `command_id` 로 다시 보내면 그때 넣은 묶음을 돌려준다.
+
+    Raises:
+        422: 모르는 단위다.
+    """
+    household = await household_service.get_household(session, caller.household_id)
+    created = await edit_service.add_batch(
+        session,
+        household_id=caller.household_id,
+        command_id=body.command_id,
+        draft=edit_service.BatchDraft(
+            name=body.name,
+            quantity=body.quantity,
+            unit=body.unit,
+            storage_location=body.storage_location,
+            date_kind=body.date_kind,
+            date_value=body.date_value,
+        ),
+    )
+    return _to_batch_read(created, today=date_utils.today_in(household.timezone))
+
+
+@router.post(
+    "/batches/discard-all",
+    response_model=DiscardAllRead,
+    summary="냉장고 비우기",
+)
+async def discard_all(
+    caller: CallerDep,
+    session: SessionDep,
+    body: Annotated[DiscardAllRequest | None, Body()] = None,
+) -> DiscardAllRead:
+    """가구의 재료를 모두 버린다.
+
+    묶음 하나를 버릴 때와 같이 행을 지우지 않고 버린 것으로 표시한다. 한 명령으로 묶으므로
+    그 `command_id` 를 되돌리면 모두 돌아온다. 버릴 것이 없으면 기록을 남기지 않는다.
+    """
+    command_id, count = await edit_service.discard_all(
+        session,
+        household_id=caller.household_id,
+        command_id=body.command_id if body is not None else None,
+    )
+    return DiscardAllRead(command_id=command_id, discarded_count=count)
+
+
 @router.patch(
     "/batches/{batch_id}",
     response_model=BatchRead,
@@ -161,6 +232,7 @@ async def edit_batch(
         session,
         household_id=caller.household_id,
         batch_id=batch_id,
+        command_id=body.command_id,
         edit=edit_service.BatchEdit(
             name=body.name,
             quantity=body.quantity,
@@ -186,6 +258,10 @@ async def discard_batch(
     batch_id: int,
     caller: CallerDep,
     session: SessionDep,
+    command_id: Annotated[
+        UUID | None,
+        Query(description="앱이 만든 요청 ID. 같은 ID 로 다시 보내도 한 번만 적용된다"),
+    ] = None,
 ) -> Response:
     """묶음을 버린다.
 
@@ -196,6 +272,9 @@ async def discard_batch(
         404: 그 묶음이 없거나 다른 가구의 것이다.
     """
     await edit_service.discard_batch(
-        session, household_id=caller.household_id, batch_id=batch_id
+        session,
+        household_id=caller.household_id,
+        batch_id=batch_id,
+        command_id=command_id,
     )
     return Response(status_code=status.HTTP_204_NO_CONTENT)

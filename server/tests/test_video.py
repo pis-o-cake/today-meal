@@ -98,3 +98,47 @@ class TestFakeGateway:
         assert [item.raw_name for item in result.proposal.ingredients] == ["두부", "계란"]
         assert all(item.amount is None for item in result.proposal.ingredients)
         assert all(item.is_amount_unknown for item in result.proposal.ingredients)
+
+
+class TestRetryAfterNoScript:
+    """글을 못 읽은 실패는 다시 시도한다.
+
+    키가 없거나 유튜브가 잠깐 막혀 생긴 실패를 영구 판정으로 굳히면, 사정이 풀린 뒤에도
+    그 영상은 영원히 열리지 않는다.
+    """
+
+    def _row(self, status: str, reason: str | None):
+        from app.domain.video.models import VideoRecipe
+
+        return VideoRecipe(
+            video_id="abc",
+            url="https://youtu.be/abc",
+            ingredients=[],
+            steps=[],
+            unresolved=[],
+            status=status,
+            failure_reason=reason,
+            model="m",
+            prompt_version="v",
+        )
+
+    def test_no_script_is_retried(self):
+        from app.core.enums import VideoRecipeStatus
+        from app.domain.video.service import _is_retryable
+
+        assert _is_retryable(self._row(VideoRecipeStatus.FAILED.value, "no_script"))
+
+    def test_not_recipe_is_not_retried(self):
+        """모델을 다시 불러도 같은 답이다. 비용만 든다."""
+        from app.core.enums import VideoRecipeStatus
+        from app.domain.video.service import _is_retryable
+
+        assert not _is_retryable(
+            self._row(VideoRecipeStatus.FAILED.value, "not_recipe")
+        )
+
+    def test_analyzed_is_not_retried(self):
+        from app.core.enums import VideoRecipeStatus
+        from app.domain.video.service import _is_retryable
+
+        assert not _is_retryable(self._row(VideoRecipeStatus.ANALYZED.value, None))

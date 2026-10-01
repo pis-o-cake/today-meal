@@ -8,6 +8,7 @@
 조용히 퍼진다.
 """
 
+import re
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -203,3 +204,82 @@ def shortage(required: Quantity, available: Quantity | None) -> ConversionResult
 
     remaining = required.amount - converted.quantity.amount
     return ConversionResult(Quantity(max(remaining, Decimal("0")), required.unit), False)
+
+
+# 고유어 수. "열두 개"·"스물한 개" 처럼 십 자리와 일 자리를 이어 말한다.
+_TENS: dict[str, int] = {"열": 10, "스물": 20, "스무": 20, "서른": 30}
+_ONES: dict[str, int] = {
+    "한": 1, "하나": 1, "두": 2, "둘": 2, "세": 3, "셋": 3, "네": 4, "넷": 4,
+    "다섯": 5, "여섯": 6, "일곱": 7, "여덟": 8, "아홉": 9,
+}
+_DIGITS = re.compile(r"\d+(?:\.\d+)?")
+_SUBJECT_PARTICLES = ("은", "는", "이", "가", "을", "를", "도")
+
+# 단위 낱말의 최대 길이. "테이블스푼" 이 가장 길다.
+_UNIT_WORD_LIMIT = 5
+
+
+def read_spoken_quantity(utterance: str | None, name: str) -> Quantity | None:
+    """발화에서 그 재료 바로 뒤에 말한 수량을 읽는다.
+
+    모델이 기한과 수량을 함께 말한 문장에서 수량을 빠뜨리는 일이 있다. 문장에 적힌 수량은
+    사용자가 말한 것이므로 읽어 쓴다 — 말하지 않은 값을 채우는 것과 다르다.
+
+    Args:
+        utterance: 전사 원문.
+        name: 재료 이름. 이 이름 바로 뒤의 수량만 본다.
+
+    Returns:
+        읽은 수량. 이름이 없거나 수와 아는 단위가 이어 나오지 않으면 `None`.
+
+    Example:
+        >>> read_spoken_quantity("계란 열 개 넣었어 유통기한은 10월 15일까지", "계란")
+        Quantity(amount=Decimal('10'), unit='ea')
+        >>> read_spoken_quantity("두부 2모 샀어", "두부")
+        Quantity(amount=Decimal('2'), unit='mo')
+        >>> read_spoken_quantity("계란 유통기한은 10월 15일까지", "계란") is None
+        True
+    """
+    if not utterance or not name:
+        return None
+    start = utterance.rfind(name)
+    if start < 0:
+        return None
+    rest = utterance[start + len(name) :]
+    for particle in _SUBJECT_PARTICLES:
+        if rest.startswith(particle + " "):
+            rest = rest[len(particle) :]
+            break
+    rest = rest.lstrip()
+
+    amount, rest = _read_number(rest)
+    if amount is None:
+        return None
+
+    word = re.match(r"[가-힣A-Za-z]+", rest.lstrip())
+    if word is None:
+        return None
+    # 단위에 뒷말이 붙어 온다("개넣었어"). 긴 쪽부터 줄여 아는 단위를 찾는다.
+    for length in range(min(len(word.group()), _UNIT_WORD_LIMIT + 2), 0, -1):
+        unit = normalize_unit(word.group()[:length])
+        if unit is not None:
+            return Quantity(amount, unit)
+    return None
+
+
+def _read_number(text: str) -> tuple[Decimal | None, str]:
+    """맨 앞의 수를 읽고 나머지를 돌려준다."""
+    digits = _DIGITS.match(text)
+    if digits is not None:
+        return Decimal(digits.group()), text[digits.end() :]
+
+    total = 0
+    rest = text
+    for word, value in sorted(_TENS.items(), key=lambda pair: -len(pair[0])):
+        if rest.startswith(word):
+            total, rest = value, rest[len(word) :].lstrip()
+            break
+    for word, value in sorted(_ONES.items(), key=lambda pair: -len(pair[0])):
+        if rest.startswith(word):
+            return Decimal(total + value), rest[len(word) :]
+    return (Decimal(total), rest) if total else (None, text)

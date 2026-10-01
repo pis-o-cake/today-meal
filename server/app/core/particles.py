@@ -45,6 +45,15 @@ def with_object(word: str) -> str:
     return f"{word}{'을' if has_final(word) else '를'}"
 
 
+def with_means(word: str) -> str:
+    """수단을 나타내는 조사를 붙인다 — 으로 / 로. ㄹ 받침 뒤에는 '로' 다."""
+    last = word[-1:] if word else ""
+    code = ord(last) if last else 0
+    if _HANGUL_START <= code <= _HANGUL_END and (code - _HANGUL_START) % _JONGSUNG_COUNT == 8:
+        return f"{word}로"
+    return f"{word}{'으로' if has_final(word) else '로'}"
+
+
 def with_topic(word: str) -> str:
     """주제 조사를 붙인다 — 은 / 는."""
     return f"{word}{'은' if has_final(word) else '는'}"

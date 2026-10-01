@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -36,6 +36,44 @@ async def latest_applied(session: AsyncSession, household_id: int) -> Command | 
         .limit(1)
     )
     return result.scalar_one_or_none()
+
+
+async def unanswered(
+    session: AsyncSession, household_id: int, *, within: timedelta, excluding: UUID
+) -> list[Command]:
+    """답을 기다리는 직전 발화들. 말한 순서대로 돌려준다.
+
+    되묻고 끝난 명령은 아무것도 반영하지 않았다. 그 뒤에 온 짧은 답을 해석하려면 앞에서
+    무엇을 말했는지 알아야 한다. 반영된 명령을 만나면 거기서 멈춘다 — 그 앞은 끝난 대화다.
+
+    Args:
+        within: 이 시간 안의 발화만 본다. 오래된 질문에 답을 잇지 않는다.
+        excluding: 지금 처리하는 발화. 자기 자신에게 잇지 않는다.
+    """
+    result = await session.execute(
+        select(Command)
+        .where(
+            Command.household_id == household_id,
+            Command.command_id != excluding,
+            Command.created_at >= func.now() - within,
+        )
+        .order_by(Command.created_at.desc())
+        .limit(6)
+    )
+    open_statuses = {
+        CommandStatus.CLARIFYING.value,
+        CommandStatus.FAILED.value,
+        CommandStatus.REJECTED.value,
+    }
+    waiting: list[Command] = []
+    for command in result.scalars():
+        if command.status not in open_statuses:
+            break
+        waiting.append(command)
+    # 되물은 적이 없으면 이을 것이 없다. 실패만 이어진 것은 대화가 아니다.
+    if not any(c.status == CommandStatus.CLARIFYING.value for c in waiting):
+        return []
+    return list(reversed(waiting))
 
 
 async def list_history(

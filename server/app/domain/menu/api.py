@@ -1,5 +1,6 @@
 """메뉴 추천 API. `/api/menu` 에 마운트된다."""
 
+from decimal import Decimal
 from typing import Annotated
 from uuid import uuid4
 
@@ -13,8 +14,10 @@ from app.core.llm.gateway import LlmGateway
 from app.core.llm.provider import get_gateway
 from app.core.locale import translate
 from app.domain.household import service as household_service
+from app.domain.inventory.service import AppliedChange
 from app.domain.menu import crud, service
 from app.domain.menu.schemas import (
+    CookedChange,
     CookedResult,
     IngredientCheckRead,
     MenuDetailRead,
@@ -39,6 +42,10 @@ async def create_suggestions(
     gateway: GatewayDep,
     servings: Annotated[int | None, Query(ge=1, le=12)] = None,
     max_minutes: Annotated[int | None, Query(ge=1, le=600)] = None,
+    focus: Annotated[
+        list[str] | None,
+        Query(max_length=3, description="꼭 쓸 재료. 그 재료가 주재료인 메뉴만 만든다"),
+    ] = None,
 ) -> list[MenuSuggestionRead]:
     """현재 재고로 가능한 메뉴를 최대 3개 만든다.
 
@@ -56,6 +63,7 @@ async def create_suggestions(
         today=today,
         servings=servings,
         max_minutes=max_minutes,
+        focus=focus or (),
     )
     return [
         MenuSuggestionRead(
@@ -115,7 +123,7 @@ async def recipe_detail(
     """인분에 맞는 재료와 조리 순서를 돌려준다.
 
     분량을 모르는 재료는 환산하지 않고 `null` 로 둔다 — 숫자를 만들지 않는다.
-    조회만으로 재고를 바꾸지 않는다.
+    조회만으로 재고를 바꾸지 않는다. 재료 상태는 **호출한 가구의 지금 재고**로 매번 대조한다.
     """
     recipe, ingredients, target = await service.detail(
         session,
@@ -123,17 +131,27 @@ async def recipe_detail(
         recipe_id=recipe_id,
         servings=servings,
     )
+    household = await household_service.get_household(session, caller.household_id)
+    checks = await service.check_stock(
+        session,
+        household_id=caller.household_id,
+        ingredients=ingredients,
+        base_servings=recipe.base_servings,
+        servings=target,
+        today=date_utils.today_in(household.timezone),
+    )
     rows: list[IngredientCheckRead] = []
-    for item in ingredients:
+    for item, check in zip(ingredients, checks, strict=True):
         scaled = service.scale(item.quantity, recipe.base_servings, target)
         rows.append(
             IngredientCheckRead(
                 name=item.raw_name,
-                required_amount=None if scaled is None else str(scaled.normalize()),
+                # WARNING: `str(Decimal.normalize())` 를 쓰면 안 된다. 300 이 `3E+2` 로
+                # 나가 화면에 그대로 찍힌다. `_plain` 이 정수·소수를 사람이 읽는 꼴로 만든다.
+                required_amount=None if scaled is None else _plain(scaled),
                 unit=item.unit,
                 is_essential=item.is_essential,
-                # 상세 화면은 재고 대조를 하지 않는다. 대조는 추천이 한다.
-                status="needs_check" if item.is_amount_unknown else "have",
+                status=check.status,
             )
         )
     steps = [
@@ -151,6 +169,35 @@ async def recipe_detail(
     )
 
 
+def _merge(deducted: list[AppliedChange]) -> list[CookedChange]:
+    """같은 재료를 한 줄로 합친다.
+
+    기한이 이른 묶음부터 빼므로 한 재료가 여러 묶음에서 줄 수 있다. 묶음마다 적으면 같은
+    이름이 되풀이돼 무엇을 얼마나 썼는지 읽기 어렵다.
+    """
+    merged: dict[tuple[str, str | None], list[Decimal]] = {}
+    for change in deducted:
+        if change.quantity_before is None or change.quantity_after is None:
+            continue
+        totals = merged.setdefault(
+            (change.display_name, change.unit), [Decimal("0"), Decimal("0")]
+        )
+        totals[0] += change.quantity_before
+        totals[1] += change.quantity_after
+    return [
+        CookedChange(name=name, before=_plain(before), after=_plain(after), unit=unit)
+        for (name, unit), (before, after) in merged.items()
+    ]
+
+
+def _plain(value: Decimal) -> str:
+    """`10.000` 을 `10` 으로. 소수부가 의미 있는 값은 남긴다."""
+    normalized = value.normalize()
+    if normalized == normalized.to_integral_value():
+        return str(int(normalized))
+    return str(normalized)
+
+
 @router.post(
     "/suggestions/{suggestion_id}/cooked",
     response_model=CookedResult,
@@ -160,6 +207,10 @@ async def mark_cooked(
     suggestion_id: int,
     caller: CallerDep,
     session: SessionDep,
+    servings: Annotated[
+        int | None,
+        Query(ge=1, le=12, description="화면에서 조리한 인분. 차감 기준이다"),
+    ] = None,
 ) -> CookedResult:
     """추천 메뉴를 실제로 만들었다고 확인하고 재고에서 뺀다.
 
@@ -171,6 +222,9 @@ async def mark_cooked(
 
     차감량은 레시피에서 온 값이라 사용자가 말한 숫자가 아니다. 이력에 **추정값**으로
     남는다.
+
+    `servings` 를 주면 그 인분으로 환산하고 추천에도 반영한다 — 화면에서 4인분으로 조리한
+    사람에게 2인분을 빼면 안 된다.
     """
     household = await household_service.get_household(session, caller.household_id)
     today = date_utils.today_in(household.timezone)
@@ -178,17 +232,19 @@ async def mark_cooked(
     already = before.consumption_applied
     command_id = uuid4()
 
-    suggestion, skipped, question = await service.mark_cooked(
+    suggestion, skipped, question, deducted = await service.mark_cooked(
         session,
         household_id=caller.household_id,
         suggestion_id=suggestion_id,
         command_id=command_id,
         today=today,
+        servings=servings,
     )
     applied = not already and question is None
     return CookedResult(
         suggestion_id=suggestion.suggestion_id,
         already_applied=already,
+        changes=_merge(deducted),
         skipped_ingredients=skipped,
         clarification_question=question,
         undo_token=str(command_id) if applied else None,

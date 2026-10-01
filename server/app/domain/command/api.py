@@ -56,6 +56,7 @@ async def interpret(
         command_id=payload.command_id,
         utterance=payload.utterance,
         locale=payload.locale,
+        follows=payload.follows,
     )
     return _to_response(result)
 

@@ -25,6 +25,20 @@ def item(**kwargs) -> ProposedItem:
     return ProposedItem(**kwargs)
 
 
+def test_unit_keeps_only_the_spoken_word():
+    """모델이 단위 뒤에 혼잣말을 이어 적어도 발화 전체를 버리지 않는다."""
+    rambling = "모 European, check Korean units -> '모' valid schema ok"
+    assert item(unit_text=rambling).unit_text == "모"
+    # 띄어 쓰지 않고 이어 적기도 한다. 실제로 받은 응답이다.
+    assert item(unit_text="개Single-word unit, no particle").unit_text == "개"
+    assert item(unit_text="ml (milliliter, metric)").unit_text == "ml"
+    assert item(unit_text="-> not a unit at all").unit_text is None
+    # 짧은 값은 그대로 둔다. 띄어 쓴 단위를 자르면 아는 단위를 모르게 된다.
+    assert item(unit_text=" 큰 술 ").unit_text == "큰 술"
+    assert item(unit_text="").unit_text is None
+    assert item(unit_text=None).unit_text is None
+
+
 def test_model_self_reported_ambiguity_is_honoured():
     """모델이 모호하다고 신고하면 그대로 되묻는다."""
     result = validate(
@@ -91,16 +105,122 @@ def test_negative_amount_is_rejected():
         item(amount=-1)
 
 
-def test_date_without_kind_asks_which_kind():
-    """종류를 모르는 날짜를 소비기한으로 승격하지 않는다."""
+def test_date_without_kind_is_sell_by_without_asking():
+    """제품 용어는 유통기한 하나다. 종류를 말하지 않은 기한은 되묻지 않고 유통기한으로 둔다."""
     result = validate(
         proposal(items=[item(amount=2, unit_text="모", raw_name="두부",
                              dates=[ProposedDate(month=10, day=3, raw_text="10월 3일")])]),
         today=TODAY,
         require_amount=True,
     )
+    assert result.question is None
+    assert result.items[0].dates[0].kind is DateKind.SELL_BY
+
+
+def test_date_is_read_from_what_was_said():
+    """모델이 말한 그대로만 옮기고 숫자 칸을 비운 응답을 실제로 받았다."""
+    result = validate(
+        proposal(
+            items=[
+                item(
+                    raw_name="두부",
+                    amount=2,
+                    unit_text="모",
+                    dates=[ProposedDate(kind=DateKind.SELL_BY, raw_text="10월 1일")],
+                )
+            ]
+        ),
+        today=TODAY,
+        require_amount=True,
+    )
+    assert result.question is None
+    assert result.items[0].dates[0].value == date(2026, 10, 1)
+
+
+def test_same_kind_of_date_is_kept_once():
+    """모델이 같은 기한을 두 번 적은 응답을 받았다. 저장 제약에 걸려 서버가 죽었다."""
+    said = ProposedDate(kind=DateKind.SELL_BY, raw_text="10월 15일")
+    result = validate(
+        proposal(items=[item(amount=10, unit_text="개", dates=[said, said])]),
+        today=TODAY,
+        require_amount=True,
+    )
+    assert result.question is None
+    assert [d.value for d in result.items[0].dates] == [date(2026, 10, 15)]
+
+
+@pytest.mark.parametrize(
+    ("said", "expected"),
+    [
+        ("일주일 남았어", date(2026, 10, 5)),
+        ("내일까지", date(2026, 9, 29)),
+        ("모레", date(2026, 9, 30)),
+        ("3일 남았어", date(2026, 10, 1)),
+        ("사흘 뒤", date(2026, 10, 1)),
+        ("2주 뒤", date(2026, 10, 12)),
+    ],
+)
+def test_remaining_time_is_a_spoken_date(said, expected):
+    """남은 기간으로 말한 기한은 사용자가 말한 날짜다. 되묻지 않는다."""
+    result = validate(
+        proposal(
+            items=[
+                item(
+                    amount=10,
+                    unit_text="개",
+                    dates=[ProposedDate(kind=DateKind.SELL_BY, raw_text=said)],
+                )
+            ]
+        ),
+        today=TODAY,
+        require_amount=True,
+    )
+    assert result.question is None
+    assert result.items[0].dates[0].value == expected
+
+
+def test_missing_amount_is_read_from_the_utterance():
+    """모델이 기한만 옮기고 수량을 비운 응답을 실제로 받았다."""
+    result = validate(
+        proposal(
+            items=[item(dates=[ProposedDate(kind=DateKind.SELL_BY, raw_text="10월 15일")])]
+        ),
+        today=TODAY,
+        require_amount=True,
+        utterance="계란 열 개 넣었어 유통기한은 10월 15일까지",
+    )
+    assert result.question is None
+    assert result.items[0].amount == Decimal("10")
+    assert result.items[0].unit == "ea"
+
+
+def test_amount_is_still_asked_when_it_was_not_said():
+    result = validate(
+        proposal(items=[item()]),
+        today=TODAY,
+        require_amount=True,
+        utterance="계란 넣었어",
+    )
     assert result.question is not None
-    assert "소비기한" in result.question
+
+
+def test_day_without_month_is_still_asked():
+    """원문을 읽더라도 말하지 않은 월을 채우지 않는다."""
+    result = validate(
+        proposal(
+            items=[
+                item(
+                    amount=2,
+                    unit_text="개",
+                    dates=[ProposedDate(kind=DateKind.USE_BY, raw_text="3일")],
+                )
+            ]
+        ),
+        today=TODAY,
+        require_amount=True,
+    )
+    assert result.question is not None
+    assert "몇 월" in result.question
 
 
 def test_date_with_kind_and_month_resolves():
@@ -170,10 +290,16 @@ def test_model_scratchpad_in_unit_is_not_echoed_to_user():
     """모델이 단위 칸에 사고 과정을 흘려 넣은 응답을 실제로 받았다.
 
     그 문자열이 되묻는 질문에 그대로 나갔다. 모델 출력을 사용자 문구에 그대로 넣지 않는다.
+
+    거절하지는 않는다 — 단위를 맞게 읽고도 발화 전체가 실패한다. 말한 단위만 남긴다.
     """
     rambling = "모 single-form stripped of particle: wait, need raw string not comment"
-    with pytest.raises(ValueError, match="at most 10 characters|max_length"):
-        item(amount=2, unit_text=rambling)
+    kept = item(amount=2, unit_text=rambling, raw_name="두부")
+    assert kept.unit_text == "모"
+
+    result = validate(proposal(items=[kept]), today=TODAY, require_amount=True)
+    assert result.question is None
+    assert result.items[0].unit == "mo"
 
 
 def test_long_unit_text_falls_back_to_generic_question():

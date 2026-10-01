@@ -72,6 +72,15 @@ class MenuDetailRead(BaseModel):
     steps: list[RecipeStep] = Field(default_factory=list)
 
 
+class CookedChange(BaseModel):
+    """조리로 줄어든 재료 하나. 같은 재료의 묶음 여럿에서 뺐으면 합쳐서 적는다."""
+
+    name: str
+    before: str = Field(description="조리 전의 양")
+    after: str = Field(description="조리 뒤의 양")
+    unit: str | None = None
+
+
 class CookedResult(BaseModel):
     """조리 확인 결과.
 
@@ -83,6 +92,9 @@ class CookedResult(BaseModel):
 
     suggestion_id: int
     already_applied: bool = Field(description="이미 반영된 추천이라 이번엔 바꾸지 않았는지")
+    changes: list[CookedChange] = Field(
+        default_factory=list, description="실제로 뺀 재료와 그 앞뒤의 양"
+    )
     skipped_ingredients: list[str] = Field(
         default_factory=list,
         description="차감하지 못한 재료. 분량을 모르거나 단위를 맞출 수 없는 것",

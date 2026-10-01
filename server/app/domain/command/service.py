@@ -38,11 +38,12 @@ from app.core.exceptions import UpstreamError
 from app.core.llm.gateway import InventoryContext, LlmGateway
 from app.core.llm.prompts import command_ko
 from app.core.llm.schemas import CommandProposal
-from app.core.locale import translate
+from app.core.locale import translate, unit_label
+from app.core.particles import sanitize_fragment, with_means, with_topic
 from app.domain.command import crud
 from app.domain.command.models import Command
 from app.domain.command.schemas import HistoryRow
-from app.domain.command.validation import ValidationOutcome, validate
+from app.domain.command.validation import ValidatedItem, ValidationOutcome, validate
 from app.domain.household import service as household_service
 from app.domain.inventory import service as inventory_service
 from app.domain.inventory.service import AppliedChange, ApplyOutcome
@@ -80,8 +81,13 @@ async def interpret(
     command_id: UUID,
     utterance: str,
     locale: str = "ko",
+    follows: UUID | None = None,
 ) -> CommandResult:
-    """발화 하나를 처리한다."""
+    """발화 하나를 처리한다.
+
+    Args:
+        follows: 같은 대화에서 되물은 명령. 없으면 앞 발화와 잇지 않는다.
+    """
     existing = await crud.get(session, command_id)
     if existing is not None:
         # 2단계. 네트워크 재시도가 재고를 두 번 바꾸지 않는다.
@@ -102,10 +108,11 @@ async def interpret(
     await session.flush()
 
     context = await _build_context(session, household_id, today.isoformat(), household.timezone)
+    spoken = await _with_unanswered(session, command, follows)
 
     started = time.perf_counter()
     try:
-        result = await gateway.interpret(utterance, context)
+        result = await gateway.interpret(spoken, context)
     except UpstreamError as error:
         # 실패를 완료처럼 알리지 않는다.
         command.status = CommandStatus.FAILED.value
@@ -127,7 +134,9 @@ async def interpret(
 
     if intent is CommandIntent.QUERY:
         # 조회는 재고를 바꾸지 않는다. 읽어서 답하기만 한다.
-        answer = await _answer_query(session, household_id, result.proposal, today)
+        answer = await _answer_query(
+            session, household_id, result.proposal, today, locale
+        )
         command.status = CommandStatus.APPLIED.value
         command.spoken_response = answer
         await session.commit()
@@ -141,9 +150,16 @@ async def interpret(
         )
 
     if intent is CommandIntent.RECOMMEND:
-        # 추천은 별도 엔드포인트가 담당한다. 여기서는 의도만 기록한다.
+        # 추천은 별도 엔드포인트가 담당한다. 여기서는 의도와 **지목한 재료**만 돌려준다.
+        focus = _focus_of(command)
         command.status = CommandStatus.APPLIED.value
-        command.spoken_response = translate("intent.recommend", locale)
+        command.spoken_response = (
+            translate("intent.recommend_with", locale).format(
+                names=with_means(", ".join(focus))
+            )
+            if focus
+            else translate("intent.recommend", locale)
+        )
         await session.commit()
         return _from_stored(command)
 
@@ -161,10 +177,28 @@ async def interpret(
         await session.commit()
         return _from_stored(command)
 
+    if intent is CommandIntent.CANCEL:
+        # IMPORTANT: 취소는 항목이 없다. 대상은 서버가 직전 반영 명령으로 고른다. 항목 검증에
+        # 넣으면 실제 모델이 준 빈 항목 목록이 "항목 없음" 으로 거절돼 말로 취소할 수 없었다.
+        applied = await _execute(
+            session, command, ValidationOutcome(), intent, household_id, locale
+        )
+        await session.commit()
+        return applied
+
+    if intent is CommandIntent.REGISTER:
+        redated = await _redate_stocked(
+            session, command, result.proposal, spoken, today, household_id, locale
+        )
+        if redated is not None:
+            await session.commit()
+            return redated
+
     outcome = validate(
         result.proposal,
         today=today,
         require_amount=intent in _AMOUNT_REQUIRED and intent not in _STATE_ONLY,
+        utterance=spoken,
     )
     if outcome.question is not None:
         # 4단계에서 멈춘다. 확인되지 않은 변경을 적용하지 않는다.
@@ -183,6 +217,47 @@ async def interpret(
     applied = await _execute(session, command, outcome, intent, household_id, locale)
     await session.commit()
     return applied
+
+
+async def _redate_stocked(
+    session: AsyncSession,
+    command: Command,
+    proposal: CommandProposal,
+    spoken: str,
+    today: date,
+    household_id: int,
+    locale: str,
+) -> CommandResult | None:
+    """있는 재료의 기한만 말했으면 그 묶음의 기한을 고친다.
+
+    실제 모델은 "두부 유통기한은 10월 5일까지야" 를 수량 없는 등록으로 준다. 그대로 검증하면
+    "두부는 얼마나인가요?" 를 되묻는데, 사용자는 넣은 것이 아니라 기한을 알려준 것이다.
+
+    IMPORTANT: 모든 항목이 수량 없이 기한만 있고 **모두 살아 있는 묶음이 있을 때만** 여기서
+    끝낸다. 하나라도 아니면 `None` 을 돌려 일반 등록 경로(수량 확인)로 넘긴다.
+
+    Returns:
+        기한을 고친 결과. 이 경로가 아니면 `None`.
+    """
+    outcome = validate(proposal, today=today, require_amount=False, utterance=spoken)
+    if not outcome.ok or not outcome.items:
+        return None
+    if any(_has_amount(item) or not item.dates for item in outcome.items):
+        return None
+    applied = await inventory_service.redate_items(
+        session,
+        household_id=household_id,
+        command_id=command.command_id,
+        items=outcome.items,
+    )
+    if applied is None:
+        return None
+    logger.info("Command {} set dates on existing stock", command.command_id)
+    return _finish(command, applied, locale, key="command.applied")
+
+
+def _has_amount(item: ValidatedItem) -> bool:
+    return item.amount is not None or item.qualitative_amount is not None
 
 
 async def _execute(
@@ -289,6 +364,54 @@ def _finish(
     )
 
 
+# 정정의 대상이 될 직전 발화를 모델에 넘기는 시간. 오래된 말을 고치는 것으로 읽지 않게 한다.
+_PREVIOUS_WINDOW = timedelta(minutes=30)
+
+
+def _utcnow() -> datetime:
+    return datetime.now(UTC)
+
+
+# 되물은 질문에 답이 이어질 수 있는 시간. 질문 낭독과 응답 창을 합친 것보다 넉넉히 둔다.
+_FOLLOW_UP_WINDOW = timedelta(seconds=90)
+
+# 새 명령임을 알리는 말. 이 말이 있으면 답이 아니라 새로 시작한 발화다.
+_NEW_COMMAND_WORDS = (
+    "넣었", "샀", "썼", "먹었", "남았", "버렸", "옮겼", "열었", "있어", "취소", "되돌", "뭐 먹",
+)
+
+
+async def _with_unanswered(
+    session: AsyncSession, command: Command, follows: UUID | None
+) -> str:
+    """되물은 질문의 답이면 앞에서 한 말에 이어 붙인다.
+
+    질문에는 "10개"·"10월이야" 처럼 짧게 답한다. 그 말만으로는 무엇에 대한 것인지 알 수
+    없어 해석이 실패한다. 새 명령을 말했으면 잇지 않는다 — 답하지 않고 넘어간 앞 발화가
+    뒤늦게 반영되면 안 된다.
+
+    IMPORTANT: 앱이 같은 대화의 답이라고 [follows] 로 밝힌 경우에만 잇는다. 시간 창만으로
+    이으면 대화를 닫고 호출어로 새로 시작한 발화에 지난 오인식이 붙어 해석이 계속 틀린다.
+    """
+    utterance = command.utterance
+    if follows is None:
+        return utterance
+    if any(word in utterance for word in _NEW_COMMAND_WORDS):
+        return utterance
+    waiting = await crud.unanswered(
+        session,
+        command.household_id,
+        within=_FOLLOW_UP_WINDOW,
+        excluding=command.command_id,
+    )
+    if not waiting or waiting[-1].command_id != follows:
+        return utterance
+    logger.info(
+        "Command {} continues {} unanswered utterance(s)", command.command_id, len(waiting)
+    )
+    return " ".join([*(earlier.utterance for earlier in waiting), utterance])
+
+
 def _spoken(changes: list[AppliedChange], locale: str, *, key: str) -> str:
     """읽어줄 한 문장.
 
@@ -301,17 +424,52 @@ def _spoken(changes: list[AppliedChange], locale: str, *, key: str) -> str:
     for change in changes:
         if change.action is ChangeAction.REVERT:
             continue
-        parts.append(_describe(change))
+        parts.append(_describe(change, locale))
     if not parts:
-        parts = [_describe(change) for change in changes]
-    return f"{', '.join(parts)} {translate(key, locale)}"
+        parts = [_describe(change, locale) for change in changes]
+    spoken = f"{', '.join(parts)} {translate(key, locale)}"
+    missing = _without_expiry(changes, locale)
+    return f"{spoken} {missing}" if missing else spoken
 
 
-def _describe(change: AppliedChange) -> str:
+def _describe(change: AppliedChange, locale: str) -> str:
     if change.quantity_after is None:
         amount = change.qualitative_amount or "확인 필요"
-        return f"{change.display_name} {amount}"
-    return f"{change.display_name} {_fmt(change.quantity_after)}{change.unit or ''}"
+        described = f"{change.display_name} {amount}"
+    else:
+        unit = unit_label(change.unit, locale)
+        described = f"{change.display_name} {_fmt(change.quantity_after)}{unit}"
+    until = _until(change, locale)
+    return f"{described}, {until}" if until else described
+
+
+def _until(change: AppliedChange, locale: str) -> str:
+    """함께 말한 기한. 말하지 않았으면 빈 문자열.
+
+    음성에서는 연도까지 읽는다 — 해가 바뀌는 때에 "1월 3일"만 읽으면 어느 해인지 모른다.
+    """
+    if change.date_kind is None or change.date_value is None:
+        return ""
+    when = translate("date.spoken", locale).format(
+        year=change.date_value.year, month=change.date_value.month, day=change.date_value.day
+    )
+    return translate(f"date.until.{change.date_kind}", locale).format(date=when)
+
+
+def _without_expiry(changes: list[AppliedChange], locale: str) -> str:
+    """기한 없이 넣은 재료를 알린다. 넣은 것이 없거나 모두 기한이 있으면 빈 문자열.
+
+    말하지 않은 기한을 채우지 않으므로, 입력되지 않았다는 사실을 그대로 알린다. 넣은 재료가
+    모두 기한이 없으면 이름을 되풀이하지 않는다.
+    """
+    stocked = [c for c in changes if c.action is ChangeAction.STOCK_IN]
+    missing = [c.display_name for c in stocked if c.date_value is None]
+    if not missing:
+        return ""
+    if len(missing) == len(stocked):
+        return translate("command.no_expiry", locale)
+    names = with_topic(", ".join(missing))
+    return translate("command.no_expiry_for", locale).format(names=names)
 
 
 def _change_row(change: AppliedChange) -> dict[str, object]:
@@ -322,21 +480,34 @@ def _change_row(change: AppliedChange) -> dict[str, object]:
         "before": _fmt(change.quantity_before) if change.quantity_before is not None else None,
         "after": _fmt(change.quantity_after) if change.quantity_after is not None else None,
         "unit": change.unit,
+        "date_kind": change.date_kind,
+        "date_value": change.date_value.isoformat() if change.date_value else None,
     }
 
 
 def _from_stored(command: Command) -> CommandResult:
     """저장된 명령 행을 결과로 옮긴다. 멱등 재생과 같은 경로를 쓴다."""
     status = CommandStatus(command.status)
+    intent = CommandIntent(command.intent)
     return CommandResult(
         command_id=command.command_id,
         status=status,
-        intent=CommandIntent(command.intent),
+        intent=intent,
         spoken=command.spoken_response,
         clarification_question=command.clarification_question,
-        screen=None,
+        screen={"focus": _focus_of(command)} if intent is CommandIntent.RECOMMEND else None,
         undo_token=command.command_id if status is CommandStatus.APPLIED else None,
     )
+
+
+def _focus_of(command: Command) -> list[str]:
+    """메뉴를 물으며 지목한 재료. "삼겹살로 뭐 해 먹지"의 삼겹살이다.
+
+    추천은 냉장고 전체를 보고 만든다. 지목한 재료를 넘기지 않으면 물은 것과 다른 답이 온다.
+    """
+    items = (command.proposal or {}).get("items") or []
+    names = [sanitize_fragment(item.get("raw_name"), limit=20) for item in items]
+    return [name for name in names if name]
 
 
 async def _answer_query(
@@ -344,6 +515,7 @@ async def _answer_query(
     household_id: int,
     proposal: CommandProposal,
     today: date,
+    locale: str,
 ) -> str:
     """조회 의도에 답한다.
 
@@ -356,7 +528,7 @@ async def _answer_query(
         if not batches:
             joined = ", ".join(names)
             return f"{joined}은 등록된 재고에 없어요."
-        return ", ".join(_describe_stock(batch) for batch in batches) + " 있어요."
+        return ", ".join(_describe_stock(batch, locale) for batch in batches) + " 있어요."
 
     priority = await inventory_service.list_priority_batches(
         session, household_id, today=today, alert_days=[3, 1, 0]
@@ -365,15 +537,16 @@ async def _answer_query(
         total = await inventory_service.list_batches(session, household_id, 5)
         if not total:
             return "등록된 재료가 없어요."
-        return ", ".join(_describe_stock(b) for b in total) + " 있어요."
+        return ", ".join(_describe_stock(b, locale) for b in total) + " 있어요."
     first = priority[:3]
-    return "먼저 쓸 재료는 " + ", ".join(_describe_stock(p.batch) for p in first) + "예요."
+    stocks = ", ".join(_describe_stock(p.batch, locale) for p in first)
+    return f"먼저 쓸 재료는 {stocks}예요."
 
 
-def _describe_stock(batch: object) -> str:
+def _describe_stock(batch: object, locale: str) -> str:
     """잔량을 사람이 읽는 형태로. 모르면 모른다고 한다."""
     quantity = getattr(batch, "quantity", None)
-    unit = getattr(batch, "unit", None) or ""
+    unit = unit_label(getattr(batch, "unit", None), locale)
     name = getattr(batch, "raw_name", "")
     if quantity is None:
         qualitative = getattr(batch, "qualitative_amount", None)
@@ -398,7 +571,16 @@ async def _build_context(
         )
         suffix = f" (기한 {soonest.isoformat()})" if soonest else ""
         items.append(f"{batch.raw_name} {amount}{suffix}")
-    return InventoryContext(items=items, today=today, timezone=timezone)
+    # IMPORTANT: "두 개가 아니라 세 개"처럼 재료를 빼고 고치는 말은 직전 발화 없이는 대상을
+    # 알 수 없다. 넘기지 않았더니 모델이 이름 없는 항목을 내 스키마 검증에서 실패했다.
+    previous = await crud.latest_applied(session, household_id)
+    recent = previous is not None and previous.created_at >= _utcnow() - _PREVIOUS_WINDOW
+    return InventoryContext(
+        items=items,
+        today=today,
+        timezone=timezone,
+        previous_utterance=previous.utterance if recent else None,
+    )
 
 
 def _fmt(value: object) -> str:
@@ -410,6 +592,21 @@ def _fmt(value: object) -> str:
     if normalized == normalized.to_integral_value():
         return str(int(normalized))
     return str(normalized)
+
+
+# 되돌리기 버튼이 만든 명령의 발화 칸. 말이 아니라 표시다 — 기록 화면에는 [_said] 가
+# 언어 팩 문구로 바꿔 보여준다. 이미 쌓인 행이 이 값을 갖고 있으므로 바꾸지 않는다.
+_UNDO_UTTERANCE = "undo"
+
+
+def _said(command: Command) -> str:
+    """기록 화면에 보일 발화. 되돌리기 버튼이 만든 명령은 언어 팩 문구로 바꾼다.
+
+    사용자는 "undo" 라고 말한 적이 없다. 그대로 보이면 하지 않은 말이 말풍선에 뜬다.
+    """
+    if command.utterance == _UNDO_UTTERANCE:
+        return translate("history.undo")
+    return command.utterance
 
 
 async def undo(
@@ -430,7 +627,7 @@ async def undo(
         command = Command(
             command_id=command_id,
             household_id=household_id,
-            utterance="undo",
+            utterance=_UNDO_UTTERANCE,
             intent=CommandIntent.CANCEL.value,
             status=CommandStatus.REJECTED.value,
             validation_error=f"unknown target command {target_command_id}",
@@ -443,7 +640,7 @@ async def undo(
     command = Command(
         command_id=command_id,
         household_id=household_id,
-        utterance="undo",
+        utterance=_UNDO_UTTERANCE,
         intent=CommandIntent.CANCEL.value,
         status=CommandStatus.PENDING.value,
         target_command_id=target_command_id,
@@ -501,7 +698,7 @@ async def history(
                     occurred_at=event.created_at,
                     command_id=event.command_id,
                     reverses_event_id=event.reverses_event_id,
-                    utterance=event.command.utterance,
+                    utterance=_said(event.command),
                     spoken_response=event.command.spoken_response,
                 )
             )

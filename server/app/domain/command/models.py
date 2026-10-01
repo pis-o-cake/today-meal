@@ -104,6 +104,12 @@ class ChangeEvent(Base, CreatedAtMixin):
     )
     note: Mapped[str | None] = mapped_column(Text)
 
+    # 되돌릴 때 복원할 **이전 값**. 이름·기한·보관 위치·버림 표시처럼 수량 칸에 담기지
+    # 않는 것을 담는다. 수량은 `quantity_before` 가 이미 갖고 있다.
+    #
+    # IMPORTANT: 이것이 없으면 이름이나 날짜를 고친 뒤 되돌려도 그 값이 돌아오지 않는다.
+    restore_payload: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+
     # 이력 화면이 재료명을 함께 보여주므로 묶음을 같이 읽는다.
     batch: Mapped["IngredientBatch"] = relationship(lazy="raise_on_sql")
 

@@ -147,26 +147,32 @@ class GeminiGateway:
         return MenuResult(proposal=proposal, usage=usage, raw=raw)
 
     async def analyze_video(self, request: VideoSource) -> VideoResult:
-        """영상의 글을 조리 단계로 정리한다. 예산을 넘으면 호출하지 않는다."""
+        """영상을 조리 단계로 정리한다. 예산을 넘으면 호출하지 않는다.
+
+        [VideoSource.video_url] 이 있으면 영상을 함께 보낸다 — 제공자가 유튜브 주소를
+        그대로 받아 영상을 읽는다. 1분이 약 3천 토큰이며 길이 상한은 호출부가 정한다.
+        """
         self._budget.check()
+
+        parts: list[dict[str, Any]] = []
+        # IMPORTANT: 영상을 글보다 먼저 넣는다. 제공자가 미디어를 앞에 둔 배치에서 더
+        # 안정적으로 읽는다.
+        if request.video_url:
+            parts.append({"fileData": {"fileUri": request.video_url}})
+        parts.append(
+            {
+                "text": video_ko.build_user_prompt(
+                    title=request.title,
+                    channel=request.channel,
+                    duration_seconds=request.duration_seconds,
+                    body=request.body,
+                )
+            }
+        )
 
         payload = {
             "systemInstruction": {"parts": [{"text": video_ko.SYSTEM}]},
-            "contents": [
-                {
-                    "role": "user",
-                    "parts": [
-                        {
-                            "text": video_ko.build_user_prompt(
-                                title=request.title,
-                                channel=request.channel,
-                                duration_seconds=request.duration_seconds,
-                                body=request.body,
-                            )
-                        }
-                    ],
-                }
-            ],
+            "contents": [{"role": "user", "parts": parts}],
             "generationConfig": {
                 "responseMimeType": "application/json",
                 "responseSchema": _video_schema(),
@@ -281,6 +287,7 @@ def _response_schema() -> dict[str, Any]:
             "month": {"type": "integer", "nullable": True},
             "day": {"type": "integer", "nullable": True},
         },
+        "required": ["raw_text"],
     }
     item_schema = {
         "type": "object",
@@ -294,7 +301,9 @@ def _response_schema() -> dict[str, Any]:
             "dates": {"type": "array", "items": date_schema},
             "is_remaining": {"type": "boolean"},
         },
-        "required": ["raw_name", "is_remaining"],
+        # IMPORTANT: `dates` 를 필수로 둔다. 선택이면 모델이 칸을 건너뛰어, 넣었다는 말과
+        # 함께 말한 기한이 조용히 사라진다. 말한 날짜가 없으면 빈 배열을 낸다.
+        "required": ["raw_name", "dates", "is_remaining"],
     }
     return {
         "type": "object",

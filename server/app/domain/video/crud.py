@@ -69,6 +69,16 @@ async def save_analyzed(
     return row
 
 
+async def forget(session: AsyncSession, row: VideoRecipe) -> None:
+    """정리 기록 하나를 지운다.
+
+    다시 시도할 실패를 지워 새 분석이 같은 자리에 들어가게 한다. `(video_id,
+    prompt_version)` 이 유일하므로 지우지 않으면 새 행을 넣을 수 없다.
+    """
+    await session.delete(row)
+    await session.flush()
+
+
 async def save_failed(
     session: AsyncSession,
     *,

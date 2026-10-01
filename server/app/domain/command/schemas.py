@@ -16,6 +16,10 @@ class CommandRequest(BaseModel):
     command_id: UUID = Field(description="앱이 발화마다 생성하는 멱등 키. 재시도해도 같은 값")
     utterance: str = Field(min_length=1, max_length=2000, description="전사 원문")
     locale: str = Field(default="ko", description="응답 문구 언어")
+    follows: UUID | None = Field(
+        default=None,
+        description="같은 대화에서 되물은 명령. 있을 때만 그 발화에 이어 해석한다",
+    )
 
 
 class CommandResponse(BaseModel):

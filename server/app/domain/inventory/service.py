@@ -7,9 +7,10 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, date, datetime, time
 from decimal import Decimal
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +19,7 @@ from app.core import units as unit_utils
 from app.core.enums import (
     ChangeAction,
     DateKind,
+    DateSource,
     FreshnessGrade,
     FridgeCondition,
     PriorityReason,
@@ -25,6 +27,7 @@ from app.core.enums import (
     StateEventKind,
     StorageLocation,
 )
+from app.core.locale import unit_label
 from app.core.particles import with_object, with_subject, with_topic
 from app.domain.command.models import ChangeEvent
 from app.domain.command.validation import ValidatedItem
@@ -51,6 +54,9 @@ class AppliedChange:
     quantity_after: Decimal | None
     unit: str | None
     qualitative_amount: str | None = None
+    # 이 변화와 함께 말한 기한. 말하지 않았으면 둘 다 `None` 이다.
+    date_kind: str | None = None
+    date_value: date | None = None
 
 
 @dataclass(slots=True)
@@ -60,10 +66,12 @@ class ApplyOutcome:
     Attributes:
         changes: 일어난 변화. 비어 있으면 아무것도 바꾸지 않았다는 뜻이다.
         question: 되물을 한 가지. 있으면 **아무것도 바꾸지 않았다.**
+        skipped: 빼지 못하고 넘어간 재료 이름. 조리 확인처럼 묻지 않고 반영할 때만 찬다.
     """
 
     changes: list[AppliedChange] = field(default_factory=list)
     question: str | None = None
+    skipped: list[str] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
@@ -130,6 +138,7 @@ async def register_items(
                 certainty=item.certainty.value,
             )
         )
+        said = next((d for d in item.dates if d.value is not None), None)
         changes.append(
             AppliedChange(
                 batch_id=batch.batch_id,
@@ -139,10 +148,170 @@ async def register_items(
                 quantity_after=item.amount,
                 unit=item.unit,
                 qualitative_amount=item.qualitative_amount,
+                date_kind=said.kind.value if said is not None else None,
+                date_value=said.value if said is not None else None,
             )
         )
     await session.flush()
     return ApplyOutcome(changes=changes)
+
+
+async def redate_items(
+    session: AsyncSession,
+    *,
+    household_id: int,
+    command_id: UUID,
+    items: Sequence[ValidatedItem],
+) -> ApplyOutcome | None:
+    """이미 있는 재료에 말한 기한을 적는다. **새 묶음을 만들지 않는다.**
+
+    "두부 유통기한은 10월 5일까지야" 는 두부를 새로 넣은 말이 아니라 있는 두부의 기한을
+    알려준 말이다. 수량을 되물으면 사용자는 답할 것이 없고, 새로 넣으면 두부가 두 번 잡힌다.
+
+    같은 종류의 기한이 있으면 고치고 없으면 새로 만든다. 다른 종류의 기한은 그대로 둔다 —
+    화면에서 고칠 때(`edit.edit_batch`)와 같은 규칙이다. 바꾸기 전 값을 원장에 남겨 되돌리면
+    그때의 기한으로 돌아간다.
+
+    Args:
+        items: 수량 없이 기한만 말한 항목.
+
+    Returns:
+        적은 결과. 한 항목이라도 살아 있는 묶음이 없으면 `None` 이며 **아무것도 바꾸지
+        않는다** — 호출자는 새로 넣는 경로로 넘긴다.
+    """
+    plans: list[tuple[ValidatedItem, IngredientBatch]] = []
+    for item in items:
+        if not item.dates:
+            return None
+        ingredient = await ingredient_service.resolve_or_create(session, item.raw_name)
+        candidates = await crud.find_target_batches(
+            session, household_id, ingredient.ingredient_id
+        )
+        target = _redate_target(candidates, item.dates[0].kind)
+        if target is None:
+            return None
+        plans.append((item, target))
+
+    changes: list[AppliedChange] = []
+    for item, batch in plans:
+        snapshot = snapshot_of(batch)
+        for validated in item.dates:
+            put_date(
+                batch,
+                kind=validated.kind,
+                value=validated.value,
+                source=validated.source,
+                raw_text=validated.raw_text,
+            )
+        batch.last_confirmed_at = _now()
+        session.add(
+            ChangeEvent(
+                command_id=command_id,
+                batch_id=batch.batch_id,
+                action=ChangeAction.ADJUST.value,
+                quantity_before=batch.quantity,
+                quantity_after=batch.quantity,
+                unit=batch.unit,
+                certainty=batch.quantity_certainty,
+                restore_payload=snapshot,
+            )
+        )
+        said = next((d for d in item.dates if d.value is not None), None)
+        changes.append(
+            AppliedChange(
+                batch_id=batch.batch_id,
+                display_name=batch.raw_name,
+                action=ChangeAction.ADJUST,
+                quantity_before=batch.quantity,
+                quantity_after=batch.quantity,
+                unit=batch.unit,
+                qualitative_amount=batch.qualitative_amount,
+                date_kind=said.kind.value if said is not None else None,
+                date_value=said.value if said is not None else None,
+            )
+        )
+    await session.flush()
+    return ApplyOutcome(changes=changes)
+
+
+def _redate_target(
+    batches: Sequence[IngredientBatch], kind: DateKind
+) -> IngredientBatch | None:
+    """기한을 적을 묶음.
+
+    그 종류의 기한이 아직 없는 묶음을 먼저 고른다 — 기한을 모른 채 넣은 묶음에 알려준 말일
+    가능성이 가장 크다. 모두 기한이 있으면 가장 최근에 넣은 묶음이다. 다 쓴 묶음은 고르지
+    않는다.
+    """
+    live = [b for b in batches if b.quantity is None or b.quantity > 0]
+    if not live:
+        return None
+    undated = [
+        b
+        for b in live
+        if not any(row.kind == kind.value and row.date_value is not None for row in b.dates)
+    ]
+    return max(undated or live, key=lambda batch: batch.batch_id)
+
+
+def put_date(
+    batch: IngredientBatch,
+    *,
+    kind: DateKind,
+    value: date | None,
+    source: DateSource,
+    raw_text: str | None = None,
+) -> None:
+    """묶음의 기한 하나를 적는다.
+
+    같은 종류의 줄이 있으면 그것을 고치고, 없으면 새로 만든다. 다른 종류의 줄은 **그대로
+    둔다** — 제조일과 유통기한이 함께 있을 수 있고, 하나를 고쳤다고 다른 것이 틀린 것은
+    아니다.
+
+    WARNING: `batch.dates` 가 미리 읽혀 있어야 한다. 비동기 세션에서 지연 로딩은 실패한다.
+    """
+    for row in batch.dates:
+        if row.kind == kind.value:
+            row.date_value = value
+            row.is_confirmed = True
+            row.source = source.value
+            row.raw_text = raw_text
+            return
+    batch.dates.append(
+        BatchDate(
+            batch_id=batch.batch_id,
+            kind=kind.value,
+            date_value=value,
+            is_confirmed=True,
+            source=source.value,
+            raw_text=raw_text,
+        )
+    )
+
+
+def snapshot_of(batch: IngredientBatch) -> dict[str, Any]:
+    """되돌릴 때 복원할 값. **수량은 담지 않는다** — 원장의 수량 칸이 이미 갖고 있다.
+
+    `ChangeEvent.restore_payload` 에 담아 [_restore] 가 되돌린다.
+
+    Returns:
+        이름·재료·보관 위치·날짜·버림 표시.
+    """
+    return {
+        "raw_name": batch.raw_name,
+        "ingredient_id": batch.ingredient_id,
+        "storage_location": batch.storage_location,
+        "deleted": batch.deleted_at is not None,
+        "dates": [
+            {
+                "kind": row.kind,
+                "date_value": row.date_value.isoformat() if row.date_value else None,
+                "is_confirmed": row.is_confirmed,
+                "source": row.source,
+            }
+            for row in batch.dates
+        ],
+    }
 
 
 async def apply_usage(
@@ -151,32 +320,53 @@ async def apply_usage(
     household_id: int,
     command_id: UUID,
     items: Sequence[ValidatedItem],
+    lenient: bool = False,
 ) -> ApplyOutcome:
     """사용 차감과 잔량 보정을 반영한다.
 
     항목의 `is_remaining` 이 차감과 보정을 가른다 — "두 개 썼어"는 `consume`, "두 개 남았어"는
     `adjust` 다. 결과 잔량이 같아도 다른 사실이므로 이력에서 구분된다.
 
+    같은 재료의 묶음이 여럿이면 **기한이 이른 것부터** 쓴다. 한 묶음으로 모자라면 다음
+    묶음으로 넘어간다. 어느 것을 썼는지 되묻지 않는다 — 먼저 먹어야 할 것을 먼저 쓰는
+    것이 이 앱의 기준이고, 되물으면 답할 길이 없을 때 아무것도 빠지지 않는다.
+
     IMPORTANT: 되물을 일이 하나라도 있으면 **아무 항목도 반영하지 않는다.** 절반만 반영하면
-    사용자가 무엇이 남았는지 알 수 없다.
+    사용자가 무엇이 남았는지 알 수 없다. 그래서 먼저 모든 항목의 계획을 세우고, 다 세워진
+    뒤에 한꺼번에 반영한다.
+
+    Args:
+        lenient: 묻지 않고 반영할지. 조리 확인이 쓴다 — 없는 재료·맞출 수 없는 단위는
+            건너뛰고([ApplyOutcome.skipped]), 모자라면 있는 만큼만 뺀다. 말로 한 차감은
+            사용자가 숫자를 말한 것이라 어긋나면 알려야 하므로 쓰지 않는다.
     """
     plans: list[tuple[ValidatedItem, IngredientBatch]] = []
+    skipped: list[str] = []
     for item in items:
         ingredient = await ingredient_service.resolve_or_create(session, item.raw_name)
         candidates = await crud.find_target_batches(
             session, household_id, ingredient.ingredient_id
         )
+        # 기한이 이른 순으로 온다. 앞에서부터 쓴다.
         usable = [b for b in candidates if b.quantity is None or b.quantity > 0]
         if not usable:
+            if lenient:
+                skipped.append(item.raw_name)
+                continue
             return ApplyOutcome(
                 question=f"{with_topic(item.raw_name)} 등록된 재고에 없어요."
             )
-        if len(usable) > 1 and not item.is_remaining:
-            # 어느 팩인지 모른다. 기한이 다른 팩을 임의로 고르면 잘못된 것을 먼저 쓴다.
-            return ApplyOutcome(
-                question=f"{with_subject(item.raw_name)} 여러 개 있어요. 어느 것을 쓰셨어요?"
-            )
-        plans.append((item, usable[0]))
+        if item.is_remaining or item.amount is None:
+            # 남은 양과 정성 표현은 나눌 수 없다. 먼저 쓸 묶음 하나에 적는다.
+            plans.append((item, usable[0]))
+            continue
+
+        shares, problem = _share_out(item, usable, lenient=lenient)
+        if problem is not None:
+            return ApplyOutcome(question=problem)
+        if not shares:
+            skipped.append(item.raw_name)
+        plans.extend(shares)
 
     changes: list[AppliedChange] = []
     for item, batch in plans:
@@ -185,7 +375,59 @@ async def apply_usage(
             return outcome
         changes.extend(outcome.changes)
     await session.flush()
-    return ApplyOutcome(changes=changes)
+    return ApplyOutcome(changes=changes, skipped=skipped)
+
+
+def _share_out(
+    item: ValidatedItem, batches: Sequence[IngredientBatch], *, lenient: bool
+) -> tuple[list[tuple[ValidatedItem, IngredientBatch]], str | None]:
+    """쓴 양을 묶음들에 나눈다. 앞의 묶음부터 비운다.
+
+    Returns:
+        `(묶음마다 뺄 양, 되물을 질문)`. 질문이 있으면 아무것도 나누지 않았다. 너그럽게
+        부른 경우에는 질문이 없고, 하나도 뺄 수 없으면 빈 목록이 온다.
+    """
+    left = item.amount
+    shares: list[tuple[ValidatedItem, IngredientBatch]] = []
+    countable: list[IngredientBatch] = []
+    for batch in batches:
+        # 잔량을 모르는 묶음과 단위를 맞출 수 없는 묶음에서는 숫자로 뺄 수 없다.
+        if batch.quantity is None:
+            continue
+        need = _convert_to_batch_unit(replace(item, amount=left), batch)
+        if need is None:
+            continue
+        countable.append(batch)
+        if left <= 0:
+            continue
+        take = min(batch.quantity, need)
+        shares.append((replace(item, amount=take, unit=batch.unit), batch))
+        # 남은 양을 말한 단위로 되돌린다. 묶음마다 단위가 다를 수 있다.
+        left = left * (need - take) / need
+
+    if lenient:
+        return shares, None
+    if not countable:
+        first = batches[0]
+        if first.quantity is None:
+            return [], f"{with_subject(item.raw_name)} 지금 얼마나 남았는지 알려주세요."
+        return [], (
+            f"{item.raw_name}의 양을 {unit_label(first.unit) or '단위'} 기준으로 알려주세요."
+        )
+    if left > 0:
+        # 음수 재고를 저장하지 않는다. 기록이 틀어진 것이므로 현재 잔량을 확인한다.
+        unit = countable[0].unit
+        if all(batch.unit == unit for batch in countable):
+            total = sum((batch.quantity for batch in countable), Decimal("0"))
+            return [], (
+                f"{with_subject(item.raw_name)} {_fmt(total)}{unit_label(unit)}"
+                "밖에 없어요. 지금 얼마나 남았어요?"
+            )
+        return [], (
+            f"{with_subject(item.raw_name)} 말한 것보다 적게 남아 있어요. "
+            "지금 얼마나 남았어요?"
+        )
+    return shares, None
 
 
 def _apply_to_batch(
@@ -228,7 +470,10 @@ def _apply_to_batch(
     amount = _convert_to_batch_unit(item, batch)
     if amount is None:
         return ApplyOutcome(
-            question=f"{item.raw_name}의 양을 {batch.unit or '단위'} 기준으로 알려주세요."
+            question=(
+                f"{item.raw_name}의 양을 {unit_label(batch.unit) or '단위'} "
+                "기준으로 알려주세요."
+            )
         )
 
     if item.is_remaining:
@@ -243,7 +488,7 @@ def _apply_to_batch(
             # 음수 재고를 저장하지 않는다. 기록이 틀어진 것이므로 현재 잔량을 확인한다.
             return ApplyOutcome(
                 question=(
-                    f"{with_subject(item.raw_name)} {_fmt(before)}{batch.unit or ''}"
+                    f"{with_subject(item.raw_name)} {_fmt(before)}{unit_label(batch.unit)}"
                     "밖에 없어요. 지금 얼마나 남았어요?"
                 )
             )
@@ -487,8 +732,62 @@ async def revert_command(
         if event.action == ChangeAction.STOCK_IN.value:
             batch.deleted_at = _now()
 
+        # 화면에서 고친 이름·기한·보관 위치와 버림 표시를 되돌린다. 수량만 되돌리면
+        # 사용자는 되돌렸다고 믿는데 이름은 바뀐 채로 남는다.
+        _restore(batch, event.restore_payload)
+
     await session.flush()
     return ApplyOutcome(changes=changes)
+
+
+def _restore(batch: IngredientBatch, payload: dict | None) -> None:
+    """수량 밖의 값을 되돌린다.
+
+    `restore_payload` 는 **바꾸기 전 값**이다. 그대로 다시 쓰면 그때의 묶음으로 돌아간다.
+    이 값이 없는 옛 이벤트는 수량만 되돌린다 — 없는 값을 지어내지 않는다.
+
+    Args:
+        batch: 되돌릴 묶음.
+        payload: `ChangeEvent.restore_payload`. `None` 이면 아무것도 하지 않는다.
+    """
+    if not payload:
+        return
+
+    if (name := payload.get("raw_name")) is not None:
+        batch.raw_name = name
+    if (ingredient_id := payload.get("ingredient_id")) is not None:
+        batch.ingredient_id = ingredient_id
+    if (storage := payload.get("storage_location")) is not None:
+        batch.storage_location = storage
+    # 버리기를 되돌리면 묶음이 되살아난다. 표시를 풀지 않으면 목록에 돌아오지 않는다.
+    if payload.get("deleted") is False:
+        batch.deleted_at = None
+
+    rows = payload.get("dates")
+    if rows is None:
+        return
+    wanted = {row["kind"]: row for row in rows}
+    for current in list(batch.dates):
+        row = wanted.pop(current.kind, None)
+        if row is None:
+            # 편집이 새로 만든 날짜다. 되돌리면 없던 것으로 돌아간다.
+            batch.dates.remove(current)
+            continue
+        raw = row.get("date_value")
+        current.date_value = date.fromisoformat(raw) if raw else None
+        current.is_confirmed = bool(row.get("is_confirmed"))
+        current.source = row.get("source") or current.source
+    for kind, row in wanted.items():
+        raw = row.get("date_value")
+        batch.dates.append(
+            BatchDate(
+                batch_id=batch.batch_id,
+                kind=kind,
+                date_value=date.fromisoformat(raw) if raw else None,
+                is_confirmed=bool(row.get("is_confirmed")),
+                source=row.get("source"),
+            )
+        )
 
 
 def _now() -> datetime:

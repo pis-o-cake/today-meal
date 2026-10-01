@@ -57,6 +57,10 @@ class Settings(BaseSettings):
 
     youtube_api_key: str = ""
 
+    # 영상 자체를 모델에 보내는 길이 상한(초). 1분이 약 3천 토큰이므로 20분이면 한 편에
+    # 6만 토큰 규모다. 이보다 긴 영상은 설명글만 쓴다 — 한 번 눌러 몇 백 원이 나가면 안 된다.
+    video_max_seconds: int = 1200
+
     default_household_id: int = Field(
         default=1,
         description="X-User-Id 가 없을 때 쓰는 가구. MVP 는 태블릿 한 대라 로그인이 관문이 아니다.",
@@ -81,9 +85,23 @@ class Settings(BaseSettings):
         """Alembic 용 동기 DSN. 앱은 asyncpg, 마이그레이션은 psycopg 를 쓴다."""
         return self.database_url.replace("+asyncpg", "+psycopg")
 
+    expose_docs: bool | None = Field(
+        default=None,
+        description=(
+            "Swagger UI 를 열지. 정하지 않으면 운영에서만 닫는다. 심사·시연용 배포는 "
+            "env 를 prod 로 두면서도 문서를 열어야 해서 따로 둔다"
+        ),
+    )
+
     @property
     def docs_enabled(self) -> bool:
-        """운영에서는 Swagger UI 를 닫는다."""
+        """Swagger UI 를 열지.
+
+        기본은 운영에서 닫는 것이다. [expose_docs] 로 명시하면 그 값을 따른다 —
+        끄는 것이 기본이어야 실수로 열리지 않는다.
+        """
+        if self.expose_docs is not None:
+            return self.expose_docs
         return self.env != "prod"
 
 

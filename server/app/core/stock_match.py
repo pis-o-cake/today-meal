@@ -12,7 +12,7 @@ CAUTION: 판정 결과를 저장하지 않는다. 재고는 계속 바뀌므로 
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -58,55 +58,84 @@ class RequiredIngredient:
 def index_stock(
     entries: Iterable[tuple[str, Decimal | None, str | None]],
     staples: Sequence[str] = (),
+    canonical: Mapping[str, str] | None = None,
 ) -> StockIndex:
     """이름으로 찾을 수 있는 재고 색인.
 
     같은 이름의 묶음이 여럿이면 합친다. 기본 양념은 수량을 모르는 보유로 둔다 — 사용자가
     보유한다고 **선언한 것만** 넣으며, 선언하지 않은 양념을 있다고 가정하지 않는다.
 
+    IMPORTANT: [canonical] 을 주면 **말한 이름과 표준명 양쪽으로** 찾을 수 있게 넣는다.
+    사용자는 "삼겹살" 로 넣고 레시피는 "돼지고기" 를 요구하므로, 말한 이름만 색인하면
+    가진 재료를 없다고 판정한다.
+
     Args:
         entries: `(이름, 수량, 단위)`. 수량을 모르면 `None`.
         staples: 사용자가 늘 있다고 선언한 양념 이름.
+        canonical: 말한 이름 → 재료 사전의 표준명.
     """
     index: StockIndex = {}
+    resolve = canonical or {}
     for name, quantity, unit in entries:
-        current = index.get(name)
-        if current is None:
-            index[name] = (quantity, unit)
-            continue
-        amount, held_unit = current
-        if amount is not None and quantity is not None and held_unit == unit:
-            index[name] = (amount + quantity, held_unit)
-        else:
-            index[name] = (None, held_unit or unit)
+        # 표준명이 말한 이름과 같으면 한 번만 넣는다.
+        for key in dict.fromkeys((name, resolve.get(name, name))):
+            _merge(index, key, quantity, unit)
     for name in staples:
         index.setdefault(name, (None, None))
     return index
+
+
+def _merge(
+    index: StockIndex, name: str, quantity: Decimal | None, unit: str | None
+) -> None:
+    """같은 이름의 묶음을 합친다. 단위가 다르거나 모르는 잔량이 섞이면 수량을 버린다."""
+    current = index.get(name)
+    if current is None:
+        index[name] = (quantity, unit)
+        return
+    amount, held_unit = current
+    if amount is not None and quantity is not None and held_unit == unit:
+        index[name] = (amount + quantity, held_unit)
+    else:
+        index[name] = (None, held_unit or unit)
 
 
 def check_ingredients(
     ingredients: Iterable[RequiredIngredient],
     stock: StockIndex,
     priority: set[str] | None = None,
+    canonical: Mapping[str, str] | None = None,
 ) -> tuple[list[IngredientCheck], list[str]]:
     """재료를 하나씩 재고와 대조한다.
+
+    IMPORTANT: [canonical] 을 주면 레시피 재료 이름도 표준명으로 한 번 더 찾는다.
+    레시피가 "삼겹살" 을 요구하고 재고가 "돼지고기" 인 반대 방향도 있다.
+
+    Args:
+        canonical: 이름 → 재료 사전의 표준명. 재고 색인도 같은 맵으로 만들어야 한다.
 
     Returns:
         대조 결과와, `priority` 에 든 재료 가운데 이 레시피가 쓰는 것들.
     """
     priority = priority or set()
+    resolve = canonical or {}
+    # 먼저 쓸 재료는 사용자가 말한 이름이고 레시피는 표준명을 쓸 수 있다. 표준명으로
+    # 맞혀 보고 **돌려줄 때는 원래 이름**을 쓴다 — 호출자가 그 이름으로 화면을 그린다.
+    priority_by_standard = {resolve.get(name, name): name for name in priority}
     checks: list[IngredientCheck] = []
     hits: list[str] = []
 
     for item in ingredients:
         name = item.raw_name.strip()
+        standard = resolve.get(name, name)
         required = Decimal(str(item.amount)) if item.amount is not None else None
         unit = unit_utils.normalize_unit(item.unit_text)
 
-        if name in priority:
-            hits.append(name)
+        hit = priority_by_standard.get(standard)
+        if hit is not None:
+            hits.append(hit)
 
-        held = stock.get(name)
+        held = stock.get(name) or stock.get(standard)
         if held is None:
             checks.append(
                 IngredientCheck(name, required, unit, item.is_essential, "missing")

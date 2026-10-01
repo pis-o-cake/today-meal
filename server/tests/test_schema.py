@@ -117,3 +117,16 @@ def test_only_batch_has_soft_delete(metadata):
         name for name, table in metadata.tables.items() if "deleted_at" in table.c
     }
     assert with_soft_delete == {"ingredient_batch"}
+
+
+def test_docs_can_be_opened_in_prod_when_asked():
+    """심사·시연 배포는 운영 설정이면서도 문서를 열어야 한다.
+
+    기본은 여전히 닫는 것이다 — 명시했을 때만 열린다.
+    """
+    from app.core.config import Settings
+
+    assert not Settings(env="prod").docs_enabled
+    assert Settings(env="prod", expose_docs=True).docs_enabled
+    assert not Settings(env="dev", expose_docs=False).docs_enabled
+    assert Settings(env="dev").docs_enabled

@@ -74,6 +74,7 @@ def validate(
     *,
     today: date,
     require_amount: bool,
+    utterance: str | None = None,
 ) -> ValidationOutcome:
     """제안을 검증한다.
 
@@ -81,6 +82,7 @@ def validate(
         proposal: 모델이 낸 제안.
         today: 가구 시간대의 오늘. 날짜 확정 기준이다.
         require_amount: 수량이 반드시 있어야 하는지. 등록·차감·보정은 참, 조회는 거짓.
+        utterance: 전사 원문. 모델이 빠뜨린 수량을 여기서 읽는다.
 
     Returns:
         통과한 항목이거나 되물을 질문. 질문이 있으면 항목은 비어 있다.
@@ -96,11 +98,29 @@ def validate(
 
     validated: list[ValidatedItem] = []
     for item in proposal.items:
-        outcome = _validate_item(item, today=today, require_amount=require_amount)
+        outcome = _validate_item(
+            _with_spoken_quantity(item, utterance), today=today, require_amount=require_amount
+        )
         if not outcome.ok:
             return outcome
         validated.extend(outcome.items)
     return ValidationOutcome(items=validated)
+
+
+def _with_spoken_quantity(item: ProposedItem, utterance: str | None) -> ProposedItem:
+    """모델이 빠뜨린 수량을 발화에서 읽어 채운다.
+
+    기한과 수량을 함께 말한 문장에서 모델이 수량을 비우는 일이 있다. 발화에 적힌 수량만
+    읽으며, 정성 표현("조금")으로 말한 항목은 건드리지 않는다.
+    """
+    if item.amount is not None or item.qualitative_amount:
+        return item
+    spoken = unit_utils.read_spoken_quantity(utterance, item.raw_name.strip())
+    if spoken is None:
+        return item
+    return item.model_copy(
+        update={"amount": float(spoken.amount), "unit_text": spoken.unit}
+    )
 
 
 def _validate_item(
@@ -116,18 +136,19 @@ def _validate_item(
 
     resolved_dates: list[ValidatedDate] = []
     for proposed in item.dates:
-        if proposed.kind is None:
-            # 종류를 말하지 않았다. 소비기한으로 승격하지 않고 되묻는다.
-            return ValidationOutcome(
-                question=f"{name}의 그 날짜가 소비기한인가요, 유통기한인가요?"
-            )
+        # IMPORTANT: 제품 용어는 "유통기한" 하나로 통일했다. 종류를 말하지 않은 기한은 되묻지
+        # 않고 유통기한으로 둔다. 받아쓰기가 "소비기한"을 흘리면 등록마다 질문이 붙었다.
+        kind = proposed.kind or DateKind.SELL_BY
         resolved = date_utils.resolve(
             proposed.year, proposed.month, proposed.day, today=today, raw_text=proposed.raw_text
         )
         if resolved.needs_clarification:
             return ValidationOutcome(question=resolved.question)
+        # 한 묶음에 같은 종류의 날짜는 하나뿐이다. 그대로 저장하면 제약에 걸려 발화 전체가
+        # 실패한다. 나중에 말한 것을 쓴다 — 되물은 질문에 답한 날짜가 뒤에 온다.
+        resolved_dates = [kept for kept in resolved_dates if kept.kind is not kind]
         resolved_dates.append(
-            ValidatedDate(kind=proposed.kind, value=resolved.value, raw_text=proposed.raw_text)
+            ValidatedDate(kind=kind, value=resolved.value, raw_text=proposed.raw_text)
         )
 
     return ValidationOutcome(

@@ -7,9 +7,17 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
+import re
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.enums import CommandIntent, DateKind, StorageLocation
+
+# 단위와 정성 표현의 길이 한계. 넘는 값은 모델의 혼잣말이다.
+_SHORT_TEXT_LIMIT = 10
+
+# 말한 단위는 한글 한 낱말이거나 `g`·`ml` 같은 로마자 기호다.
+_SPOKEN_UNIT = re.compile(r"[가-힣]+|[A-Za-z]+")
 
 
 class ProposedDate(BaseModel):
@@ -40,7 +48,9 @@ class ProposedItem(BaseModel):
     amount: float | None = Field(default=None, ge=0, description="수량. 말하지 않았으면 비운다")
     # WARNING: 상한이 없으면 모델이 이 칸을 혼잣말 메모지로 쓴다. 실제로 그런 응답을 받았다.
     unit_text: str | None = Field(
-        default=None, max_length=10, description="말한 단위 원문. 예 '모', '개', '큰술'"
+        default=None,
+        max_length=_SHORT_TEXT_LIMIT,
+        description="말한 단위 원문. 예 '모', '개', '큰술'",
     )
     qualitative_amount: str | None = Field(
         default=None, max_length=10, description="'조금'·'반' 같은 표현"
@@ -51,6 +61,23 @@ class ProposedItem(BaseModel):
         default=False,
         description="'네 개 남았어'처럼 남은 양을 말했는지. 사용량과 구분하는 핵심 값",
     )
+
+    @field_validator("unit_text", mode="before")
+    @classmethod
+    def _keep_spoken_unit(cls, value: object) -> object:
+        """단위 뒤에 이어 적은 혼잣말을 떼고 말한 단위만 남긴다.
+
+        모델이 "모 European, check ..."·"개Single-word ..." 처럼 단위 뒤에 메모를 이어
+        적는 일이 있다. 길이 제한으로 거절하면 단위는 맞게 읽었는데도 발화 전체가 실패한다.
+        맨 앞의 한글 낱말(또는 로마자 기호)이 말한 단위다.
+        """
+        if not isinstance(value, str):
+            return value
+        text = value.strip()
+        if len(text) <= _SHORT_TEXT_LIMIT:
+            return text or None
+        spoken = _SPOKEN_UNIT.match(text)
+        return spoken.group()[:_SHORT_TEXT_LIMIT] if spoken else None
 
 
 class CommandProposal(BaseModel):

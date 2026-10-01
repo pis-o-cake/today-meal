@@ -9,7 +9,10 @@ RUN pip install --no-cache-dir uv
 
 WORKDIR /build
 COPY pyproject.toml ./
-RUN uv pip install --system --no-cache -r <(uv pip compile pyproject.toml --quiet -o -)
+# WARNING: 프로세스 치환(`<(...)`)을 쓰지 않는다. `RUN` 의 기본 셸은 `/bin/sh` 이고
+# 거기에는 그 문법이 없어 빌드가 통째로 실패한다 — 파일로 한 번 떨어뜨린다.
+RUN uv pip compile pyproject.toml --quiet -o requirements.txt \
+    && uv pip install --system --no-cache -r requirements.txt
 
 FROM python:3.12-slim AS runtime
 
@@ -27,14 +30,14 @@ WORKDIR /app
 COPY --chown=app:app app ./app
 COPY --chown=app:app alembic ./alembic
 COPY --chown=app:app alembic.ini ./
+COPY --chown=app:app deploy ./deploy
 
 USER app
 EXPOSE 8000
 
-# Gunicorn + Uvicorn worker. 워커 수는 배포에서 조정한다.
-CMD ["gunicorn", "app.main:app", \
-     "--worker-class", "uvicorn.workers.UvicornWorker", \
-     "--workers", "2", \
-     "--bind", "0.0.0.0:8000", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-"]
+# 스키마를 맞추고 사전을 넣은 뒤 Gunicorn + Uvicorn worker 로 띄운다.
+#
+# IMPORTANT: 포트를 이미지 안에 고정하지 않는다. 배포 플랫폼은 `$PORT` 로 포트를
+# 지정하며, 8000 에 묶어 두면 라우터가 붙지 못해 502 가 난다. 로컬 compose 는 자기
+# `command` 로 이 CMD 를 덮으므로 개발 환경은 그대로다.
+CMD ["sh", "deploy/start.sh"]

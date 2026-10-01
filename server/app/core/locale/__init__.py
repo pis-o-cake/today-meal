@@ -31,3 +31,23 @@ def translate(key: str, locale: str = DEFAULT_LOCALE) -> str:
         찾은 문구. 키가 없으면 키 자체를 돌려주어 누락을 드러낸다.
     """
     return _messages(locale).get(key, key)
+
+
+def unit_label(symbol: str | None, locale: str = DEFAULT_LOCALE) -> str:
+    """단위 기호를 사용자에게 읽어주고 보여줄 표기로 바꾼다.
+
+    저장과 계산은 `ea`·`mo` 같은 기호로 하고, 사용자에게는 이 표기만 내보낸다. 기호를
+    그대로 읽으면 "계란 2ea" 가 된다.
+
+    Args:
+        symbol: 정규화된 단위 기호. 예 `ea`, `mo`.
+        locale: 언어 코드. 없는 언어는 기본 언어로 대체한다.
+
+    Returns:
+        표기. 기호가 없으면 빈 문자열, 메시지 팩에 없는 기호는 기호 그대로.
+    """
+    if not symbol:
+        return ""
+    key = f"unit.{symbol}"
+    label = translate(key, locale)
+    return symbol if label == key else label

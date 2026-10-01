@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오늘 뭐 먹지? — 설치</title>
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="description" content="말로 관리하는 우리 집 냉장고. 안드로이드 설치 파일을 내려받습니다.">
+<meta name="theme-color" content="#F3EEE3">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="오늘 뭐 먹지?">
+<meta property="og:description" content="말로 관리하는 우리 집 냉장고 · 안드로이드 설치">
+<meta property="og:image" content="https://today-meal-api-production.up.railway.app/install/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://today-meal-api-production.up.railway.app/install/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --cream: #F3EEE3;
+    --paper: #FBF8F1;
+    --ink: #1D221F;
+    --ink-2: #3C423D;
+    --muted: #5E625C;
+    --line: #D3CAB8;
+    --green: #2E6A4E;
+    --green-soft: #DDE9DF;
+    --urgent: #9C4221;
+    --urgent-soft: #F4E0D5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--cream); }
+  body {
+    font-family: 'Pretendard', -apple-system, 'Apple SD Gothic Neo',
+                 'Noto Sans KR', sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+    line-height: 1.5;
+    padding: 40px 20px 64px;
+  }
+  main { max-width: 480px; margin: 0 auto; }
+
+  .brand { text-align: center; margin-bottom: 36px; }
+  .brand h1 {
+    margin: 0;
+    font-size: 34px; font-weight: 800; letter-spacing: -0.035em;
+  }
+  .brand p {
+    margin: 10px 0 0;
+    font-size: 16px; color: var(--muted); font-weight: 500;
+  }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 28px 24px;
+    margin-bottom: 18px;
+  }
+
+  .qr { text-align: center; }
+  .qr img {
+    width: 232px; height: 232px;
+    image-rendering: pixelated;
+    border-radius: 12px;
+    background: #fff;
+    padding: 10px;
+  }
+  .qr figcaption {
+    margin-top: 14px;
+    font-size: 15px; color: var(--muted);
+  }
+
+  .cta {
+    display: block;
+    margin-top: 20px;
+    padding: 18px 20px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 999px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 17px; font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .cta small {
+    display: block;
+    margin-top: 4px;
+    font-size: 13px; font-weight: 500; opacity: .72;
+  }
+
+  h2 {
+    margin: 0 0 14px;
+    font-size: 17px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  ol { margin: 0; padding-left: 20px; }
+  ol li { margin-bottom: 10px; font-size: 15px; color: var(--ink-2); }
+  ol li:last-child { margin-bottom: 0; }
+  .hint {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--urgent-soft);
+    border-radius: 12px;
+    font-size: 14px; color: var(--urgent);
+  }
+
+  .facts { display: grid; gap: 10px; }
+  .fact {
+    display: flex; justify-content: space-between; gap: 12px;
+    font-size: 14px;
+  }
+  .fact dt { color: var(--muted); margin: 0; }
+  .fact dd { margin: 0; font-weight: 600; text-align: right; }
+  .fact code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+  }
+
+  .links { display: flex; gap: 10px; margin-top: 4px; }
+  .links a {
+    flex: 1;
+    padding: 13px 10px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+    color: var(--ink-2);
+    text-align: center; text-decoration: none;
+    font-size: 14px; font-weight: 600;
+  }
+
+  footer {
+    margin-top: 26px;
+    text-align: center;
+    font-size: 13px; color: var(--muted);
+  }
+
+  /* 큰 화면에서는 QR 로, 폰에서는 버튼으로 받는 것이 자연스럽다. */
+  @media (max-width: 520px) {
+    .qr img { width: 196px; height: 196px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">
+    <h1>오늘 뭐 먹지?</h1>
+    <p>말로 관리하는 우리 집 냉장고</p>
+  </div>
+
+  <section class="card qr">
+    <figure style="margin:0">
+      <img src="qr.png" alt="이 페이지 주소를 담은 QR 코드">
+      <figcaption>폰 카메라로 찍으면 이 페이지가 열립니다</figcaption>
+    </figure>
+    <a class="cta" href="/download/today-meal.apk">
+      APK 내려받기
+      <small>Android 8.0 이상 · 59MB</small>
+    </a>
+  </section>
+
+  <section class="card">
+    <h2>설치하는 법</h2>
+    <ol>
+      <li>위 버튼을 눌러 APK를 받습니다.</li>
+      <li>알림이나 <b>다운로드</b> 폴더에서 받은 파일을 엽니다.</li>
+      <li>“출처를 알 수 없는 앱” 안내가 나오면 <b>이 출처 허용</b>을 켜고 설치합니다.</li>
+      <li>앱을 열고 <b>로그인 없이 둘러보기</b> → <b>허용하고 시작하기</b>로 마이크를 허용합니다.</li>
+    </ol>
+    <p class="hint">
+      마이크를 허용해야 “헤이 키친”으로 부를 수 있습니다. 건너뛰면 화면 조작만 됩니다.
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>무엇을 해볼 수 있나요</h2>
+    <ol>
+      <li>“헤이 키친” → <b>“계란 열 개 넣었어, 유통기한은 10월 5일까지야”</b></li>
+      <li>냉장고 탭에서 기한이 급한 재료를 확인합니다.</li>
+      <li>“헤이 키친” → <b>“삼겹살로 뭐 해먹을까?”</b> 로 메뉴를 받습니다.</li>
+      <li>메뉴를 고르고 인분을 바꾸면 필요한 재료 양이 다시 계산됩니다.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>서버</h2>
+    <dl class="facts">
+      <div class="fact"><dt>상태</dt><dd><code id="health">확인 중…</code></dd></div>
+      <div class="fact"><dt>주소</dt><dd><code>today-meal-api-production.up.railway.app</code></dd></div>
+    </dl>
+    <div class="links">
+      <a href="/docs">API 문서</a>
+      <a href="/health">상태 확인</a>
+    </div>
+  </section>
+
+  <footer>설치한 앱은 위 서버에 연결됩니다. 별도 설정이 필요 없습니다.</footer>
+</main>
+
+<script>
+  // 서버가 살아 있는지 페이지에서 바로 보여준다. 심사하는 사람이 먼저 묻는 것이 이것이다.
+  fetch('/health')
+    .then((response) => response.ok ? response.json() : Promise.reject(response.status))
+    .then((body) => {
+      const el = document.getElementById('health');
+      el.textContent = body.status === 'ok' ? '정상' : body.status;
+      el.style.color = body.status === 'ok' ? 'var(--green)' : 'var(--urgent)';
+    })
+    .catch(() => {
+      const el = document.getElementById('health');
+      el.textContent = '응답 없음';
+      el.style.color = 'var(--urgent)';
+    });
+</script>
+</body>
+</html>

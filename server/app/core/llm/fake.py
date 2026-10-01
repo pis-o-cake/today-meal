@@ -41,14 +41,16 @@ _INTENT_PATTERNS: list[tuple[CommandIntent, re.Pattern[str]]] = [
     (CommandIntent.CANCEL, re.compile(r"취소|되돌려|되돌리")),
     (CommandIntent.CORRECT, re.compile(r"아니(라|고|야)?\b|아니라|이 아니라|가 아니라")),
     (CommandIntent.PLAN_FUTURE, re.compile(r"살 ?거|사야|사올|내일|다음에")),
+    # 메뉴를 묻는 말은 조회보다 먼저 본다. "뭐 해먹을까?" 는 물음표 때문에 조회 패턴에도
+    # 걸리지만 묻는 것은 재고가 아니라 메뉴다.
+    (CommandIntent.RECOMMEND, re.compile(r"뭐 ?먹|뭐 ?해|해먹|추천|만들까")),
     # 의문 형태는 '있어' 가 들어가도 조회다. ADJUST 보다 먼저 본다.
     (CommandIntent.QUERY, re.compile(r"몇 ?개|얼마나|뭐 ?있|있나|있어\?|\?$")),
     (CommandIntent.OPEN, re.compile(r"열었|개봉|뜯었")),
     (CommandIntent.MOVE, re.compile(r"옮겼|옮김|옮겨")),
     (CommandIntent.ADJUST, re.compile(r"남았|남아|있어\b|있다")),
-    (CommandIntent.CONSUME, re.compile(r"썼|쓸|사용|넣었는데|먹었|해먹")),
+    (CommandIntent.CONSUME, re.compile(r"썼|쓸|사용|넣었는데|먹었")),
     (CommandIntent.REGISTER, re.compile(r"넣었|샀|왔|들어왔|채웠")),
-    (CommandIntent.RECOMMEND, re.compile(r"뭐 ?먹|추천|해먹지|만들까")),
 ]
 
 _STORAGE_PATTERNS: list[tuple[StorageLocation, re.Pattern[str]]] = [
@@ -66,11 +68,26 @@ _DATE_KIND_PATTERNS: list[tuple[DateKind, re.Pattern[str]]] = [
 ]
 
 # 수량 없이 상태만 말하는 의도. 재료명만 뽑아도 실행할 수 있다.
+#
+# 추천도 여기 든다 — "삼겹살로 뭐 해먹을까" 의 삼겹살은 수량이 없지만 그것을 뽑지 않으면
+# 지목한 재료가 빈 채로 추천이 돌아 물은 것과 다른 답이 온다.
 _BARE_NAME_INTENTS = frozenset(
-    {CommandIntent.OPEN, CommandIntent.MOVE, CommandIntent.QUERY, CommandIntent.CONSUME}
+    {
+        CommandIntent.OPEN,
+        CommandIntent.MOVE,
+        CommandIntent.QUERY,
+        CommandIntent.CONSUME,
+        CommandIntent.RECOMMEND,
+    }
 )
 _WAKE_WORD = re.compile(r"^\s*헤이\s*냉장고[,.]?\s*")
-_NON_NAME_TOKENS = frozenset({"오늘", "어제", "아까", "방금", "지금", "내일", "전부", "다"})
+_NON_NAME_TOKENS = frozenset(
+    {
+        "오늘", "어제", "아까", "방금", "지금", "내일", "전부", "다",
+        # 메뉴를 묻는 말 자체는 재료가 아니다.
+        "뭐", "무엇", "메뉴", "먹지", "먹을까", "해먹을까", "해먹지", "추천",
+    }
+)
 _NON_NAME_PREFIXES = ("냉장", "냉동", "실온", "상온")
 
 _ITEM_PATTERN = re.compile(
@@ -258,7 +275,12 @@ class FakeLlmGateway:
         """
         cleaned = _WAKE_WORD.sub("", text)
         for token in cleaned.split():
+            # "삼겹살로" 의 '로' 까지 떼야 한다. 조사가 붙은 이름으로 재고를 찾으면 못 찾는다.
             word = token.strip(",.?!").rstrip("은는이가을를도")
+            for particle in ("으로", "로"):
+                if len(word) > len(particle) and word.endswith(particle):
+                    word = word[: -len(particle)]
+                    break
             if not word or word in _NON_NAME_TOKENS:
                 continue
             if any(word.startswith(prefix) for prefix in _NON_NAME_PREFIXES):

@@ -16,7 +16,7 @@ IMPORTANT: 2번과 3번의 순서를 뒤집으면 없는 재료로 만들 수 �
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -42,9 +42,11 @@ from app.core.stock_match import IngredientCheck, RequiredIngredient, StockIndex
 from app.domain.command.models import Command
 from app.domain.command.validation import ValidatedItem
 from app.domain.household.models import Household
+from app.domain.ingredient import crud as ingredient_crud
 from app.domain.ingredient import service as ingredient_service
 from app.domain.inventory import service as inventory_service
 from app.domain.inventory.models import IngredientBatch
+from app.domain.inventory.service import AppliedChange
 from app.domain.menu import crud
 from app.domain.menu.models import MenuSuggestion, Recipe, RecipeIngredient
 
@@ -91,12 +93,18 @@ async def suggest(
     today: date,
     servings: int | None = None,
     max_minutes: int | None = None,
+    focus: Sequence[str] = (),
 ) -> list[tuple[MenuSuggestion, ScoredSuggestion]]:
     """메뉴를 추천하고 결과를 저장한다.
 
     저장된 행과 재고 대조 결과를 함께 돌려준다. `availability` 는 추천 시점의 스냅샷이므로
     화면이 부족·확인 재료를 그릴 때는 이 대조 결과를 쓴다.
+
+    Args:
+        focus: 사용자가 지목한 재료. 있으면 그 재료가 주재료인 메뉴만 만든다. 집에 없는
+            재료여도 받는다 — 보유 여부는 재고 대조가 판정해 `availability` 로 알린다.
     """
+    named = [name.strip()[:20] for name in focus if name and name.strip()][:3]
     usable = await inventory_service.cookable_batches(session, household.household_id, today=today)
     priority = await inventory_service.list_priority_batches(
         session,
@@ -107,7 +115,7 @@ async def suggest(
     priority_names = [p.batch.raw_name for p in priority if p.is_cookable]
     priority_set = set(priority_names)
 
-    if not usable:
+    if not usable and not named:
         logger.info("No cookable stock for household {}", household.household_id)
         return []
 
@@ -124,13 +132,26 @@ async def suggest(
         max_minutes=max_minutes,
         avoided=avoided,
         tools=list(household.tools or []),
+        focus=named,
     )
 
     result = await gateway.suggest_menus(request)
-    stock = _stock_index(usable, staples)
+    # IMPORTANT: 재고와 레시피 재료를 **같은 표준명으로** 모아 대조한다. 사용자는
+    # "삼겹살" 로 넣고 레시피는 "돼지고기" 를 요구하므로, 말한 이름만 보면 가진 재료를
+    # 없다고 판정한다.
+    canonical = await ingredient_crud.canonical_names(
+        session,
+        [batch.raw_name for batch in usable]
+        + [
+            item.raw_name
+            for recipe in result.proposal.recipes
+            for item in recipe.ingredients
+        ],
+    )
+    stock = _stock_index(usable, staples, canonical)
 
     scored = [
-        _score(recipe, stock, priority_set)
+        _score(recipe, stock, priority_set, canonical)
         for recipe in result.proposal.recipes
     ]
     scored.sort(key=lambda item: item.sort_key)
@@ -171,11 +192,13 @@ def _describe(batch: IngredientBatch) -> str:
 
 
 def _stock_index(
-    batches: Sequence[IngredientBatch], staples: Sequence[str]
+    batches: Sequence[IngredientBatch],
+    staples: Sequence[str],
+    canonical: Mapping[str, str] | None = None,
 ) -> StockIndex:
     """재고 묶음을 이름 색인으로 바꾼다. 판정 규칙은 `core.stock_match` 가 갖는다."""
     return stock_match.index_stock(
-        ((b.raw_name, b.quantity, b.unit) for b in batches), staples
+        ((b.raw_name, b.quantity, b.unit) for b in batches), staples, canonical
     )
 
 
@@ -183,6 +206,7 @@ def _score(
     recipe: ProposedRecipe,
     stock: StockIndex,
     priority: set[str],
+    canonical: Mapping[str, str] | None = None,
 ) -> ScoredSuggestion:
     """레시피 재료를 재고와 대조한다. 규칙은 `core.stock_match` 가 갖는다."""
     checks, hits = stock_match.check_ingredients(
@@ -198,6 +222,7 @@ def _score(
         ),
         stock,
         priority,
+        canonical,
     )
     return ScoredSuggestion(
         recipe=recipe,
@@ -276,6 +301,50 @@ async def detail(
     return recipe, ingredients, target
 
 
+async def check_stock(
+    session: AsyncSession,
+    *,
+    household_id: int,
+    ingredients: Sequence[RecipeIngredient],
+    base_servings: int,
+    servings: int,
+    today: date,
+) -> list[IngredientCheck]:
+    """레시피 재료를 **지금** 그 가구의 재고와 대조한다. 결과는 [ingredients] 와 같은 순서다.
+
+    IMPORTANT: 상세 화면의 재료 상태는 이 결과만 쓴다. 대조 없이 `have` 로 채우면 냉장고에
+    없는 재료까지 '있어요' 로 보인다. 기본 양념은 가구가 **선언한 것만** 보유로 보며 수량을
+    모르므로 `needs_check` 가 된다 — 실제 재고처럼 `have` 로 말하지 않는다.
+
+    Args:
+        ingredients: 대조할 레시피 재료.
+        base_servings: 레시피 원본 인분.
+        servings: 화면이 보는 인분. 필요량을 이 인분으로 환산해 대조한다.
+        today: 가구 시간대의 오늘. 기한이 지난 묶음은 보유로 보지 않는다.
+    """
+    usable = await inventory_service.cookable_batches(session, household_id, today=today)
+    staples, _ = await crud.preferences(session, household_id)
+    canonical = await ingredient_crud.canonical_names(
+        session,
+        [batch.raw_name for batch in usable] + [item.raw_name for item in ingredients],
+    )
+    stock = _stock_index(usable, staples, canonical)
+    required: list[RequiredIngredient] = []
+    for item in ingredients:
+        scaled = scale(item.quantity, base_servings, servings)
+        required.append(
+            RequiredIngredient(
+                raw_name=item.raw_name,
+                amount=None if scaled is None else float(scaled),
+                unit_text=item.unit,
+                is_essential=item.is_essential,
+                is_amount_unknown=item.is_amount_unknown,
+            )
+        )
+    checks, _ = stock_match.check_ingredients(required, stock, None, canonical)
+    return checks
+
+
 def scale(amount: Decimal | None, base_servings: int, target_servings: int) -> Decimal | None:
     """분량을 인분에 맞춰 환산한다. 모르는 분량은 만들지 않는다."""
     if amount is None or base_servings <= 0:
@@ -287,6 +356,7 @@ __all__ = [
     "MAX_SUGGESTIONS",
     "IngredientCheck",
     "ScoredSuggestion",
+    "check_stock",
     "detail",
     "scale",
     "suggest",
@@ -300,12 +370,17 @@ async def mark_cooked(
     suggestion_id: int,
     command_id: UUID,
     today: date,
-) -> tuple[MenuSuggestion, list[str], str | None]:
+    servings: int | None = None,
+) -> tuple[MenuSuggestion, list[str], str | None, list[AppliedChange]]:
     """추천 메뉴를 실제로 만들었다고 확인하고 사용량을 반영한다.
 
     IMPORTANT: `consumption_applied` 가 **중복 차감을 막는다.** 같은 추천에 확인이 두 번
     오면 두 번째는 아무것도 바꾸지 않는다. 사용자가 버튼을 두 번 누르거나 네트워크가
     재시도해도 재고가 두 번 줄지 않아야 한다.
+
+    IMPORTANT: 차감 기준은 **화면에서 조리한 인분**이다. [servings] 를 받으면 그 값을
+    추천에 반영하고 그것으로 환산한다. 저장된 인분으로 빼면 사용자가 4인분을 보며 조리하고
+    2인분이 빠지는 일이 생긴다.
 
     레시피 필요량을 그대로 빼지 않고 **재고와 맞출 수 있는 것만** 뺀다. 단위 변환 근거가
     없거나 분량을 모르는 재료는 건너뛰고 건너뛴 이름을 돌려준다 — 숫자를 지어내지 않는다.
@@ -316,10 +391,11 @@ async def mark_cooked(
         suggestion_id: 확인할 추천.
         command_id: 이 변경을 묶을 명령 ID.
         today: 가구 시간대의 오늘.
+        servings: 화면에서 조리한 인분. 없으면 저장된 인분을 쓴다.
 
     Returns:
-        `(갱신된 추천, 차감하지 못한 재료 이름, 되물을 질문)`. 질문이 있으면 **아무것도
-        반영하지 않았고** 확인 표시도 남기지 않았다는 뜻이다.
+        `(갱신된 추천, 차감하지 못한 재료 이름, 되물을 질문, 뺀 내역)`. 질문이 있으면
+        **아무것도 반영하지 않았고** 확인 표시도 남기지 않았다는 뜻이다.
 
     Raises:
         NotFoundError: 그 추천이 없거나 다른 가구의 것일 때.
@@ -327,7 +403,17 @@ async def mark_cooked(
     suggestion = await crud.get_suggestion(session, household_id, suggestion_id)
     if suggestion.consumption_applied:
         logger.info("Suggestion {} already applied; skipping", suggestion_id)
-        return suggestion, [], None
+        return suggestion, [], None, []
+
+    # 화면에서 바꾼 인분이 왔으면 그것이 정본이다. 추천에도 남겨 이력·재조회가 같은 수를 본다.
+    if servings is not None and servings != suggestion.servings:
+        logger.info(
+            "Suggestion {} cooked at {} servings (stored {})",
+            suggestion_id,
+            servings,
+            suggestion.servings,
+        )
+        suggestion.servings = servings
 
     ingredients = await crud.recipe_ingredients(session, suggestion.recipe_id)
     recipe = await crud.get_recipe(session, household_id, suggestion.recipe_id)
@@ -336,6 +422,7 @@ async def mark_cooked(
 
     items: list[ValidatedItem] = []
     skipped: list[str] = []
+    deducted: list[AppliedChange] = []
     for item in ingredients:
         # 기본 양념은 재고 묶음으로 관리하지 않는다. 차감 대상이 아니다.
         if item.raw_name in staple_names:
@@ -374,17 +461,22 @@ async def mark_cooked(
         )
         await session.flush()
 
+        # 기한이 이른 묶음부터 묻지 않고 뺀다. 조리를 마친 뒤에는 답을 들을 자리가 없어,
+        # 되물으면 아무것도 빠지지 않은 채로 끝난다.
         outcome = await inventory_service.apply_usage(
             session,
             household_id=household_id,
             command_id=command_id,
             items=items,
+            lenient=True,
         )
+        skipped.extend(outcome.skipped)
+        deducted = outcome.changes
         if not outcome.ok:
             # 되물을 일이 있으면 아무것도 반영하지 않는다. 확인 표시도 남기지 않는다.
             # 건너뛴 재료와 다른 사실이므로 칸을 나눠 돌려준다.
             logger.info("Cooked confirmation needs clarification: {}", outcome.question)
-            return suggestion, skipped, outcome.question
+            return suggestion, skipped, outcome.question, []
 
     suggestion.cooked_at = datetime.now(UTC)
     suggestion.consumption_applied = True
@@ -392,7 +484,7 @@ async def mark_cooked(
     logger.info(
         "Suggestion {} marked cooked: {} deducted, {} skipped",
         suggestion_id,
-        len(items),
+        len(deducted),
         len(skipped),
     )
-    return suggestion, skipped, None
+    return suggestion, skipped, None, deducted
