@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오늘 뭐 먹지?</title>
+<meta name="description" content="먼저 쓸 재료로 정하는 오늘의 한 끼 · 발표 자료">
+<!-- 링크 미리보기. 메신저는 절대 주소만 읽는다. -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://today-meal-deck.today-meal.workers.dev/">
+<meta property="og:title" content="오늘 뭐 먹지?">
+<meta property="og:description" content="먼저 쓸 재료로 정하는 오늘의 한 끼 · 발표 자료">
+<meta property="og:image" content="https://today-meal-deck.today-meal.workers.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="628">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+@font-face {
+  font-family: 'Pretendard';
+  src: url('assets/fonts/Pretendard-deck.woff2') format('woff2');
+  font-weight: 45 920;
+  font-display: block;
+}
+
+:root {
+  --cream: #F3EEE3;
+  --paper: #FBF8F1;
+  --ink: #1D221F;
+  --ink-2: #3C423D;
+  --muted: #5E625C;
+  --line: #D3CAB8;
+  --green: #2E6A4E;
+  --green-soft: #DDE9DF;
+  --urgent: #9C4221;
+  --urgent-soft: #F4E0D5;
+  --soon: #9A5B0E;
+  --soon-soft: #F5E6CC;
+  --fresh: #2E7D4A;
+  --fresh-soft: #DCEFE1;
+  --unknown: #555D6B;
+  --unknown-soft: #E3E6EC;
+  --expired: #3E5A9A;
+  --expired-soft: #DFE6F5;
+  --fridge: #BFE3C8;
+  --ease: cubic-bezier(.3, 0, .2, 1);
+  --t: .55s;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--cream); }
+body {
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+}
+
+/* 1920×1080 무대를 창 크기에 맞춰 축소·확대한다. 좌표는 모두 무대 기준 px. */
+.viewport { position: fixed; inset: 0; }
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1920px; height: 1080px;
+  transform-origin: 50% 50%;
+  background: var(--cream);
+}
+
+.slide {
+  position: absolute; inset: 0;
+  padding: 130px 160px 120px;
+  opacity: 0; visibility: hidden;
+  transition: opacity .35s var(--ease), visibility 0s linear .35s;
+}
+.slide.is-active { opacity: 1; visibility: visible; transition: opacity .35s var(--ease); }
+
+/* 단계 공개: data-step="n"은 현재 단계가 n 이상일 때 보인다. */
+[data-step] { opacity: 0; transition: opacity var(--t) var(--ease), transform var(--t) var(--ease); }
+.slide.s1 [data-step="1"], .slide.s2 [data-step="2"], .slide.s3 [data-step="3"], .slide.s4 [data-step="4"], .slide.s5 [data-step="5"] { opacity: 1; }
+
+.title {
+  margin: 0;
+  font-size: 88px; line-height: 1.12; font-weight: 800; letter-spacing: -0.035em;
+}
+.lead {
+  margin: 36px 0 0;
+  font-size: 38px; line-height: 1.5; font-weight: 500; color: var(--ink-2); letter-spacing: -0.015em;
+}
+.tag {
+  display: inline-block;
+  font-size: 24px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em;
+}
+
+/* ---------- 냉장고 캐릭터 ---------- */
+.fridge { display: block; width: 100%; height: 100%; overflow: visible; }
+.fridge .f-shadow { fill: var(--ink); opacity: .1; }
+.fridge .f-ink { fill: var(--ink); }
+.fridge .f-body { fill: var(--fridge); stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
+.fridge .f-line { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
+.fridge .f-line--flat { stroke-linecap: butt; }
+.fridge .f-gloss { fill: none; stroke: #fff; stroke-opacity: .75; stroke-width: 5; stroke-linecap: round; }
+.fridge .f-gloss--soft { stroke-opacity: .6; }
+.fridge .f-note { fill: #FFF3B8; stroke: var(--ink); stroke-width: 3; }
+.fridge .f-pin { fill: var(--green); stroke: var(--ink); stroke-width: 2; }
+.fridge .f-note-lines { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
+.fridge .f-cheek { fill: #FF8A98; opacity: .45; }
+.fridge .f-mouth { fill: var(--ink); }
+.fridge .f-tongue { fill: #FF8A98; }
+.fridge .f-light { fill: #FFF1C2; opacity: 0; transition: opacity .4s var(--ease) .15s; }
+.fridge .f-items { opacity: 0; transition: opacity .4s var(--ease) .3s; }
+.fridge .f-shelf { stroke: #E3BE62; stroke-width: 3; stroke-linecap: round; }
+.fridge .f-egg { fill: #fff; stroke: var(--ink); stroke-width: 2.5; }
+.fridge .f-leaf { fill: #5FB870; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; }
+.fridge .f-door {
+  transform-box: view-box; transform-origin: 46px 50px;
+  transition: transform .75s var(--ease);
+}
+.fridge .f-face { transition: opacity .2s linear .35s; }
+.fridge .f-face--smile { opacity: 0; }
+.slide--open.s1 .fridge .f-door { transform: scaleX(.14); }
+.slide--open.s1 .fridge .f-light, .slide--open.s1 .fridge .f-items { opacity: 1; }
+.slide--open.s1 .fridge .f-face--calm, [data-mood="smile"] .f-face--calm { opacity: 0; }
+.slide--open.s1 .fridge .f-face--smile, [data-mood="smile"] .f-face--smile { opacity: 1; }
+
+/* ---------- 1. 오늘 뭐 먹지? ---------- */
+.slide--open { display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 60px; }
+.open__fridge { width: 440px; height: 440px; }
+.open__title { margin: 28px 0 0; font-size: 150px; line-height: 1; font-weight: 850; letter-spacing: -0.05em; }
+.open__line { margin: 40px 0 0; font-size: 40px; font-weight: 500; color: var(--ink-2); transform: translateY(8px); }
+.slide--open.s1 .open__line { transform: none; }
+
+/* ---------- 2. 냉장고 선반 ---------- */
+.slide--shelf { display: grid; grid-template-columns: 720px 1fr; column-gap: 80px; align-items: center; }
+.shelf__list { position: relative; list-style: none; margin: 0; padding: 0; height: 600px; }
+.item {
+  position: absolute; left: 0; right: 0; top: 0; height: 128px;
+  display: grid; grid-template-columns: 76px auto 1fr auto; align-items: center; column-gap: 24px;
+  padding: 0 36px 0 28px;
+  background: var(--paper); border: 3px solid transparent; border-radius: 24px;
+  transform: translateY(calc(var(--from) * 152px));
+  transition: transform .6s var(--ease) .5s, border-color .25s var(--ease), box-shadow .25s var(--ease);
+}
+/* 삼겹살 카드가 먼저 떠올라 맨 위로 가고, 나머지가 뒤이어 자리를 옮긴다. */
+.item--first { z-index: 2; transition: transform .7s var(--ease) .15s, border-color .2s var(--ease), box-shadow .2s var(--ease); }
+.slide--shelf.s1 .item { transform: translateY(calc(var(--to) * 152px)); }
+.slide--shelf.s1 .item--first { border-color: var(--green); box-shadow: 0 14px 30px rgba(29, 34, 31, .14); }
+.item__icon { width: 64px; height: 64px; color: var(--ink); }
+.item__icon svg { width: 100%; height: 100%; display: block; }
+.item__name { font-size: 46px; font-weight: 750; letter-spacing: -0.03em; }
+.item__qty { font-size: 34px; font-weight: 500; color: var(--muted); }
+.chip {
+  justify-self: end;
+  padding: 10px 22px; border-radius: 999px;
+  font-size: 28px; font-weight: 650; letter-spacing: -0.01em;
+  color: var(--ink-2); background: #E6DFD0;
+}
+.chip--urgent { color: var(--urgent); background: var(--urgent-soft); }
+.chip--unknown { background: transparent; box-shadow: inset 0 0 0 2px var(--line); color: var(--muted); }
+
+/* ---------- 3. 기한별 홈(실제 앱 화면) ---------- */
+.slide--bands { display: grid; grid-template-columns: 1fr 470px 470px; column-gap: 70px; align-items: center; padding-right: 120px; }
+.bands__text .lead { max-width: 640px; }
+.bands__phone {
+  position: relative; height: 900px; aspect-ratio: 600 / 1338;
+  border-radius: 44px; background: var(--ink); padding: 7px; justify-self: center;
+  box-shadow: 0 30px 60px rgba(29, 34, 31, .18);
+}
+.bands__screen { position: relative; width: 100%; height: 100%; border-radius: 38px; overflow: hidden; background: #fff; }
+.bands__screen img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transform: scale(1.015); transition: opacity .55s var(--ease), transform .7s var(--ease);
+}
+.bands__tag { position: absolute; left: 0; top: -44px; }
+.slide--bands:not(.s1) [data-band="soon"],
+.slide--bands.s1:not(.s2) [data-band="urgent"],
+.slide--bands.s2:not(.s3) [data-band="unknown"],
+.slide--bands.s3 [data-band="fresh"] { opacity: 1; transform: none; }
+.legend { list-style: none; margin: 0; padding: 0; display: grid; row-gap: 18px; }
+.legend li {
+  display: flex; align-items: center; gap: 18px;
+  padding: 18px 26px; border-radius: 22px; background: transparent;
+  font-size: 32px; font-weight: 700; letter-spacing: -0.02em; color: var(--muted);
+  transition: background .4s var(--ease), color .4s var(--ease), transform .4s var(--ease);
+}
+.legend li::before { content: ''; width: 22px; height: 22px; border-radius: 50%; background: currentColor; opacity: .55; flex: none; }
+.legend span { display: flex; flex-direction: column; }
+.legend small { display: block; margin-top: 4px; font-size: 22px; font-weight: 600; opacity: .8; }
+.slide--bands:not(.s1) [data-leg="soon"] { background: var(--soon-soft); color: var(--soon); transform: translateX(-10px); }
+.slide--bands.s1:not(.s2) [data-leg="urgent"] { background: var(--urgent-soft); color: var(--urgent); transform: translateX(-10px); }
+.slide--bands.s2:not(.s3) [data-leg="unknown"] { background: var(--unknown-soft); color: var(--unknown); transform: translateX(-10px); }
+.slide--bands.s3 [data-leg="fresh"] { background: var(--fresh-soft); color: var(--fresh); transform: translateX(-10px); }
+
+/* ---------- 4. 말로 기록하고, 먹은 만큼 맞추고 ---------- */
+.slide--voice { display: grid; grid-template-columns: 1fr 470px; column-gap: 100px; align-items: center; padding-right: 220px; }
+.say { list-style: none; margin: 60px 0 0; padding: 0; display: grid; row-gap: 22px; }
+.say li {
+  display: grid; grid-template-columns: 1fr 330px; column-gap: 30px; align-items: center;
+  padding: 26px 34px; border-radius: 28px; background: var(--paper);
+  opacity: .32; transition: opacity .45s var(--ease), box-shadow .45s var(--ease);
+}
+.say q { quotes: '“' '”'; font-size: 38px; line-height: 1.35; font-weight: 750; letter-spacing: -0.03em; }
+.say b { font-size: 30px; font-weight: 750; color: var(--green); }
+.slide--voice:not(.s1) [data-say="1"], .slide--voice.s1:not(.s2) [data-say="2"], .slide--voice.s2 [data-say="3"] { opacity: 1; box-shadow: inset 0 0 0 4px var(--green); }
+.phone-shot {
+  position: relative; height: 900px; aspect-ratio: 600 / 1338; justify-self: center;
+  border-radius: 44px; background: var(--ink); padding: 7px; box-shadow: 0 30px 60px rgba(29, 34, 31, .18);
+}
+.phone-shot__tag { position: absolute; left: 0; top: -44px; }
+.phone-shot__screen { position: relative; width: 100%; height: 100%; border-radius: 38px; overflow: hidden; background: #fff; }
+.phone-shot__screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s var(--ease); }
+.slide--voice:not(.s1) [data-shot="1"], .slide--voice.s1:not(.s2) [data-shot="2"], .slide--voice.s2 [data-shot="3"] { opacity: 1; }
+
+/* ---------- 5. 먼저 쓸 재료가 오늘의 메뉴로 ---------- */
+.mflow { position: absolute; left: 160px; right: 160px; top: 270px; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 40px; }
+.mflow li {
+  position: relative; height: 130px; padding: 0 30px; border-radius: 28px; background: var(--paper);
+  display: flex; flex-direction: column; justify-content: center;
+  font-size: 42px; font-weight: 800; letter-spacing: -0.035em;
+}
+.mflow li small { margin-top: 6px; font-size: 24px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
+.mflow li:not(:last-child)::after {
+  content: ''; position: absolute; right: -32px; top: 50%; margin-top: -10px;
+  border-style: solid; border-width: 10px 0 10px 16px; border-color: transparent transparent transparent var(--ink-2);
+}
+.mshots { position: absolute; left: 160px; top: 460px; display: flex; gap: 40px; }
+.mshot { position: relative; }
+.mshot .tag { position: absolute; left: 0; top: -38px; white-space: nowrap; }
+.mshot img { display: block; height: 560px; border-radius: 30px; box-shadow: 0 0 0 5px var(--ink), 0 20px 40px rgba(29, 34, 31, .14); }
+.yt { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; }
+.yt__line { position: absolute; left: 1145px; top: 400px; width: 40px; height: 200px; overflow: visible; }
+.yt__line path { fill: none; stroke: var(--ink-2); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 8 10; }
+.yt__card { position: absolute; left: 860px; top: 600px; width: 900px; padding: 38px 44px; border-radius: 30px; box-shadow: inset 0 0 0 4px var(--ink-2); background: var(--cream); }
+.yt__card b { display: block; font-size: 46px; font-weight: 850; letter-spacing: -0.035em; }
+.yt__card p { margin: 18px 0 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0 18px; font-size: 32px; font-weight: 650; color: var(--ink-2); }
+.yt__card i { width: 36px; height: 3px; background: var(--ink-2); position: relative; }
+.yt__card i::after { content: ''; position: absolute; right: -2px; top: -6px; border-style: solid; border-width: 7.5px 0 7.5px 11px; border-color: transparent transparent transparent var(--ink-2); }
+
+/* ---------- 5. 실제 앱 시연 ---------- */
+.slide--demo { display: flex; flex-direction: column; justify-content: center; }
+.demo__title { margin: 0; font-size: 150px; line-height: 1.05; font-weight: 850; letter-spacing: -0.05em; }
+.demo__meta { margin: 30px 0 0; font-size: 38px; font-weight: 600; color: var(--ink-2); }
+.demo__head { transition: opacity .4s var(--ease), transform .5s var(--ease); }
+.slide--demo.is-started .demo__head { opacity: 0; transform: translateY(-14px); pointer-events: none; }
+/* 영상은 1920×1080 편집본이다. 무대를 가득 채워 재생한다. */
+.demo__player { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .45s var(--ease) .15s; }
+.slide--demo.is-started .demo__player { opacity: 1; }
+.demo__player video { width: 100%; height: 100%; object-fit: contain; display: block; }
+.demo__pause {
+  position: absolute; left: 50%; top: 50%; width: 120px; height: 120px; margin: -60px 0 0 -60px;
+  border-radius: 50%; background: rgba(251, 248, 241, .9); opacity: 0; transition: opacity .25s linear; pointer-events: none;
+}
+.demo__pause::after {
+  content: ''; position: absolute; left: 47px; top: 36px;
+  border-style: solid; border-width: 24px 0 24px 38px; border-color: transparent transparent transparent var(--ink);
+}
+.demo__player.is-paused .demo__pause { opacity: 1; }
+/* 재생 바: 아래 가장자리 얇은 선. 누른 곳으로 이동한다. 위쪽 여백까지 눌리도록 판정 영역을 넓게 둔다. */
+.demo__bar { position: absolute; left: 0; right: 0; bottom: 0; height: 56px; cursor: pointer; }
+.slide--demo.is-started .demo__bar { pointer-events: auto; }
+.demo__track, .demo__fill { position: absolute; left: 0; bottom: 0; height: 8px; transition: height .2s var(--ease); }
+.demo__track { right: 0; background: rgba(29, 34, 31, .14); }
+.demo__fill { width: 0; background: var(--green); }
+.demo__bar:hover .demo__track, .demo__bar:hover .demo__fill { height: 14px; }
+.demo__time {
+  position: absolute; left: 32px; bottom: 30px; padding: 6px 16px; border-radius: 999px;
+  background: rgba(251, 248, 241, .94); border: 1px solid var(--line);
+  font-size: 22px; font-weight: 650; color: var(--ink-2); font-variant-numeric: tabular-nums;
+  opacity: 0; transition: opacity .25s linear; pointer-events: none;
+}
+.demo__player.is-paused .demo__time, .demo__bar:hover + .demo__time { opacity: 1; }
+.demo__status { margin: 34px 0 0; min-height: 40px; font-size: 30px; font-weight: 650; color: var(--muted); }
+.slide--demo.is-failed .demo__status { color: var(--urgent); }
+
+/* ---------- 7. 단계별 AI ---------- */
+.ai { position: absolute; left: 160px; right: 160px; top: 290px; list-style: none; margin: 0; padding: 0; display: grid; row-gap: 18px; }
+.ai li {
+  display: grid; grid-template-columns: 420px 520px 1fr; column-gap: 40px; align-items: center;
+  padding: 26px 40px; border-radius: 26px; background: var(--paper);
+  opacity: .3; transition: opacity .45s var(--ease), box-shadow .45s var(--ease);
+}
+.ai li.ai__head { opacity: 1; background: transparent; padding-top: 0; padding-bottom: 0; font-size: 24px; font-weight: 700; color: var(--muted); }
+.slide--ai.s1 [data-row="1"], .slide--ai.s2 [data-row="2"], .slide--ai.s3 [data-row="3"], .slide--ai.s4 [data-row="4"] { opacity: 1; }
+.slide--ai.s1:not(.s2) [data-row="1"], .slide--ai.s2:not(.s3) [data-row="2"],
+.slide--ai.s3:not(.s4) [data-row="3"], .slide--ai.s4:not(.s5) [data-row="4"] { box-shadow: inset 0 0 0 4px var(--green); }
+.ai__stage { font-size: 32px; font-weight: 700; color: var(--ink-2); }
+.ai__tool { font-size: 46px; font-weight: 850; letter-spacing: -0.035em; color: var(--ink); }
+.ai__tool small { display: block; font-size: 22px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
+.ai__why { font-size: 31px; line-height: 1.4; font-weight: 650; color: var(--green); }
+.ai__cue { display: inline-block; margin-left: 12px; padding: 4px 14px; border-radius: 999px; font-size: 20px; font-weight: 750; color: var(--paper); background: var(--ink-2); vertical-align: middle; letter-spacing: 0; }
+.ai__more { position: absolute; left: 160px; top: 930px; margin: 0; font-size: 34px; font-weight: 750; color: var(--ink); }
+
+/* ---------- 7. 기술 선택과 제약 ---------- */
+.tech { position: absolute; left: 160px; right: 160px; top: 290px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 80px; }
+.tech h3 { margin: 0; font-size: 48px; font-weight: 850; letter-spacing: -0.035em; }
+.tech__need { margin: 18px 0 0; font-size: 30px; line-height: 1.5; font-weight: 600; color: var(--ink-2); }
+.tech__pick { margin: 26px 0 0; padding: 28px 32px; border-radius: 26px; background: var(--paper); font-size: 32px; line-height: 1.5; font-weight: 650; }
+.tech__pick b { color: var(--green); }
+.tech__sub { display: block; margin-top: 14px; font-size: 26px; line-height: 1.45; font-weight: 600; color: var(--muted); }
+.wake { position: relative; margin-top: 26px; height: 420px; }
+.wake__heard { list-style: none; margin: 0; padding: 0; display: grid; row-gap: 16px; width: 300px; }
+.wake__heard li {
+  height: 66px; display: flex; align-items: center; padding: 0 24px; border-radius: 16px; background: var(--paper);
+  font-size: 32px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink-2);
+}
+.wake__heard li em { font-style: normal; font-size: 20px; font-weight: 600; color: var(--muted); margin-left: 8px; }
+.wake svg { position: absolute; left: 300px; top: 0; width: 140px; height: 360px; overflow: visible; }
+.wake path { fill: none; stroke: var(--green); stroke-width: 4; stroke-linecap: round; }
+.wake__rule {
+  position: absolute; left: 440px; top: 80px; width: 330px; padding: 26px 28px;
+  border-radius: 24px; box-shadow: inset 0 0 0 3px var(--green);
+  font-size: 26px; line-height: 1.45; font-weight: 650; color: var(--ink-2);
+}
+.wake__rule b { display: block; font-size: 38px; font-weight: 850; color: var(--green); margin-bottom: 8px; }
+.wake__heard, .wake svg, .wake__rule { transition: opacity .45s var(--ease), transform .5s var(--ease); }
+.slide--tech:not(.s1) .wake svg, .slide--tech:not(.s1) .wake__rule { opacity: 0; transform: translateX(-12px); }
+
+/* ---------- 9. 마무리 ---------- */
+.close__end { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.close__fridge { width: 300px; height: 300px; }
+.close__words { margin: 44px 0 0; text-align: center; font-size: 80px; line-height: 1.3; font-weight: 800; letter-spacing: -0.04em; }
+
+/* ---------- 진행 표시 ---------- */
+.progress { position: fixed; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(29, 34, 31, .06); }
+.progress span { display: block; height: 100%; width: 0; background: var(--green); transition: width .35s var(--ease); }
+.pageno { position: fixed; right: 22px; bottom: 14px; margin: 0; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+/* 시연 장에서는 영상 재생 바와 겹치지 않게 아래쪽 표시를 숨긴다. */
+.on-demo .progress, .on-demo .pageno { opacity: 0; }
+
+/* 링크로 받은 사람을 위한 조작 안내. 웹(http)에서만, 발표자 창이 없을 때만 보인다. */
+.hint {
+  position: fixed; left: 50%; bottom: 28px; z-index: 5;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 18px 10px 16px; border-radius: 999px;
+  background: rgba(251, 248, 241, .95); border: 1px solid var(--line);
+  box-shadow: 0 8px 24px rgba(29, 34, 31, .1);
+  font-size: 15px; font-weight: 600; color: var(--ink-2); white-space: nowrap;
+  opacity: 0; transform: translate(-50%, 10px); pointer-events: none;
+  transition: opacity .35s var(--ease), transform .45s var(--ease);
+}
+.hint.is-on { opacity: 1; transform: translate(-50%, 0); }
+.hint b { color: var(--green); font-weight: 750; }
+.hint kbd {
+  font: inherit; font-size: 13px; font-weight: 700; color: var(--ink);
+  padding: 2px 9px; border-radius: 6px; background: var(--paper);
+  border: 1px solid var(--line); border-bottom-width: 3px;
+}
+.hint__tap { position: relative; flex: none; width: 12px; height: 12px; margin-right: 4px; border-radius: 50%; background: var(--green); }
+.hint__tap::before, .hint__tap::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--green);
+  animation: hint-ripple 1.8s var(--ease) infinite;
+}
+.hint__tap::after { animation-delay: .9s; }
+@keyframes hint-ripple { from { transform: scale(1); opacity: .7; } to { transform: scale(2.9); opacity: 0; } }
+.hint.is-touch .hint__or, .hint.is-touch kbd { display: none; }
+@media (prefers-reduced-motion: reduce) { .hint__tap::before, .hint__tap::after { animation: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0s !important; transition-delay: 0s !important; }
+}
+
+@page { size: 1920px 1080px; margin: 0; }
+@media print {
+  html, body { height: auto; overflow: visible; background: var(--cream); }
+  .viewport { position: static; }
+  .stage { position: static; transform: none !important; height: auto; }
+  .slide { position: relative; opacity: 1 !important; visibility: visible !important; width: 1920px; height: 1080px; page-break-after: always; break-after: page; }
+  .progress, .pageno, .demo__player, .hint { display: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+<main class="viewport" id="viewport">
+  <div class="stage" id="stage">
+
+    <!-- 1 -->
+    <section class="slide slide--open" data-steps="1" aria-label="오늘 뭐 먹지?">
+      <div class="open__fridge" data-fridge></div>
+      <h1 class="open__title">오늘 뭐 먹지?</h1>
+      <p class="open__line" data-step="1">먼저 쓸 재료로 정하는 오늘의 한 끼</p>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide slide--shelf" data-steps="1" aria-label="답은 냉장고 안에 있는데">
+      <div class="shelf__text">
+        <h2 class="title">답은 냉장고 안에<br>있는데</h2>
+        <p class="lead">무엇이 남았는지,<br>무엇부터 먹어야 할지</p>
+      </div>
+      <ol class="shelf__list" aria-label="냉장고 재료">
+        <li class="item" style="--from:0; --to:2">
+          <span class="item__icon" data-icon="egg"></span>
+          <span class="item__name">계란</span><span class="item__qty">10개</span>
+          <span class="chip">D-3 며칠 남음</span>
+        </li>
+        <li class="item item--first" style="--from:1; --to:0">
+          <span class="item__icon" data-icon="pork"></span>
+          <span class="item__name">삼겹살</span><span class="item__qty">300g</span>
+          <span class="chip chip--urgent">D-1 기한 코앞</span>
+        </li>
+        <li class="item" style="--from:2; --to:1">
+          <span class="item__icon" data-icon="tofu"></span>
+          <span class="item__name">두부</span><span class="item__qty">2모</span>
+          <span class="chip">D-2 며칠 남음</span>
+        </li>
+        <li class="item" style="--from:3; --to:3">
+          <span class="item__icon" data-icon="onion"></span>
+          <span class="item__name">대파</span><span class="item__qty">1단</span>
+          <span class="chip chip--unknown">기한 모름</span>
+        </li>
+      </ol>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide slide--bands" data-steps="3" aria-label="기한별로, 먼저 쓸 재료부터">
+      <div class="bands__text">
+        <h2 class="title">기한별로,<br>먼저 쓸 재료부터</h2>
+        <p class="lead">먼저 먹을 재료와,<br>아직 여유 있는 재료를 한눈에</p>
+      </div>
+      <div class="bands__phone">
+        <span class="tag bands__tag">실제 앱 화면</span>
+        <div class="bands__screen">
+          <img data-band="soon" src="assets/img/home-soon.png" alt="며칠 안에 먹어요: 두부 2모, 계란 10개">
+          <img data-band="urgent" src="assets/img/home-urgent.png" alt="빨리 먹어야 해요: 삼겹살 300g">
+          <img data-band="unknown" src="assets/img/home-unknown.png" alt="언제까지 먹어야 해요: 대파 1단">
+          <img data-band="fresh" src="assets/img/home-fresh.png" alt="천천히 먹어도 돼요">
+        </div>
+      </div>
+      <ul class="legend" aria-label="기한 칸">
+        <li data-leg="urgent"><span>빨리 먹어야 해요<small>삼겹살 300g · D-1</small></span></li>
+        <li data-leg="soon"><span>며칠 안에 먹어요<small>두부 2모 · 계란 10개</small></span></li>
+        <li data-leg="fresh"><span>천천히 먹어도 돼요<small>아직 여유</small></span></li>
+        <li data-leg="unknown"><span>언제까지 먹어야 해요?<small>기한을 입력하지 않은 대파</small></span></li>
+      </ul>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide slide--voice" data-steps="2" aria-label="말로 기록하고, 먹은 만큼 맞추고">
+      <div class="voice__text">
+        <h2 class="title">말로 기록하고,<br>먹은 만큼 맞추고</h2>
+        <ol class="say">
+          <li data-say="1"><q>계란 열 개 넣었어.<br>유통기한은 10월 4일까지야.</q><b>재료·수량·기한 기록</b></li>
+          <li data-say="2"><q>계란 두 개 썼어.</q><b>사용량 반영</b></li>
+          <li data-say="3"><q>계란 네 개 남았어.</q><b>남은 수량 다시 맞추기</b></li>
+        </ol>
+      </div>
+      <div class="phone-shot">
+        <span class="tag phone-shot__tag">실제 앱 화면</span>
+        <div class="phone-shot__screen">
+          <img data-shot="1" src="assets/img/rec-egg10.png" alt="반영했어요: 계란 10개, 유통기한 2026.10.04">
+          <img data-shot="2" src="assets/img/rec-egg8.png" alt="반영했어요: 계란 8개, 사용">
+          <img data-shot="3" src="assets/img/rec-egg4.png" alt="반영했어요: 계란 4개, 남은 수량 다시 맞춤">
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="slide slide--menu" data-steps="1" aria-label="먼저 쓸 재료가 오늘의 메뉴로">
+      <h2 class="title">먼저 쓸 재료가 오늘의 메뉴로</h2>
+      <ol class="mflow">
+        <li>메뉴 추천</li>
+        <li>인분 조절</li>
+        <li class="mflow__cook">단계별 조리</li>
+        <li>재고 반영<small>추천 메뉴 조리 완료 시</small></li>
+      </ol>
+      <div class="mshots">
+        <div class="mshot"><span class="tag">추천 메뉴</span><img src="assets/img/menu-list.png" alt="조리 탭 추천 메뉴 세 가지"></div>
+        <div class="mshot"><span class="tag">단계별 조리 · 타이머</span><img src="assets/img/cook-timer.png" alt="조리 모드 2단계와 3분 타이머"></div>
+      </div>
+      <div class="yt" data-step="1">
+        <svg class="yt__line" viewBox="0 0 40 200" aria-hidden="true"><path d="M20 196 V4" /></svg>
+        <div class="yt__card">
+          <b>유튜브에서 본 요리도</b>
+          <p>링크 입력 <i></i> 재료·조리 순서 분석 <i></i> 조리 안내</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide slide--demo" data-steps="0" aria-label="실제 앱 시연">
+      <div class="demo__head">
+        <h2 class="demo__title">실제 앱 시연</h2>
+        <p class="demo__meta">말로 기록한 재료가 오늘의 한 끼로</p>
+        <p class="demo__status" id="demo-status" aria-live="polite"></p>
+      </div>
+      <!-- Space로 재생하면 영상이 무대를 가득 채운다. 받는 중이면 이 장에 머물고, 열 수 없으면 안내 뒤 다음 장. -->
+      <div class="demo__player" id="demo-player" aria-hidden="true">
+        <video id="demo-video" src="assets/video/demo.mp4" preload="metadata" playsinline></video>
+        <div class="demo__pause" aria-hidden="true"></div>
+        <div class="demo__bar" id="demo-bar" aria-hidden="true"><span class="demo__track"></span><span class="demo__fill" id="demo-fill"></span></div>
+        <span class="demo__time" id="demo-time" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide slide--ai" data-steps="5" aria-label="단계마다, 필요한 AI">
+      <h2 class="title">단계마다, 필요한 AI</h2>
+      <ol class="ai">
+        <li class="ai__head" aria-hidden="true"><span>단계</span><span>활용 도구</span><span>선택 목적</span></li>
+        <li data-row="1"><span class="ai__stage">기획·설계·기술 검증</span><span class="ai__tool">GPT / Astra</span><span class="ai__why">빠른 응답으로 선택지 비교·방향 조정</span></li>
+        <li data-row="2"><span class="ai__stage">디자인</span><span class="ai__tool">Claude Design <span class="ai__cue">직접 보기</span></span><span class="ai__why">애니메이션 목업으로 화면·테마 비교</span></li>
+        <li data-row="3"><span class="ai__stage">구현</span><span class="ai__tool">Claude Code</span><span class="ai__why">앱·서버 개발, 테스트·배포</span></li>
+        <li data-row="4"><span class="ai__stage">문서·검토 기준</span><span class="ai__tool"><small>기존 자체 도구</small>engsys</span><span class="ai__why">문서 정책과 hook·검증 절차 적용</span></li>
+      </ol>
+      <p class="ai__more" data-step="5">시연 영상 편집과 웹 발표자료 제작에도 AI 활용</p>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide slide--tech" data-steps="1" aria-label="기술 선택과 제약 해결">
+      <h2 class="title">기술 선택과 제약 해결</h2>
+      <div class="tech">
+        <div>
+          <h3>유튜브 링크를 조리 안내로</h3>
+          <p class="tech__pick">유튜브 URL 입력을 <b>공식 지원하는 Gemini</b> 선택<small class="tech__sub">명령 해석·메뉴 추천도 통일해 연동·검증 범위 축소</small></p>
+        </div>
+        <div>
+          <h3>한국식 발음도 같은 호출로</h3>
+          <p class="tech__need">“헤이 키친”의 다양한 인식 결과를<br>발음 유사성으로 판별</p>
+          <div class="wake">
+            <ul class="wake__heard" aria-label="실기기에서 받아쓴 결과">
+              <li>헤이키친</li>
+              <li>베이키친</li>
+              <li>에이키친</li>
+              <li>hat kitchen</li>
+            </ul>
+            <svg viewBox="0 0 140 360" aria-hidden="true">
+              <path d="M0 33 C70 33 70 156 140 156 M0 115 C70 115 70 156 140 156 M0 197 C70 197 70 156 140 156 M0 279 C70 279 70 156 140 156" />
+            </svg>
+            <div class="wake__rule"><b>“헤이 키친”</b>호출로 판단</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="slide slide--close" data-steps="0" aria-label="냉장고를 비우는 한 끼">
+      <div class="close__end">
+        <div class="close__fridge" data-fridge data-mood="smile"></div>
+        <p class="close__words">“오늘 뭐 먹지?”라는 고민을,<br>냉장고를 비우는 한 끼로 연결합니다.</p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<nav class="progress" aria-hidden="true"><span id="progress-bar"></span></nav>
+<p class="pageno" id="pageno" aria-hidden="true"></p>
+<p class="hint" id="hint" aria-live="polite"><span class="hint__tap" aria-hidden="true"></span><b id="hint-tap">클릭</b><span class="hint__or">또는</span><kbd>Space</kbd><span id="hint-text"></span></p>
+
+<template id="fridge-tpl">
+  <svg class="fridge" viewBox="0 0 200 200" role="img" aria-label="냉장고 캐릭터">
+    <ellipse class="f-shadow" cx="100" cy="191" rx="48" ry="6"/>
+    <rect class="f-ink" x="68" y="176" width="14" height="12" rx="4"/>
+    <rect class="f-ink" x="118" y="176" width="14" height="12" rx="4"/>
+    <rect class="f-body" x="46" y="24" width="108" height="156" rx="32"/>
+    <path class="f-light" d="M50 70 V58 A28 28 0 0 1 78 30 H122 A28 28 0 0 1 150 58 V70 Z"/>
+    <g class="f-items">
+      <path d="M58 64 H142" class="f-shelf"/>
+      <ellipse cx="86" cy="52" rx="8" ry="10" class="f-egg"/>
+      <ellipse cx="104" cy="54" rx="7" ry="8.5" class="f-egg"/>
+      <path d="M122 60 C122 48 128 42 136 40 C134 48 130 56 122 60 Z" class="f-leaf"/>
+    </g>
+    <g class="f-door">
+      <path d="M46 74 V56 A32 32 0 0 1 78 24 H122 A32 32 0 0 1 154 56 V74 Z" class="f-body"/>
+      <path d="M56 36 Q52 44 52 60" class="f-gloss"/>
+      <path d="M138 40 v18" class="f-line"/>
+      <g transform="rotate(-8 80 48)">
+        <rect x="66" y="36" width="28" height="24" rx="4" class="f-note"/>
+        <circle cx="80" cy="36" r="3.5" class="f-pin"/>
+        <path d="M71 46 h16 M71 52 h10" class="f-note-lines"/>
+      </g>
+    </g>
+    <path d="M46 74 H154" class="f-line f-line--flat"/>
+    <path d="M53 90 v12" class="f-gloss f-gloss--soft"/>
+    <path d="M138 88 v26" class="f-line"/>
+    <circle cx="72" cy="134" r="7" class="f-cheek"/>
+    <circle cx="124" cy="134" r="7" class="f-cheek"/>
+    <g class="f-face f-face--calm">
+      <path d="M79 113 a5 5 0 0 1 10 0 v6 a5 5 0 0 1 -10 0 z M107 113 a5 5 0 0 1 10 0 v6 a5 5 0 0 1 -10 0 z" class="f-ink"/>
+      <path d="M92 135 q6 5 12 0" class="f-line"/>
+    </g>
+    <g class="f-face f-face--smile">
+      <path d="M77 121 q7 -9 14 0 M105 121 q7 -9 14 0" class="f-line"/>
+      <path d="M90 131 h16 a2 2 0 0 1 2 2.4 q-2 9.6 -10 9.6 q-8 0 -10 -9.6 a2 2 0 0 1 2 -2.4 z" class="f-mouth"/>
+      <path d="M93.5 140 q4.5 -4 9 0 q-2 3 -4.5 3 q-2.5 0 -4.5 -3 z" class="f-tongue"/>
+    </g>
+  </svg>
+</template>
+
+<template id="icon-egg"><svg viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="34" rx="16" ry="21" fill="#FBF6EA" stroke="currentColor" stroke-width="3"/></svg></template>
+<template id="icon-pork"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="7" y="17" width="50" height="32" rx="9" fill="#F2C1B6" stroke="currentColor" stroke-width="3"/><path d="M10 28 H54 M10 38 H54" stroke="#FFF4EE" stroke-width="4" stroke-linecap="round"/></svg></template>
+<template id="icon-tofu"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="12" y="14" width="40" height="38" rx="7" fill="#FFFDF6" stroke="currentColor" stroke-width="3"/><path d="M15 26 H49" stroke="#E4DDCB" stroke-width="3"/></svg></template>
+<template id="icon-onion"><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="rotate(-38 32 32)"><path d="M27 34 V6 M37 34 V10" stroke="#4F9A5E" stroke-width="8" stroke-linecap="round"/><rect x="22" y="30" width="20" height="30" rx="9" fill="#FBFBF3" stroke="currentColor" stroke-width="3"/></g></svg></template>
+
+<script>
+/*
+ * 청중 화면 진행.
+ *
+ * ← / →       이전·다음 장 (← 로 돌아가면 그 장의 마지막 단계)
+ * Space       다음 단계, 마지막 단계면 다음 장 (6장에서는 영상 재생·일시정지)
+ * Shift+Space 이전 단계
+ * PageDown·↓  Space와 같음(프레젠터 리모컨용), PageUp·↑ 이전 단계
+ * 1~9 직접 이동, Home·End, F 전체 화면, P 발표자 창
+ *
+ * 발표자 창과는 창 참조 postMessage로 상태와 명령을 주고받는다(file:// 대응).
+ */
+(() => {
+  'use strict';
+
+  const STAGE_W = 1920;
+  const STAGE_H = 1080;
+
+  const stage = document.getElementById('stage');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const progressBar = document.getElementById('progress-bar');
+  const pageno = document.getElementById('pageno');
+
+  let index = 0;
+  let step = 0;
+
+  const stepsOf = (i) => Number(slides[i].dataset.steps || 0);
+  const demoSlide = document.querySelector('.slide--demo');
+  const video = document.getElementById('demo-video');
+  const player = document.getElementById('demo-player');
+  const isDemo = (i) => slides[i] === demoSlide;
+  let videoReady = false;
+  let videoFailed = false;
+  let playWhenReady = false;
+  const hint = document.getElementById('hint');
+  const hintText = document.getElementById('hint-text');
+  // 발표는 로컬 파일로 하므로 안내는 웹 링크로 열었을 때만 띄운다.
+  const SHARED = /^https?:$/.test(location.protocol);
+  const HINT_IDLE_MS = 9000;
+  let interacted = false;
+  let idle = false;
+  let idleTimer = null;
+
+  function fit() {
+    const scale = Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H);
+    stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  }
+
+  function mountTemplates() {
+    const fridge = document.getElementById('fridge-tpl');
+    document.querySelectorAll('[data-fridge]').forEach((el) => {
+      el.appendChild(fridge.content.cloneNode(true));
+    });
+    document.querySelectorAll('[data-icon]').forEach((el) => {
+      const tpl = document.getElementById(`icon-${el.dataset.icon}`);
+      if (tpl) el.appendChild(tpl.content.cloneNode(true));
+    });
+  }
+
+  function render() {
+    slides.forEach((slide, i) => {
+      const active = i === index;
+      slide.classList.toggle('is-active', active);
+      slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+      const shown = active ? step : 0;
+      for (let k = 1; k <= 6; k += 1) slide.classList.toggle(`s${k}`, k <= shown);
+    });
+    progressBar.style.width = `${((index + 1) / slides.length) * 100}%`;
+    pageno.textContent = `${index + 1} / ${slides.length}`;
+    document.body.classList.toggle('on-demo', isDemo(index));
+    updateHint();
+    publish();
+  }
+
+  function hintMessage() {
+    if (!SHARED || (presenter && !presenter.closed)) return '';
+    if (isDemo(index)) {
+      if (video.ended) return '다음 장으로';
+      if (!video.paused) return '';
+      return demoSlide.classList.contains('is-started') ? '이어서 재생' : '시연 영상 재생';
+    }
+    if (index === slides.length - 1) return '';
+    return !interacted || idle ? '다음으로' : '';
+  }
+
+  function updateHint() {
+    const message = hintMessage();
+    if (message) hintText.textContent = message;
+    hint.classList.toggle('is-on', Boolean(message));
+  }
+
+  // 한 번 넘겨 보면 안내를 숨기고, 한동안 멈춰 있으면 다시 띄운다.
+  function noteInteraction() {
+    interacted = true;
+    idle = false;
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => { idle = true; updateHint(); }, HINT_IDLE_MS);
+    updateHint();
+  }
+
+  function go(target, at = 'start') {
+    if (target < 0 || target >= slides.length) return;
+    if (target !== index && isDemo(index) && !video.paused) video.pause();
+    index = target;
+    step = at === 'end' ? stepsOf(target) : 0;
+    render();
+  }
+
+  function forward() {
+    // 6장: 영상이 끝나기 전에는 Space가 장을 넘기지 않는다. 열 수 없을 때만 안내 뒤 다음 장.
+    if (isDemo(index) && !video.ended && !videoFailed) {
+      if (videoReady) {
+        toggleVideo();
+        return;
+      }
+      // IMPORTANT: 웹에서 영상을 받는 중에 Space를 눌러도 시연을 건너뛰지 않는다. 준비되면 바로 재생한다.
+      playWhenReady = true;
+      setDemoStatus('영상 준비 중… 준비되면 바로 재생합니다');
+      return;
+    }
+    if (isDemo(index) && videoFailed && !demoSlide.classList.contains('is-failed')) {
+      demoSlide.classList.add('is-failed');
+      setDemoStatus('영상을 열 수 없습니다 · 시연 파일을 플레이어로 재생하세요 (Space: 다음 장)');
+      return;
+    }
+    if (step < stepsOf(index)) {
+      step += 1;
+      render();
+      return;
+    }
+    go(index + 1);
+  }
+
+  function backward() {
+    if (step > 0) {
+      step -= 1;
+      render();
+      return;
+    }
+    go(index - 1, 'end');
+  }
+
+  function setupVideo() {
+    // 첫 화면을 먼저 띄우고 영상은 페이지 로드 뒤에 받아 둔다.
+    window.addEventListener('load', () => { video.preload = 'auto'; video.load(); }, { once: true });
+    const ready = () => {
+      videoReady = true;
+      videoFailed = false;
+      setDemoStatus('');
+      if (playWhenReady && isDemo(index) && video.paused) toggleVideo();
+      playWhenReady = false;
+    };
+    video.addEventListener('loadedmetadata', ready);
+    video.addEventListener('error', () => {
+      videoReady = false;
+      videoFailed = true;
+      playWhenReady = false;
+      if (isDemo(index)) forward();
+    });
+    video.addEventListener('play', () => { player.classList.remove('is-paused'); demoSlide.classList.add('is-started'); });
+    setupProgress();
+    video.addEventListener('pause', () => { if (!video.ended) player.classList.add('is-paused'); });
+    ['play', 'pause', 'ended'].forEach((type) => video.addEventListener(type, updateHint));
+    if (video.readyState >= 1) ready();
+  }
+
+  function setDemoStatus(text) {
+    document.getElementById('demo-status').textContent = text;
+  }
+
+  function setupProgress() {
+    const bar = document.getElementById('demo-bar');
+    const fill = document.getElementById('demo-fill');
+    const time = document.getElementById('demo-time');
+    const clock = (sec) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+    let frame = 0;
+    const paint = () => {
+      const total = video.duration || 0;
+      fill.style.width = total ? `${(video.currentTime / total) * 100}%` : '0';
+      time.textContent = total ? `${clock(video.currentTime)} / ${clock(total)}` : '';
+    };
+    // timeupdate 는 초당 4번 정도라 바가 끊겨 보인다. 재생 중에는 매 프레임 그린다.
+    const loop = () => {
+      paint();
+      if (!video.paused) frame = requestAnimationFrame(loop);
+    };
+    video.addEventListener('play', () => { cancelAnimationFrame(frame); loop(); });
+    ['pause', 'seeked', 'loadedmetadata', 'ended'].forEach((type) => video.addEventListener(type, paint));
+    bar.addEventListener('click', (e) => {
+      // IMPORTANT: 화면 클릭은 다음 장 넘기기라서, 재생 바 클릭은 위로 전달하지 않는다.
+      e.stopPropagation();
+      if (!video.duration) return;
+      const rect = bar.getBoundingClientRect();
+      const ratio = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+      video.currentTime = ratio * video.duration;
+      paint();
+      updateHint();
+    });
+  }
+
+  function toggleVideo() {
+    if (video.paused) {
+      demoSlide.classList.add('is-started');
+      video.play().catch(() => player.classList.add('is-paused'));
+      return;
+    }
+    video.pause();
+  }
+
+  let presenter = null;
+
+  function publish() {
+    if (!presenter || presenter.closed) return;
+    presenter.postMessage({ type: 'state', index, step, steps: stepsOf(index), total: slides.length }, '*');
+  }
+
+  window.addEventListener('message', (e) => {
+    const cmd = e.data;
+    if (!cmd || cmd.type !== 'cmd') return;
+    presenter = e.source;
+    updateHint();
+    const actions = {
+      forward,
+      backward,
+      next: () => go(index + 1),
+      prev: () => go(index - 1, 'end'),
+      sync: publish,
+    };
+    const action = actions[cmd.action];
+    if (action) action();
+  });
+
+  function openPresenter() {
+    presenter = window.open('presenter.html', 'today-meal-presenter', 'width=1280,height=800');
+    updateHint();
+    setTimeout(publish, 600);
+  }
+
+  function onKey(e) {
+    const tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey || e.altKey) return;
+
+    const key = e.key;
+    const handlers = {
+      ArrowRight: () => go(index + 1),
+      ArrowLeft: () => go(index - 1, 'end'),
+      ' ': () => (e.shiftKey ? backward() : forward()),
+      PageDown: forward,
+      ArrowDown: forward,
+      PageUp: backward,
+      ArrowUp: backward,
+      Home: () => go(0),
+      End: () => go(slides.length - 1, 'end'),
+      f: toggleFullscreen,
+      F: toggleFullscreen,
+      p: openPresenter,
+      P: openPresenter,
+    };
+    if (/^[1-9]$/.test(key) && Number(key) <= slides.length) {
+      e.preventDefault();
+      go(Number(key) - 1);
+      return;
+    }
+    const handler = handlers[key];
+    if (!handler) return;
+    e.preventDefault();
+    handler();
+  }
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+      return;
+    }
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+
+  function beforePrint() {
+    slides.forEach((slide) => {
+      for (let k = 1; k <= stepsOf(slides.indexOf(slide)); k += 1) slide.classList.add(`s${k}`);
+    });
+  }
+
+  function readHash() {
+    const [slidePart, stepPart] = (location.hash || '').replace('#', '').split('.');
+    const fromHash = Number(slidePart);
+    if (!(fromHash >= 1 && fromHash <= slides.length)) return false;
+    const nextStep = Math.min(Math.max(Number(stepPart) || 0, 0), stepsOf(fromHash - 1));
+    if (fromHash - 1 === index && nextStep === step) return false;
+    index = fromHash - 1;
+    step = nextStep;
+    return true;
+  }
+
+  function start() {
+    mountTemplates();
+    setupVideo();
+    // IMPORTANT: 공유 링크·새로고침은 항상 1장부터. 주소에 남은 장 번호는 지운다.
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (_) { /* file:// 일부 환경 */ }
+    fit();
+    render();
+    window.addEventListener('hashchange', () => { if (readHash()) render(); });
+    window.addEventListener('resize', fit);
+    document.addEventListener('keydown', onKey);
+    if (window.matchMedia('(hover: none)').matches) {
+      hint.classList.add('is-touch');
+      document.getElementById('hint-tap').textContent = '탭';
+    }
+    document.addEventListener('keydown', noteInteraction, true);
+    document.addEventListener('pointerdown', noteInteraction, true);
+    // 무대 밖 여백을 눌러도 넘어가도록 화면 전체에서 받는다.
+    document.querySelector('.viewport').addEventListener('click', forward);
+    window.addEventListener('beforeprint', beforePrint);
+    window.addEventListener('afterprint', render);
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>

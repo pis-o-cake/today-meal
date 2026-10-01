@@ -1,0 +1,14 @@
+// 발표 덱 공유용 Cloudflare 배포. build_deck.py 로 server/app/deck 를 만든 뒤 이 폴더에서 `npx wrangler deploy`.
+{
+  "name": "today-meal-deck",
+  "compatibility_date": "2026-09-30",
+  "workers_dev": true,
+  "preview_urls": false,
+  "main": "worker.js",
+  "assets": {
+    "directory": "../../../server/app/deck",
+    "binding": "ASSETS",
+    // 영상만 Worker 를 거쳐 Range(206)를 지원한다. 나머지는 정적 자산이 바로 응답한다.
+    "run_worker_first": ["/assets/video/*"]
+  }
+}

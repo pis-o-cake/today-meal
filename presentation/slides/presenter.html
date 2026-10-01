@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>발표자 창</title>
+<style>
+  @font-face { font-family: 'Pretendard'; src: url('assets/fonts/Pretendard-deck.woff2') format('woff2'); font-weight: 45 920; }
+  :root { --bg: #1D221F; --panel: #262C28; --text: #EFEBE1; --muted: #A9AFA7; --green: #7CC49A; --warn: #E8A87C; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; word-break: keep-all; }
+  .wrap { display: grid; grid-template-columns: 1fr 340px; gap: 20px; padding: 20px; min-height: 100vh; }
+  header { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+  h1 { margin: 0; font-size: 34px; font-weight: 750; letter-spacing: -0.02em; }
+  .pos { font-size: 20px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .panel { background: var(--panel); border-radius: 16px; padding: 18px 22px; }
+  .panel h2 { margin: 0 0 10px; font-size: 16px; font-weight: 700; color: var(--muted); }
+  .script p { margin: 0 0 14px; font-size: 26px; line-height: 1.55; }
+  .notes li, .steps li { font-size: 18px; line-height: 1.55; margin-bottom: 6px; color: #DCD8CE; }
+  .notes ul, .steps ul { margin: 0; padding-left: 20px; }
+  .steps li.done { color: var(--muted); text-decoration: line-through; }
+  .steps li.now { color: var(--green); font-weight: 700; }
+  aside { display: flex; flex-direction: column; gap: 16px; }
+  .clock { font-size: 44px; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .clock small { display: block; font-size: 16px; font-weight: 500; color: var(--muted); }
+  .over { color: var(--warn); }
+  .next { font-size: 22px; font-weight: 650; margin: 0; }
+  .status { font-size: 17px; margin: 0; }
+  .ok { color: var(--green); } .bad { color: var(--warn); }
+  .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button { font: inherit; font-size: 18px; padding: 12px; border-radius: 10px; border: 0; background: #3A423D; color: var(--text); cursor: pointer; }
+  button.primary { grid-column: 1 / -1; background: #2E6A4E; font-weight: 700; }
+  button:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  .keys { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .main { display: flex; flex-direction: column; gap: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="title">연결 대기</h1>
+    <span class="pos" id="pos">청중 화면(index.html)에서 P를 눌러 이 창을 여세요</span>
+  </header>
+  <div class="main">
+    <section class="panel steps"><h2>이 장의 진행</h2><ul id="steps"></ul></section>
+    <section class="panel script"><h2>대본</h2><div id="script"></div></section>
+    <section class="panel notes"><h2>노트</h2><ul id="notes"></ul></section>
+  </div>
+  <aside>
+    <section class="panel">
+      <div class="clock" id="slide-clock">0:00<small>이 장</small></div>
+      <div class="clock" id="total-clock">0:00<small>전체</small></div>
+      <button id="reset" type="button" class="primary">발표 시작 (전체 시간 측정)</button>
+    </section>
+    <section class="panel"><h2>다음 장</h2><p class="next" id="next">—</p></section>
+    <section class="panel"><h2>준비물</h2><p class="status" id="asset">6장 영상 assets/video/demo.mp4 · 7장 Claude Design 창 미리 열기</p></section>
+    <section class="panel">
+      <div class="buttons">
+        <button type="button" data-cmd="prev">이전 장</button>
+        <button type="button" data-cmd="next">다음 장</button>
+        <button type="button" data-cmd="backward">이전 단계</button>
+        <button type="button" class="primary" data-cmd="forward">진행 (Space)</button>
+      </div>
+      <p class="keys">← → 장 이동, Space 진행, Shift+Space 이전 단계.<br>이 창의 키 입력도 청중 화면을 움직입니다.</p>
+    </section>
+  </aside>
+</div>
+<script>
+/*
+ * 발표자 노트. 청중 화면(index.html)은 이 파일을 읽지 않는다. 발표자 창(presenter.html)만 쓴다.
+ * budget: 장별 목표 시간(초). 합계 405초(6:45). 6장은 87초 영상과 전후 설명, 7장은 Claude Design 창 전환(약 5초)을 포함한다.
+ * WARNING: 대본 분량으로 잡은 추정치다. 리허설로 재기 전에는 시간 검증 완료로 보지 않는다.
+ */
+window.DECK_NOTES = [
+  {
+    title: '오늘 뭐 먹지?', budget: 25,
+    steps: ['Space: 냉장고 문 열기'],
+    script: [
+      '“오늘 뭐 먹지?” 매일 하는 고민입니다.',
+      '냉장고에 재료는 있는데, 무엇이 남았는지, 무엇부터 먹어야 할지는 잘 떠오르지 않습니다.',
+      '‘오늘 뭐 먹지?’는 먼저 써야 할 재료를 확인하고, 그 재료로 만들 한 끼를 정하도록 돕는 앱입니다.',
+    ],
+    notes: ['조사 수치·통계를 말하지 않는다.'],
+  },
+  {
+    title: '답은 냉장고 안에 있는데', budget: 30,
+    steps: ['Space: 기한 순으로 정렬, 삼겹살 강조'],
+    script: [
+      '냉장고에 삼겹살과 두부, 계란이 있다고 해보겠습니다.',
+      '계란으로 간단히 먹을 수도 있지만, 삼겹살의 기한이 내일까지라면 오늘은 삼겹살을 먼저 쓰는 편이 좋겠죠.',
+      '메뉴를 고민하는 순간에, 있는 재료와 남은 기한을 함께 확인할 수 있으면 좋겠다고 생각했습니다. 그 생각에서 시작한 앱입니다.',
+    ],
+    notes: ['카드 값은 시연 영상과 같은 재료·수량(삼겹살 D-1, 두부 D-2, 계란 D-3, 대파 기한 없음).'],
+  },
+  {
+    title: '기한별로, 먼저 쓸 재료부터', budget: 45,
+    steps: ['Space: 빨리 먹어야 해요(삼겹살)', 'Space: 기한을 입력하지 않은 대파', 'Space: 천천히 먹어도 돼요'],
+    script: [
+      '홈에서는 재료를 기한별로 나눠 보여줍니다. 화면을 넘기면 재료와 함께 냉장고의 색과 표정도 바뀝니다.',
+      '[전환] 빨리 먹어야 하는 칸에서는 삼겹살을 확인할 수 있습니다. 날짜를 하나씩 찾아보지 않아도, 오늘 무엇부터 쓸지 파악할 수 있습니다.',
+      '[전환] 기한을 입력하지 않은 대파는 별도로 보여줍니다. 날짜를 모르는 재료도 놓치지 않게 했습니다.',
+      '[전환] 여유 있는 재료는 다른 칸으로 구분합니다. 이렇게 냉장고를 살펴보고 오늘 사용할 재료를 정하는 것이 앱의 출발점입니다.',
+    ],
+    notes: [
+      '화면은 10/1 실기기 녹화에서 뽑은 실제 앱 화면.',
+      '빨리 먹어야 해요 칸의 추천 메뉴(삼겹살 두부 된장찌개)는 그때의 추천 결과로, 시연 영상의 메뉴(두부 삼겹살 조림)와 다르다. 메뉴 이름은 말하지 않는다.',
+    ],
+  },
+  {
+    title: '말로 기록하고, 먹은 만큼 맞추고', budget: 35,
+    steps: ['Space: “계란 두 개 썼어” → 사용량 반영', 'Space: “계란 네 개 남았어” → 남은 수량 다시 맞추기'],
+    script: [
+      '이 흐름을 계속 쓰려면 재료를 기록하는 일이 부담스럽지 않아야 합니다.',
+      '‘헤이 키친’으로 부른 뒤 재료와 수량, 기한을 말하면 기록됩니다.',
+      '[전환] 먹고 나서는 ‘계란 두 개 썼어’라고 사용량을 반영할 수 있습니다.',
+      '[전환] 기록과 실제 수량이 다르면 ‘계란 네 개 남았어’라고 남은 양을 맞출 수도 있습니다.',
+      '음성 기능은 냉장고 기록을 간편하게 유지하기 위해 넣었습니다.',
+    ],
+    notes: ['오른쪽 화면은 시연 영상의 실제 반영 결과(계란 10개·유통기한 10/4 → 2개 사용 → 8개 남음 → 4개로 다시 맞춤).'],
+  },
+  {
+    title: '먼저 쓸 재료가 오늘의 메뉴로', budget: 45,
+    steps: ['Space: 유튜브 레시피 경로'],
+    script: [
+      '먼저 쓸 재료를 골랐다면 ‘삼겹살로 뭐 해먹을까?’라고 물어봅니다.',
+      '추천받은 메뉴에서 인분에 맞는 재료량을 확인하고, 단계별 안내와 타이머를 보며 요리할 수 있습니다. 추천 메뉴로 조리를 완료하면 조리한 인분을 기준으로 재고에도 반영됩니다.',
+      '[전환] 해보고 싶은 유튜브 요리가 있다면 링크를 넣어 재료와 조리 순서를 정리할 수도 있습니다. 영상에서 본 요리를 앱의 조리 안내로 이어가는 경로입니다.',
+      '이제 실제 앱에서 이 과정이 어떻게 이어지는지 보여드리겠습니다.',
+    ],
+    notes: ['유튜브 레시피로 조리를 마쳐도 재고는 자동으로 빠지지 않는다. 그렇게 보이게 말하지 않는다.'],
+  },
+  {
+    title: '실제 앱 시연', budget: 100,
+    steps: ['Space: 영상 재생(무대 가득)', 'Space: 일시정지·다시 재생', '영상이 끝난 뒤 Space 또는 →: 7장'],
+    script: [
+      '[영상 전] 실제 기기에서 촬영한 영상입니다. 재료 등록부터 메뉴 추천, 조리 완료 후 재고 반영까지 보시겠습니다.',
+      '[영상 중] 설명하지 않는다.',
+      '[영상 후] 이렇게 먼저 쓸 재료를 골라 요리하고, 남은 재료를 다음 식사로 이어갑니다.',
+    ],
+    notes: [
+      '파일: assets/video/demo.mp4 = today-meal-90s-v4-ai-voice-leda.mp4(87초, 배경음악 Life of Riley). 막히면 같은 파일을 플레이어로 전체 화면 재생.',
+      '사람 목소리는 내 발화를 AI 음성(Gemini TTS)으로 후시 녹음했다. 화면 오른쪽 위에 “사용자 음성 · AI 후시 녹음” 표기. 앱 응답·신호음은 실제 녹화음. 풀버전 영상은 내 목소리 그대로.',
+      '영상 장면: 계란 단일 등록 → 사용량 반영·남은 수량 다시 맞추기 → 2인분에서 3인분 확인 후 2인분으로 조리 → 조리 완료 후 재고 반영 → 유튜브 링크 분석.',
+      '복합 등록, 대화식 정정, 4인분 변경은 영상에 없다. 설명하지 않는다.',
+    ],
+  },
+  {
+    title: '단계마다, 필요한 AI', budget: 65,
+    steps: ['Space: GPT / Astra', 'Space: Claude Design → 별도 창 5초', 'Space: Claude Code', 'Space: engsys', 'Space: 영상 편집·발표자료에도 AI'],
+    script: [
+      '개발에는 단계별로 도구를 나눠 썼습니다.',
+      '[Space] 기획과 기술 검증에는 빠르게 선택지를 비교하고 방향을 조정하기 위해 Astra를 썼습니다.',
+      '[Space] Claude Design으로는 애니메이션 목업을 만들고, 화면과 테마를 비교해 구현 방향을 정했습니다. 잠깐 보여드리겠습니다.',
+      '[Claude Design 창으로 전환 → 홈 애니메이션 → 복귀]',
+      '[Space] 구현은 Claude Code로 진행했습니다. 앱과 서버를 만들고, 실기기에서 발견한 호출 직후 말이 잘리는 문제 등을 수정했습니다.',
+      '[Space] 기존에 만든 engsys의 문서 정책과 자동 검증을 적용해 작업 기준을 유지했습니다.',
+      '[Space] 직접 촬영한 시연 영상의 편집과 지금 보시는 웹 발표자료 제작에도 AI를 활용했습니다. 방향을 정하고 결과를 검수하는 판단은 직접 맡았습니다.',
+    ],
+    notes: [
+      'Claude Design 창: 발표 전 선택한 홈 화면·대표 시안이 읽히는 배율로 열어 둔다. Cmd+Tab → 홈 애니메이션 한 번 → 복귀. 5초, 이 장 시간에 포함.',
+      'engsys는 AI 모델이 아니라 기존에 만든 자체 개발 지원 도구다. 해커톤 기간에 새로 만든 것처럼 말하지 않는다.',
+      'engsys 적용 범위: .engsys/project.yaml(문서 경로별 유형·수명 주기), commit-msg hook(engsys vcs check-message), pre-commit 비밀값 검사, engsys docs check. 문서 내용이 사실과 맞는지까지 자동 보장하지 않는다.',
+      'Claude Code 실기기 수정 사례(10/1): 호출 응답 “네?” 대신 신호음으로 앞말 잘림 해결, 말 중간 끊김, 등록 후 홈 자동 이동, 닫힌 대화의 이전 발화가 붙던 문제, 조리 후 “잔량 미확인” 표시.',
+      '자동 테스트(10/1): 서버 279건, 앱 179건 통과.',
+    ],
+  },
+  {
+    title: '기술 선택과 제약 해결', budget: 50,
+    steps: ['Space: 인식 변형 → “헤이 키친” 호출로 판단'],
+    script: [
+      '앱 안에서 사용할 모델도 필요한 기능을 기준으로 골랐습니다.',
+      '유튜브 링크를 직접 받아 조리 과정을 분석해야 했기 때문에, 해당 기능을 공식 지원하는 Gemini를 선택했습니다. 짧은 개발 기간을 고려해 명령 해석과 메뉴 추천도 같은 모델로 통일했습니다.',
+      '호출어는 사용할 수 있는 한국어 모델을 확보하기 어려웠습니다. 그래서 한국인이 발음하기 쉬운 영어 문구 ‘헤이 키친’을 골랐습니다.',
+      '[전환] 실제 기기에서는 ‘베이키친’, ‘에이키친’처럼 다르게 인식됐습니다. 현재는 기기의 음성인식 결과에 발음 유사성 규칙을 적용해, 이런 변형도 같은 호출로 판단하도록 보완했습니다.',
+    ],
+    notes: [
+      'YouTube Data API의 제목·설명 조회와 Gemini의 영상 분석은 별개다.',
+      '다른 LLM은 영상 분석이 불가능하다는 주장을 하지 않는다.',
+      '호출어 모델 검토 과정(Porcupine 개인 이용 제한으로 제외, sherpa-onnx 한국어 ASR 실기기 종료로 폐기)과 현재 기기 STT 기반 구현을 구분한다.',
+      '직접 모델을 재학습하거나 원본 음성을 비교하는 모델을 만든 것으로 설명하지 않는다.',
+      '변형 근거: 갤럭시 SM-E426S에서 “헤이 키친” 6회 → 헤이키친 2, 베이키친·에이키친·hat kitchen 각 1(코드 주석 기록).',
+      '호출 판정 범위를 넓힌 만큼 오작동 가능성이 있다는 점은 질문 시 설명한다.',
+    ],
+  },
+  {
+    title: '냉장고를 비우는 한 끼', budget: 10,
+    steps: [],
+    script: [
+      'AI를 활용해, 냉장고 속 재료를 오늘의 식사로 연결하는 앱을 만들었습니다.',
+      '‘오늘 뭐 먹지?’였습니다. 감사합니다.',
+    ],
+    notes: ['AI 도구 이름을 다시 나열하지 않는다.'],
+  },
+];
+</script>
+<script>
+(() => {
+  'use strict';
+  const notes = window.DECK_NOTES || [];
+  // 목표 합계는 장별 budget의 합. 리허설 전 추정치다.
+  const TOTAL_BUDGET = notes.reduce((sum, n) => sum + (n.budget || 0), 0);
+  const $ = (id) => document.getElementById(id);
+
+  let state = null;
+  let startedAt = null;
+  let slideStartedAt = Date.now();
+  let lastIndex = -1;
+
+  const fmt = (sec) => {
+    const s = Math.max(0, Math.floor(sec));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  };
+
+  // 청중 화면(이 창을 연 창)에 명령을 보낸다. file:// 에서도 창 참조 postMessage는 동작한다.
+  function send(action) {
+    const deck = window.opener;
+    if (!deck || deck.closed) {
+      $('pos').textContent = '청중 화면과 연결이 끊겼습니다. 청중 화면에서 P를 다시 누르세요';
+      return;
+    }
+    deck.postMessage({ type: 'cmd', action }, '*');
+  }
+
+  function list(el, items, cls) {
+    el.replaceChildren(...items.map((text, i) => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      if (cls) li.className = cls(i);
+      return li;
+    }));
+  }
+
+  function show(next) {
+    state = next;
+    const n = notes[state.index] || { title: '', script: [], notes: [], steps: [] };
+    if (state.index !== lastIndex) {
+      lastIndex = state.index;
+      slideStartedAt = Date.now();
+    }
+    $('title').textContent = `${state.index + 1}. ${n.title}`;
+    $('pos').textContent = `${state.index + 1} / ${state.total}   단계 ${state.step} / ${state.steps}`;
+    list($('steps'), n.steps || [], (i) => (i < state.step ? 'done' : i === state.step ? 'now' : ''));
+    $('script').replaceChildren(...(n.script || []).map((t) => {
+      const p = document.createElement('p');
+      p.textContent = t;
+      return p;
+    }));
+    list($('notes'), n.notes || []);
+    const after = notes[state.index + 1];
+    $('next').textContent = after ? `${state.index + 2}. ${after.title}` : '마지막 장';
+  }
+
+  function tick() {
+    const n = state ? notes[state.index] : null;
+    const budget = n ? n.budget : 0;
+    const slideSec = (Date.now() - slideStartedAt) / 1000;
+    const totalSec = startedAt ? (Date.now() - startedAt) / 1000 : 0;
+    $('slide-clock').innerHTML = `${fmt(slideSec)}<small>이 장 / 목표 ${fmt(budget)}</small>`;
+    $('slide-clock').classList.toggle('over', budget > 0 && slideSec > budget);
+    const totalLabel = startedAt ? `전체 / 목표 ${fmt(TOTAL_BUDGET)} (리허설 전 추정)` : '전체 · 1장에서 발표 시작을 누르세요';
+    $('total-clock').innerHTML = `${fmt(totalSec)}<small>${totalLabel}</small>`;
+    $('total-clock').classList.toggle('over', totalSec > TOTAL_BUDGET);
+  }
+
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'state') show(e.data);
+  });
+  document.querySelectorAll('[data-cmd]').forEach((b) => b.addEventListener('click', () => send(b.dataset.cmd)));
+  // IMPORTANT: 전체 시간은 버튼으로만 시작한다. 장 이동으로 자동 시작하면 1장 시간이 빠진다.
+  $('reset').addEventListener('click', () => {
+    startedAt = Date.now();
+    slideStartedAt = Date.now();
+    $('reset').textContent = '시간 다시 재기';
+    $('reset').classList.remove('primary');
+  });
+  document.addEventListener('keydown', (e) => {
+    const map = { ArrowRight: 'next', ArrowLeft: 'prev', PageDown: 'forward', PageUp: 'backward', ArrowDown: 'forward', ArrowUp: 'backward' };
+    if (e.key === ' ') { e.preventDefault(); send(e.shiftKey ? 'backward' : 'forward'); return; }
+    if (map[e.key]) { e.preventDefault(); send(map[e.key]); }
+  });
+
+  // 청중 화면을 새로고침해도 다시 연결되도록 주기적으로 상태를 요청한다.
+  send('sync');
+  setInterval(() => { if (window.opener && !window.opener.closed) window.opener.postMessage({ type: 'cmd', action: 'sync' }, '*'); }, 2000);
+  setInterval(tick, 500);
+  tick();
+})();
+</script>
+</body>
+</html>
