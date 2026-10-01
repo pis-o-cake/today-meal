@@ -279,24 +279,6 @@ body {
 .demo__status { margin: 34px 0 0; min-height: 40px; font-size: 30px; font-weight: 650; color: var(--muted); }
 .slide--demo.is-failed .demo__status { color: var(--urgent); }
 
-/* ---------- 7. 단계별 AI ---------- */
-.ai { position: absolute; left: 160px; right: 160px; top: 290px; list-style: none; margin: 0; padding: 0; display: grid; row-gap: 18px; }
-.ai li {
-  display: grid; grid-template-columns: 300px 420px 1fr 280px; column-gap: 36px; align-items: center;
-  padding: 26px 40px; border-radius: 26px; background: var(--paper);
-  opacity: .3; transition: opacity .45s var(--ease), box-shadow .45s var(--ease);
-}
-.ai li.ai__head { opacity: 1; background: transparent; padding-top: 0; padding-bottom: 0; font-size: 24px; font-weight: 700; color: var(--muted); }
-.slide--ai.s1 [data-row="1"], .slide--ai.s2 [data-row="2"], .slide--ai.s3 [data-row="3"], .slide--ai.s4 [data-row="4"] { opacity: 1; }
-.slide--ai.s1:not(.s2) [data-row="1"], .slide--ai.s2:not(.s3) [data-row="2"],
-.slide--ai.s3:not(.s4) [data-row="3"], .slide--ai.s4:not(.s5) [data-row="4"] { box-shadow: inset 0 0 0 4px var(--green); }
-.ai__stage { font-size: 30px; font-weight: 700; color: var(--ink-2); }
-.ai__tool { font-size: 42px; font-weight: 850; letter-spacing: -0.035em; color: var(--ink); }
-.ai__tool small { display: block; font-size: 20px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
-.ai__did { font-size: 29px; line-height: 1.4; font-weight: 650; color: var(--ink-2); letter-spacing: -0.02em; }
-.ai__me { font-size: 29px; font-weight: 800; color: var(--green); letter-spacing: -0.02em; }
-.ai__more { position: absolute; left: 160px; top: 930px; margin: 0; font-size: 34px; font-weight: 750; color: var(--ink); }
-
 /* ---------- 7. 기술 선택과 제약 ---------- */
 .tech { position: absolute; left: 160px; right: 160px; top: 390px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 80px; }
 .tech h3 { margin: 0; font-size: 48px; font-weight: 850; letter-spacing: -0.035em; }
@@ -379,18 +361,13 @@ body {
 .guard__server b { color: var(--green); }
 .guard__claim { position: absolute; left: 160px; right: 160px; top: 640px; margin: 0; font-size: 46px; line-height: 1.42; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); }
 
-.slide--ai .ai { position: absolute; left: 160px; right: 160px; top: 270px; list-style: none; margin: 0; padding: 0; display: grid; row-gap: 10px; }
-.slide--ai .ai li { display: grid; grid-template-columns: 280px 380px 1fr; column-gap: 36px; align-items: center; padding: 14px 34px; border-radius: 20px; background: var(--paper); opacity: 1; box-shadow: none; }
-.slide--ai .ai__stage { font-size: 26px; font-weight: 700; color: var(--muted); }
-.slide--ai .ai__tool { font-size: 32px; font-weight: 850; letter-spacing: -0.03em; color: var(--ink); }
-.slide--ai .ai__tool small { display: block; font-size: 19px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
-.slide--ai .ai__did { font-size: 26px; font-weight: 600; color: var(--ink-2); letter-spacing: -0.02em; }
-.case { position: absolute; left: 160px; right: 160px; top: 690px; padding: 30px 40px 36px; border-radius: 30px; background: var(--green); color: var(--paper); }
-.case__label { margin: 0 0 18px; font-size: 26px; font-weight: 750; opacity: .85; }
-.case ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 56px; counter-reset: case; }
-.case li { counter-increment: case; position: relative; font-size: 36px; line-height: 1.35; font-weight: 800; letter-spacing: -0.03em; }
-.case li::before { content: counter(case); display: block; margin-bottom: 6px; font-size: 22px; font-weight: 800; opacity: .7; }
-.case li:not(:last-child)::after { content: ''; position: absolute; right: -36px; top: 44px; border-style: solid; border-width: 11px 0 11px 17px; border-color: transparent transparent transparent var(--paper); }
+.stages { position: absolute; left: 160px; right: 160px; top: 400px; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 56px; }
+.stages li { display: flex; flex-direction: column; padding-top: 28px; border-top: 2px solid var(--line); }
+.stages__no { font-size: 24px; font-weight: 800; color: var(--green); font-variant-numeric: tabular-nums; }
+.stages__name { margin-top: 10px; font-size: 28px; font-weight: 700; color: var(--muted); letter-spacing: -0.02em; }
+.stages__tool { margin-top: 26px; font-size: 46px; line-height: 1.15; font-weight: 850; letter-spacing: -0.035em; color: var(--ink); }
+.stages__tool small { display: block; margin-top: 8px; font-size: 22px; font-weight: 650; letter-spacing: -0.01em; color: var(--muted); }
+.stages__did { margin-top: 20px; font-size: 28px; line-height: 1.4; font-weight: 600; color: var(--ink-2); letter-spacing: -0.02em; }
 
 .ask__legend { position: absolute; right: 160px; top: 200px; margin: 0; font-size: 24px; font-weight: 650; color: var(--muted); }
 .ask { position: absolute; left: 160px; right: 160px; top: 290px; list-style: none; margin: 0; padding: 0; display: grid; row-gap: 22px; counter-reset: ask; }
@@ -558,23 +535,16 @@ body {
       <p class="guard__claim" data-step="1">AI의 해석 결과를 바로 저장하지 않고,<br>서버가 대상과 수량을 검증합니다.</p>
     </section>
 
-    <!-- 7 개발 과정의 AI 활용과 판단 사례 -->
-    <section class="slide slide--ai" data-steps="1" aria-label="개발 과정의 AI와 판단 사례">
-      <h2 class="title">AI로 만들고, 실기기에서 판단했다</h2>
-      <ol class="ai">
-        <li><span class="ai__stage">기획·기술 선택</span><span class="ai__tool">GPT / Astra</span><span class="ai__did">선택지 비교 · 유튜브 분석 때문에 Gemini 선택</span></li>
-        <li><span class="ai__stage">디자인</span><span class="ai__tool">Claude Design</span><span class="ai__did">화면 목업 · 테마 시안</span></li>
-        <li><span class="ai__stage">구현·수정</span><span class="ai__tool">Claude Code</span><span class="ai__did">앱 · 서버 · 자동 테스트</span></li>
-        <li><span class="ai__stage">검토</span><span class="ai__tool">engsys<small>기존 개발 지원 도구 · AI 모델 아님</small></span><span class="ai__did">문서 규칙 · 커밋 검사</span></li>
+    <!-- 7 개발 과정의 AI 활용 -->
+    <!-- 단계 공개 없이 장 진입 때 전부 보인다. 장 전환 페이드 외에 요소별 모션을 두지 않는다. -->
+    <section class="slide slide--tools" data-steps="0" aria-label="기획부터 구현까지, 단계마다 AI 활용">
+      <h2 class="title">기획부터 구현까지, 단계마다 AI 활용</h2>
+      <ol class="stages">
+        <li><span class="stages__no">01</span><span class="stages__name">기획·기술 검토</span><b class="stages__tool">GPT / Astra</b><span class="stages__did">선택지 비교·방향 정리</span></li>
+        <li><span class="stages__no">02</span><span class="stages__name">디자인</span><b class="stages__tool">Claude Design</b><span class="stages__did">화면·테마 시안</span></li>
+        <li><span class="stages__no">03</span><span class="stages__name">구현·수정</span><b class="stages__tool">Claude Code</b><span class="stages__did">앱·서버·자동 테스트</span></li>
+        <li><span class="stages__no">04</span><span class="stages__name">검토</span><b class="stages__tool">engsys<small>기존 개발 지원 도구</small></b><span class="stages__did">문서 규칙·커밋 검사</span></li>
       </ol>
-      <div class="case" data-step="1">
-        <p class="case__label">실기기에서 직접 판단한 사례</p>
-        <ol>
-          <li>호출 직후 앞말이 잘림</li>
-          <li>응답을 짧은 신호음으로 변경</li>
-          <li>촬영에서 호출·명령 순서 재확인</li>
-        </ol>
-      </div>
     </section>
 
     <!-- 8 다음 검증 -->
