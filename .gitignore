@@ -60,3 +60,18 @@ server/.ruff_cache/
 *.pem
 *.key
 serviceAccount*.json
+
+# 로컬 실행 흔적
+.e2e-server.pid
+# 배포용 APK. 서버 `/install` 이 내려주는 빌드 산출물이라 저장소에 두지 않는다.
+server/app/static/app-release.bin
+
+# 시연 영상 제작 — 원본 촬영·챕터 편집본·중간 산출물은 로컬 전용
+demo/long/
+demo/edit/
+demo/work/
+demo/models/
+demo/.venv/
+demo/.recording
+demo/final/preview/
+demo/final/voiceover/candidates/
