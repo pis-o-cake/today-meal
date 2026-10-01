@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>캐릭터 시안 2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="width: {{size}}px; height: {{size}}px; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; color: #333A52">
+<svg viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="{{label}}">
+<defs><linearGradient id="{{gidB}}" x1="0" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="{{gTop}}"></stop><stop offset="1" stop-color="{{gBot}}"></stop></linearGradient><linearGradient id="{{gidR}}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{{rTop}}"></stop><stop offset="1" stop-color="{{rBot}}"></stop></linearGradient></defs>
+<ellipse cx="100" cy="190" rx="48" ry="6" fill="{{shadowFill}}" opacity="0.12">
+<animate attributeName="rx" values="{{shadowAnim}}" keyTimes="{{kt}}" dur="{{dur}}" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1"></animate>
+</ellipse>
+<g>
+<animateTransform attributeName="transform" type="translate" values="{{bob}}" keyTimes="{{kt}}" dur="{{dur}}" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1"></animateTransform>
+<g>
+<animateTransform attributeName="transform" type="rotate" values="{{sway}}" keyTimes="{{swayKt}}" dur="{{swayDur}}" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1"></animateTransform>
+<g transform="translate(100 184)"><g>
+<animateTransform attributeName="transform" type="scale" values="{{squash}}" keyTimes="{{kt}}" dur="{{dur}}" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1"></animateTransform>
+<g transform="translate(-100 -184)">
+<g transform="rotate({{tilt}} 100 184)">
+<rect x="68" y="176" width="14" height="12" rx="4" fill="{{line}}"></rect>
+<rect x="118" y="176" width="14" height="12" rx="4" fill="{{line}}"></rect>
+<rect x="46" y="24" width="108" height="156" rx="32" fill="{{bodyFill}}" stroke="{{rim}}" stroke-width="5"></rect>
+<ellipse cx="80" cy="68" rx="22" ry="32" fill="hsla(0,0%,100%,0.3)" opacity="{{gOp}}"></ellipse>
+<rect x="52.5" y="30.5" width="95" height="143" rx="26" fill="none" stroke="hsla(0,0%,100%,0.6)" stroke-width="2" opacity="{{gOp}}"></rect>
+<path d="M150 124 v24 a28 28 0 0 1 -28 28 h-36" fill="none" stroke="{{gShade}}" stroke-width="6" stroke-linecap="round" opacity="{{gOp}}"></path>
+<path d="M56 36 Q52 44 52 60" fill="none" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="5" stroke-linecap="round"></path>
+<path d="M53 90 v12" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round"></path>
+<path d="M46 74 H154" fill="none" stroke="{{line}}" stroke-width="5"></path>
+<path d="M138 40 v18" fill="none" stroke="{{line}}" stroke-width="5" stroke-linecap="round"></path>
+<path d="M138 88 v26" fill="none" stroke="{{line}}" stroke-width="5" stroke-linecap="round"></path>
+<g transform="rotate(-8 80 48)">
+<rect x="66" y="36" width="28" height="24" rx="4" fill="#FFF3B8" stroke="#333A52" stroke-width="3"></rect>
+<circle cx="80" cy="36" r="3.5" fill="{{deep}}" stroke="#333A52" stroke-width="2"></circle>
+<path d="M71 46 h16 M71 52 h10" fill="none" stroke="#333A52" stroke-width="2.4" stroke-linecap="round" opacity="{{noteLines}}"></path>
+<text x="80" y="55" text-anchor="middle" font-size="17" font-weight="800" fill="#333A52" font-family="Pretendard, sans-serif" opacity="{{noteMark}}">{{note}}</text>
+</g>
+<circle cx="72" cy="134" r="7" fill="#FF8A98" opacity="{{cheek}}"></circle>
+<circle cx="124" cy="134" r="7" fill="#FF8A98" opacity="{{cheek}}"></circle>
+<g transform="translate(0 119)">
+<g>
+<animateTransform attributeName="transform" type="scale" values="{{blink}}" keyTimes="0;0.9;0.95;1" dur="{{blinkDur}}" repeatCount="indefinite"></animateTransform>
+<g transform="translate(0 -119)">
+<path d="{{eyeFill}}" fill="#333A52"></path>
+<path d="{{eyeStroke}}" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path>
+<path d="{{eyeShine}}" fill="#FFFFFF"></path>
+</g>
+</g>
+</g>
+<path d="{{brow}}" fill="none" stroke="#333A52" stroke-width="4.5" stroke-linecap="round"></path>
+<path d="{{mouthFill}}" fill="#333A52"></path>
+<path d="{{mouthStroke}}" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path>
+<g opacity="{{sweatOp}}">
+<path d="M161 56 q-6 9 -3 13 q4 4 8 0 q2 -5 -5 -13z" fill="#A9DCFF" stroke="#333A52" stroke-width="2.2" stroke-linejoin="round">
+<animateTransform attributeName="transform" type="translate" values="0 0;0 12;0 12" keyTimes="0;0.7;1" dur="1.9s" repeatCount="indefinite"></animateTransform>
+<animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.2;0.7;1" dur="1.9s" repeatCount="indefinite"></animate>
+</path>
+</g>
+</g>
+</g></g></g>
+</g>
+</g>
+<path d="M164 40 q7 9 0 18" fill="none" stroke="{{deep}}" stroke-width="4.5" stroke-linecap="round" opacity="{{waves}}">
+<animate attributeName="opacity" values="{{waveAnim}}" dur="1.2s" repeatCount="indefinite"></animate>
+</path>
+<path d="M173 33 q12 16 0 32" fill="none" stroke="{{deep}}" stroke-width="4.5" stroke-linecap="round" opacity="{{waves}}">
+<animate attributeName="opacity" values="{{waveAnim}}" dur="1.2s" begin="0.3s" repeatCount="indefinite"></animate>
+</path>
+<path d="M36 40 q-7 9 0 18" fill="none" stroke="{{deep}}" stroke-width="4.5" stroke-linecap="round" opacity="{{waves}}">
+<animate attributeName="opacity" values="{{waveAnim}}" dur="1.2s" begin="0.6s" repeatCount="indefinite"></animate>
+</path>
+</svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mood":{"editor":"enum","options":["expired","urgent","soon","fresh","unknown","listening","asking","done","hello"],"default":"urgent"},"size":{"editor":"int","default":220,"min":48,"max":400},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"$preview":{"width":220,"height":220}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#D5DAE1","c1":"#8C95A3","c2":"#FFC2B2","c3":"#E8573A","c4":"#FFE0AA","c5":"#E39A2D","c6":"#BDEBC9","c7":"#3FAE5E","c8":"#D9DEE8","c9":"#8A94A8","c10":"#C7CFFF","c11":"#5A6BEA","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#D5DAE1","c1":"#8C95A3","c2":"#F1B6A7","c3":"#DF4020","c4":"#F0D3A0","c5":"#DF9220","c6":"#A9E5B9","c7":"#35B85A","c8":"#D9DEE8","c9":"#8A94A8","c10":"#B0B9F2","c11":"#2036DF","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#D5DAE1","c1":"#8C95A3","c2":"#EEB0A0","c3":"#A64430","c4":"#EED2A0","c5":"#A67730","c6":"#A9E5B9","c7":"#30A651","c8":"#D9DEE8","c9":"#8A94A8","c10":"#A0ABEE","c11":"#303EA6","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#D5DAE1","c1":"#8C95A3","c2":"#FFC2B2","c3":"#E8573A","c4":"#FFE0AA","c5":"#E39A2D","c6":"#BDEBC9","c7":"#3FAE5E","c8":"#D9DEE8","c9":"#8A94A8","c10":"#C7CFFF","c11":"#5A6BEA","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var mood = this.props.mood || 'urgent';
+    var size = Number(this.props.size || 220);
+    var NONE = 'M0 0';
+    var pill = function (cx, cy, h) {
+      return 'M' + (cx - 5) + ' ' + (cy - h / 2 + 5) + ' a5 5 0 0 1 10 0 v' + (h - 10) + ' a5 5 0 0 1 -10 0 z';
+    };
+    var dot = function (cx, cy, r) {
+      return 'M' + (cx - r) + ' ' + cy + ' a' + r + ' ' + r + ' 0 1 0 ' + (2 * r) + ' 0 a' + r + ' ' + r + ' 0 1 0 ' + (-2 * r) + ' 0 z';
+    };
+    var palette = {
+      expired:   { body: K.c0, deep: K.c1, cheek: 0, label: '앗, 때를 놓쳤어요' },
+      urgent:    { body: K.c2, deep: K.c3, cheek: 0.45, label: '빨리 먹어야 해요!' },
+      soon:      { body: K.c4, deep: K.c5, cheek: 0.45, label: '며칠 안에 먹어요' },
+      fresh:     { body: K.c6, deep: K.c7, cheek: 0.5, label: '천천히 먹어도 돼요~' },
+      done:      { body: K.c6, deep: K.c7, cheek: 0.55, label: '반영했어요' },
+      unknown:   { body: K.c8, deep: K.c9, cheek: 0.2, label: '언제까지 먹어야 해요?' },
+      listening: { body: K.c10, deep: K.c11, cheek: 0.45, label: '쫑긋, 듣고 있어요' },
+      asking:    { body: K.c4, deep: K.c5, cheek: 0.35, label: '확인 질문' },
+      hello:     { body: K.c10, deep: K.c11, cheek: 0.5, label: '반가워요' }
+    };
+    var c = palette[mood] || palette.urgent;
+    var f = { eyeFill: NONE, eyeStroke: NONE, eyeShine: NONE, brow: NONE, mouthFill: NONE, mouthStroke: NONE, note: '', waves: 0, tilt: 0 };
+    if (mood === 'fresh' || mood === 'done' || mood === 'hello') {
+      f.eyeStroke = 'M77 121 q7 -9 14 0 M105 121 q7 -9 14 0';
+      f.mouthStroke = 'M91 135 q7 8 14 0';
+    } else if (mood === 'soon') {
+      f.eyeFill = pill(84, 119, 16) + ' ' + pill(112, 119, 16);
+      f.mouthFill = 'M93 136 h10 a2.5 2.5 0 0 1 0 5 h-10 a2.5 2.5 0 0 1 0 -5 z';
+    } else if (mood === 'urgent') {
+      f.eyeFill = pill(84, 121, 16) + ' ' + pill(112, 121, 16);
+      f.brow = 'M75 107 L90 102 M121 107 L106 102';
+      f.mouthFill = dot(98, 141, 4.5);
+      f.note = '!';
+    } else if (mood === 'expired') {
+      f.eyeStroke = 'M78 121 h12 M106 121 h12';
+      f.mouthStroke = 'M94 139 h8';
+      f.tilt = -5;
+    } else if (mood === 'unknown') {
+      f.eyeFill = dot(84, 120, 4.5) + ' ' + dot(112, 120, 4.5);
+      f.mouthStroke = 'M93 139 q5 -3 10 0';
+      f.note = '?';
+    } else if (mood === 'listening') {
+      f.eyeFill = dot(84, 119, 7) + ' ' + dot(112, 119, 7);
+      f.eyeShine = dot(86.5, 116, 2.2) + ' ' + dot(114.5, 116, 2.2);
+      f.mouthFill = 'M92 137 a6 7 0 1 0 12 0 a6 7 0 1 0 -12 0 z';
+      f.waves = 1;
+    } else if (mood === 'asking') {
+      f.eyeFill = pill(84, 121, 14) + ' ' + pill(112, 121, 14);
+      f.brow = 'M76 105 q7 -6 14 -2 M106 107 h14';
+      f.mouthStroke = 'M92 139 q6 -4 12 0';
+      f.note = '?';
+    }
+    // 상태별 움직임: 넉넉은 통통 튀고, 코앞·지남은 힘이 빠져 시무룩하게 내려앉는다
+    var ANIM = {
+      listening: { dur: 1.4, kt: '0;0.45;0.55;1', bob: '0 0;0 -7;0 -7;0 0', squash: '1 1;1 1;1 1;1 1', shadow: '48;40;40;48', sway: '-2.5;2.5;2.5;-2.5', swayDur: 2.8 },
+      fresh:     { dur: 0.9, kt: '0;0.45;0.55;1', bob: '0 0;0 -14;0 -14;0 0', squash: '1.06 0.94;0.97 1.04;0.97 1.04;1.06 0.94', shadow: '50;38;38;50', sway: '-3;3;3;-3', swayDur: 1.8 },
+      done:      { dur: 1.1, kt: '0;0.45;0.55;1', bob: '0 0;0 -9;0 -9;0 0', squash: '1.04 0.96;0.98 1.03;0.98 1.03;1.04 0.96', shadow: '49;41;41;49', sway: '-2;2;2;-2', swayDur: 2.2 },
+      hello:     { dur: 1.3, kt: '0;0.45;0.55;1', bob: '0 0;0 -7;0 -7;0 0', squash: '1.03 0.97;0.99 1.02;0.99 1.02;1.03 0.97', shadow: '49;43;43;49', sway: '-3;3;3;-3', swayDur: 2.6 },
+      soon:      { dur: 2.6, kt: '0;0.45;0.55;1', bob: '0 0;0 -3;0 -3;0 0', squash: '1 1;0.99 1.015;0.99 1.015;1 1', shadow: '48;46;46;48', sway: '-1;1;1;-1', swayDur: 5 },
+      urgent:    { dur: 3.6, kt: '0;0.35;0.75;1', bob: '0 0;0 5;0 5;0 0', squash: '1 1;1.05 0.94;1.05 0.94;1 1', shadow: '48;53;53;48', sway: '0;-5;-5;0', blinkDur: 5 },
+      expired:   { dur: 4.6, kt: '0;0.4;0.8;1', bob: '0 0;0 7;0 7;0 0', squash: '1 1;1.08 0.9;1.08 0.9;1 1', shadow: '48;56;56;48', sway: '0;-7;-7;0', blinkDur: 6 },
+      unknown:   { dur: 3, kt: '0;0.45;0.55;1', bob: '0 0;0 -2;0 -2;0 0', squash: '1 1;1 1;1 1;1 1', shadow: '48;47;47;48', sway: '-6;6;6;-6' },
+      asking:    { dur: 2.6, kt: '0;0.45;0.55;1', bob: '0 0;0 -3;0 -3;0 0', squash: '1 1;1 1;1 1;1 1', shadow: '48;46;46;48', sway: '-4;4;4;-4' }
+    };
+    var A = ANIM[mood] || ANIM.soon;
+    // 글래스 테마 전용: 반투명 유리 재질 (색 문자열은 테마 변환에서 제외되게 조립)
+    var glass = THEME === 'glass';
+    var INK = '#' + '333A52';
+    var hexRgb = function (hx) { hx = String(hx).replace('#', ''); var n = parseInt(hx, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+    var ra = function (cc, al) { return 'rgb' + 'a(' + cc[0] + ',' + cc[1] + ',' + cc[2] + ',' + al + ')'; };
+    var lift = function (cc, t) { return cc.map(function (v) { return Math.round(v + (255 - v) * t); }); };
+    var sink = function (cc, t) { return cc.map(function (v) { return Math.round(v * (1 - t)); }); };
+    var cb = hexRgb(c.body), cd = hexRgb(c.deep);
+    var gid = 'm2' + mood + size + (glass ? 'g' : '');
+    return { K: K, themeName: THEME,
+      size: size, label: c.label, body: c.body, deep: c.deep, cheek: c.cheek,
+      gidB: gid + 'b', gidR: gid + 'r', gTop: ra(lift(cb, 0.55), 0.82), gBot: ra(cb, 0.6),
+      rTop: ra([255, 255, 255], 0.95), rBot: ra(sink(cd, 0.2), 0.85), gShade: ra(cd, 0.28), gOp: glass ? 1 : 0,
+      bodyFill: glass ? 'url(#' + gid + 'b)' : c.body, rim: glass ? 'url(#' + gid + 'r)' : INK,
+      line: glass ? ra(sink(cd, 0.25), 0.85) : INK, shadowFill: glass ? ra(cd, 1) : INK,
+      eyeFill: f.eyeFill, eyeStroke: f.eyeStroke, eyeShine: f.eyeShine, brow: f.brow,
+      mouthFill: f.mouthFill, mouthStroke: f.mouthStroke,
+      note: f.note, noteMark: f.note ? 1 : 0, noteLines: f.note ? 0 : 1,
+      waves: f.waves, tilt: f.tilt,
+      // 듣는 중일 때만 움직인다: 위아래로 들썩, 좌우로 살짝 흔들, 눈 깜빡, 소리 물결 깜빡임
+      kt: A.kt, dur: A.dur + 's', bob: A.bob, squash: A.squash, shadowAnim: A.shadow,
+      sway: A.sway.split(';').map(function (d) { return d + ' 100 184'; }).join(';'), swayKt: A.swayKt || A.kt, swayDur: (A.swayDur || A.dur) + 's',
+      blinkDur: (A.blinkDur || 3.4) + 's', sweatOp: mood === 'urgent' ? 1 : 0,
+      blink: '1 1;1 1;1 0.1;1 1',
+      waveAnim: mood === 'listening' ? '0.15;1;0.15' : '0;0;0'
+    };
+  }
+}
+</script>
+</body>
+</html>

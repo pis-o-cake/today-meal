@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>조리</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
+
+  <header style="display: flex; align-items: center; gap: 10px; padding: 10px 20px 0">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.2; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em">조리</h1>
+      <span style="font-size: 14px; font-weight: 500; color: {{K.c1}}">단계별로 읽어 주고 타이머도 맞춰요</span>
+    </div>
+    <dc-import name="Mascot2" theme="{{themeName}}" mood="hello" size="56" hint-size="56px,56px"></dc-import>
+  </header>
+
+  <div style="flex-grow: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 14px; padding: 16px 20px 0">
+    <section aria-label="냉장고 재료로 요리하기" style="display: flex; flex-direction: column; padding: 16px 16px 6px; border-radius: 24px; background: {{K.c2}}; border: 1px solid {{K.c3}}; box-shadow: 0 8px 24px {{K.c4}}; {{K.fx}}">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 11px; background: {{K.c5}}; color: {{K.c6}}; font-size: 12px; font-weight: 800">AI 추천</span>
+        <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.03em">냉장고 재료로 요리하기</span>
+        <button type="button" aria-label="추천 새로 받기" style="margin-left: auto; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: {{K.c7}}; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: {{refreshOp}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v4.5h-4.5"></path></svg>
+        </button>
+      </div>
+      <sc-if value="{{thinking}}" hint-placeholder-val="{{ false }}">
+        <div role="status" aria-label="추천을 고르는 중" style="display: flex; flex-direction: column; align-items: center; padding: 14px 0 18px">
+          <dc-import name="Mascot2" theme="{{themeName}}" mood="asking" size="84" hint-size="84px,84px"></dc-import>
+          <span style="margin-top: 10px; font-size: 16px; font-weight: 700">냉장고를 뒤져보는 중</span>
+          <svg width="300" height="20" viewBox="0 0 300 20" aria-hidden="true" style="margin-top: 6px; overflow: visible"><text x="150" y="15" text-anchor="middle" font-size="13" font-weight="500" fill="{{K.c8}}" font-family="Pretendard, sans-serif" opacity="0">냉장고 문을 열어보는 중…<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.027;0.173;0.2;1" dur="12s" begin="0.0s" repeatCount="indefinite"></animate></text><text x="150" y="15" text-anchor="middle" font-size="13" font-weight="500" fill="{{K.c8}}" font-family="Pretendard, sans-serif" opacity="0">기한 코앞인 재료부터 챙기는 중…<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.027;0.173;0.2;1" dur="12s" begin="2.4s" repeatCount="indefinite"></animate></text><text x="150" y="15" text-anchor="middle" font-size="13" font-weight="500" fill="{{K.c8}}" font-family="Pretendard, sans-serif" opacity="0">뭐랑 뭐가 어울릴지 짝지어 보는 중…<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.027;0.173;0.2;1" dur="12s" begin="4.8s" repeatCount="indefinite"></animate></text><text x="150" y="15" text-anchor="middle" font-size="13" font-weight="500" fill="{{K.c8}}" font-family="Pretendard, sans-serif" opacity="0">오늘 몇 분이나 걸릴지 어림잡는 중…<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.027;0.173;0.2;1" dur="12s" begin="7.2s" repeatCount="indefinite"></animate></text><text x="150" y="15" text-anchor="middle" font-size="13" font-weight="500" fill="{{K.c8}}" font-family="Pretendard, sans-serif" opacity="0">이거 맛있으려나 혼자 고민하는 중…<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.027;0.173;0.2;1" dur="12s" begin="9.6s" repeatCount="indefinite"></animate></text></svg>
+          <svg width="40" height="20" viewBox="0 0 40 20" aria-hidden="true" style="margin-top: 12px"><circle cx="4" cy="13" r="4" fill="{{K.c25}}" opacity="0.85"><animate attributeName="cy" values="13;6;13;13" keyTimes="0;0.2;0.4;1" dur="1.4s" begin="0.00s" repeatCount="indefinite"></animate></circle><circle cx="20" cy="13" r="4" fill="{{K.c25}}" opacity="0.65"><animate attributeName="cy" values="13;6;13;13" keyTimes="0;0.2;0.4;1" dur="1.4s" begin="0.15s" repeatCount="indefinite"></animate></circle><circle cx="36" cy="13" r="4" fill="{{K.c25}}" opacity="0.45"><animate attributeName="cy" values="13;6;13;13" keyTimes="0;0.2;0.4;1" dur="1.4s" begin="0.30s" repeatCount="indefinite"></animate></circle></svg>
+        </div>
+      </sc-if>
+      <sc-if value="{{showPicks}}" hint-placeholder-val="{{ true }}">
+      <span style="font-size: 13px; font-weight: 500; color: {{K.c8}}; margin-top: 2px">기한 코앞인 두부부터 쓰도록 골랐어요</span>
+      <div style="display: flex; flex-direction: column; margin-top: 6px">
+        <sc-for list="{{picks}}" as="r" hint-placeholder-count="2">
+          <a href="{{r.href}}" style="{{r.rowStyle}}">
+            <span style="{{r.iconStyle}}">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+            </span>
+            <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 16px; font-weight: 700">{{r.name}}</span>
+              <span style="font-size: 13px; font-weight: 500; color: {{K.c8}}">{{r.meta}}</span>
+            </span>
+            <span style="display: flex; align-items: center; gap: 4px; height: 34px; padding: 0 12px; border-radius: 17px; background: {{K.c9}}; color: {{K.c10}}; font-size: 13px; font-weight: 700; {{K.fxd}}">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg>
+              시작
+            </span>
+          </a>
+        </sc-for>
+      </div>
+      </sc-if>
+    </section>
+
+    <section aria-label="영상 레시피로 요리하기" style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 24px; background: {{K.c2}}; border: 1px solid {{K.c3}}; box-shadow: 0 8px 24px {{K.c4}}; {{K.fx}}">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.03em">영상 레시피로 요리하기</span>
+        <span style="font-size: 13px; font-weight: 500; color: {{K.c8}}">유튜브 링크를 넣으면 단계별로 정리해 드려요</span>
+      </div>
+      <div style="display: flex; gap: 8px">
+        <label style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box; padding: 0 12px; border-radius: 14px; background: {{K.c11}}; border: 1px solid {{K.c12}}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{K.c26}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1 M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"></path></svg>
+          <input type="url" inputmode="url" aria-label="유튜브 링크" placeholder="링크 붙여넣기" style="flex-grow: 1; min-width: 0; height: 100%; padding: 0; border: 0; background: transparent; font-family: inherit; font-size: 15px; color: {{K.c0}}; outline: none">
+        </label>
+        <button type="button" onClick="{{summarize}}" style="flex-shrink: 0; height: 48px; padding: 0 16px; border: 0; border-radius: 14px; background: {{K.c13}}; color: {{K.c10}}; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; {{K.fxd}}">정리하기</button>
+      </div>
+      <div style="display: flex; gap: 12px; padding: 12px; border-radius: 18px; background: {{K.c14}}; border: 1px solid {{K.c15}}; {{K.fx}}">
+        <div aria-hidden="true" style="position: relative; width: 92px; height: 64px; flex-shrink: 0; border-radius: 12px; background: linear-gradient(135deg, {{K.c16}} 0%, {{K.c17}} 100%); display: flex; align-items: center; justify-content: center">
+          <span style="width: 30px; height: 30px; border-radius: 50%; background: {{K.c2}}; display: flex; align-items: center; justify-content: center; color: {{K.c0}}; {{K.fx}}">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"></path></svg>
+          </span>
+        </div>
+        <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+          <span style="font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">초간단 두부조림</span>
+          <span style="font-size: 12px; font-weight: 500; color: {{K.c8}}">5단계 · 약 20분 · 재료 6개 중 5개</span>
+          <span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 7px; background: {{K.c18}}; color: {{K.c19}}">대파만 없어요</span>
+        </div>
+      </div>
+      <a href="{{links.cooking}}" style="display: flex; align-items: center; justify-content: center; gap: 6px; height: 48px; border-radius: 24px; background: {{K.c20}}; border: 1px solid {{K.c21}}; color: {{K.c0}}; text-decoration: none; font-size: 15px; font-weight: 700; {{K.fxc}}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+        이 레시피로 조리 시작
+      </a>
+    </section>
+
+    <div style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 500; color: {{K.c8}}">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z M5.5 11a6.5 6.5 0 0 0 13 0 M12 17.5V21"></path></svg>
+      “헤이 키친, 두부로 뭐 해 먹지?”
+    </div>
+  </div>
+
+  <nav aria-label="주요 화면" style="position: absolute; left: 0; right: 0; bottom: 0; height: {{navH}}px; box-sizing: border-box; padding: 0 12px {{bottom}}px; display: flex; border-radius: 28px 28px 0 0; background: {{K.c22}}; border-top: 1px solid {{K.c3}}; box-shadow: 0 -12px 32px {{K.c23}}; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); {{g_nav}}">
+    <a href="{{links.home}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c24}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6.5a3 4 0 1 0 6 0a3 4 0 1 0 -6 0M8 10.5V21M15 3l.5 18M19 3l-1 18"></path></svg>
+      뭐 먹지?
+    </a>
+    <a href="{{links.fridge}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c24}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="3"></rect><path d="M5 10h14M8.5 6v1.5M8.5 13v3"></path></svg>
+      냉장고
+    </a>
+    <a href="{{links.cook}}" aria-current="page" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c0}}; font-weight: 700; {{g_tab}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M3 13.5h2 M19 13.5h2 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+      조리
+    </a>
+    <a href="{{links.history}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c24}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      기록
+    </a>
+    <a href="{{links.my}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c24}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"></path></svg>
+      마이페이지
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"picks":{"editor":"enum","options":["list","thinking"],"default":"list"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"#5F6670","c2":"rgba(255,255,255,0.9)","c3":"rgba(255,255,255,0.95)","c4":"rgba(20,25,35,0.06)","c5":"#EEF0FF","c6":"#3F4FD1","c7":"#8A9199","c8":"#6B727B","c9":"#15181D","c10":"#FFFFFF","c11":"#F4F5F8","c12":"rgba(21,24,29,0.06)","c13":"#15181D","c14":"#F8F9FB","c15":"rgba(21,24,29,0.05)","c16":"#3A3F4B","c17":"#6B7280","c18":"#FFEFD2","c19":"#8F5A08","c20":"rgba(255,255,255,0.9)","c21":"rgba(21,24,29,0.1)","c22":"rgba(255,255,255,0.72)","c23":"rgba(20,25,35,0.07)","c24":"#7C838C","c25":"#E08E00","c26":"#8A9199","c27":"#DDF3E4","c28":"#17703C","c29":"#FFE4DB","c30":"#B0341A","root":"radial-gradient(130% 70% at 50% 0%, #FFFFFF 0%, #FBF7F4 45%, #F2E9E2 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#5F6670","c2":"#FFFFFF","c3":"rgba(17,20,26,0.07)","c4":"rgba(20,25,35,0.06)","c5":"#EEF0FF","c6":"#1024C6","c7":"#8A9199","c8":"#6B727B","c9":"#15181D","c10":"#FFFFFF","c11":"#F4F5F8","c12":"rgba(21,24,29,0.06)","c13":"#15181D","c14":"#FFFFFF","c15":"rgba(21,24,29,0.05)","c16":"#3A3F4B","c17":"#6B7280","c18":"#FFEBC8","c19":"#8F5A08","c20":"#FFFFFF","c21":"rgba(21,24,29,0.1)","c22":"#FFFFFF","c23":"rgba(20,25,35,0.07)","c24":"#7C838C","c25":"#D48D11","c26":"#8A9199","c27":"#D3F3DD","c28":"#0A7D3A","c29":"#FFDCD1","c30":"#BB2D0F","root":"#F4F5F7","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"#5F6670","c2":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c3":"rgba(255,255,255,0.92)","c4":"rgba(20,25,45,0.06)","c5":"rgba(120,128,150,0.10)","c6":"#1D30C9","c7":"#8A9199","c8":"#6B727B","c9":"linear-gradient(180deg, rgba(58,62,72,0.92) 0%, rgba(18,20,26,0.94) 100%)","c10":"#FFFFFF","c11":"rgba(120,128,150,0.10)","c12":"rgba(21,24,29,0.06)","c13":"linear-gradient(180deg, rgba(58,62,72,0.92) 0%, rgba(18,20,26,0.94) 100%)","c14":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c15":"rgba(21,24,29,0.05)","c16":"#3A3F4B","c17":"#6B7280","c18":"rgba(255,173,26,0.13)","c19":"#8F5A08","c20":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c21":"rgba(21,24,29,0.1)","c22":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c23":"rgba(20,25,45,0.07)","c24":"#7C838C","c25":"#FFA200","c26":"#8A9199","c27":"rgba(60,221,111,0.13)","c28":"#11763B","c29":"rgba(255,83,26,0.13)","c30":"#B13419","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#BDC1C6","c2":"rgba(45,46,49,0.96)","c3":"rgba(232,234,237,0.08)","c4":"rgba(0,0,0,0.11)","c5":"#3C4043","c6":"#8AB4F8","c7":"#9AA0A6","c8":"#9AA0A6","c9":"#E8EAED","c10":"#202124","c11":"#3C4043","c12":"rgba(232,234,237,0.1)","c13":"#E8EAED","c14":"#3C4043","c15":"rgba(232,234,237,0.08)","c16":"#80868B","c17":"#80868B","c18":"rgba(252,173,112,0.16)","c19":"#FCAD70","c20":"rgba(45,46,49,0.96)","c21":"rgba(232,234,237,0.14)","c22":"rgba(45,46,49,0.96)","c23":"rgba(0,0,0,0.13)","c24":"#9AA0A6","c25":"#FCAD70","c26":"#9AA0A6","c27":"rgba(129,201,149,0.16)","c28":"#81C995","c29":"rgba(252,173,112,0.16)","c30":"#F28B82","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24 } : { w: 390, h: 844, top: 59, bottom: 34 };
+    var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
+    // 추천은 세 개까지. 아이콘 칸 색과 끝말이 재료 상태를 말한다(지금 가능 · 확인 필요 · 재료 준비 후).
+    var AV = { ready: 'background: ' + K.c27 + '; color: ' + K.c28 + '', check: 'background: ' + K.c18 + '; color: ' + K.c19 + '', buy: 'background: ' + K.c29 + '; color: ' + K.c30 + '' };
+    var thinking = this.props.picks === 'thinking';
+    var picks = [
+      { name: '두부계란전', meta: '2인분 · 약 15분 · 재료 다 있어요', av: 'ready' },
+      { name: '두부조림', meta: '2인분 · 약 20분 · 재료 다 있어요', av: 'ready' },
+      { name: '마파두부', meta: '2인분 · 약 25분 · 재료 준비 후', av: 'buy' }
+    ].map(function (r, i) {
+      return { name: r.name, meta: r.meta, href: L('Cooking'),
+        iconStyle: 'width: 44px; height: 44px; flex-shrink: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center; ' + AV[r.av],
+        rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 64px; color: ' + K.c0 + '; text-decoration: none;' + (i > 0 ? ' border-top: 1px solid ' + K.c12 + ';' : '') };
+    });
+    // 글래스 테마 전용: 떠 있는 유리 탭 바 (색은 hsl로 적어 테마 변환에서 제외)
+    var GLASS_ON = THEME === 'glass';
+    var gNav = function (bottomPx) {
+      return 'left: 14px; right: 14px; bottom: ' + bottomPx + 'px; height: 62px; padding: 0 6px; border-radius: 31px; border: 1px solid hsla(0,0%,100%,0.75);'
+        + ' background: linear-gradient(135deg, hsla(0,0%,100%,0.42) 0%, hsla(0,0%,100%,0.1) 50%, hsla(0,0%,100%,0.26) 100%);'
+        + ' backdrop-filter: blur(14px) saturate(190%); -webkit-backdrop-filter: blur(14px) saturate(190%);'
+        + ' box-shadow: inset 1px 1px 0 hsla(0,0%,100%,0.95), inset -1px -1px 0 hsla(0,0%,100%,0.45), inset 0 -12px 20px hsla(0,0%,100%,0.2), 0 0 0 0.5px hsla(230,20%,20%,0.15), 0 12px 30px hsla(230,30%,20%,0.13)';
+    };
+    var gTab = 'margin: 7px 0; border-radius: 24px; background: linear-gradient(135deg, hsla(0,0%,100%,0.72) 0%, hsla(0,0%,100%,0.22) 55%, hsla(0,0%,100%,0.4) 100%);'
+      + ' box-shadow: inset 1px 1px 0 hsla(0,0%,100%,1), inset -1px -1px 0 hsla(0,0%,100%,0.5), 0 0 0 0.5px hsla(230,20%,20%,0.12), 0 4px 12px hsla(230,30%,20%,0.10)';
+    return { K: K, themeName: THEME, FNT: FNT, g_nav: GLASS_ON ? gNav(Math.max(g.bottom - 12, 12)) : '', g_tab: GLASS_ON ? gTab : '', navH: 64 + g.bottom,
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom,
+      picks: picks, summarize: function () {}, thinking: thinking, showPicks: !thinking, refreshOp: thinking ? 0.4 : 1,
+      links: { home: L('Main'), fridge: L('Fridge'), cook: L('CookHome'), history: L('History'), my: L('MyPage'), cooking: L('Cooking') }
+    };
+  }
+}
+</script>
+</body>
+</html>

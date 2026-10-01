@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>스플래시</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div role="img" aria-label="오늘 뭐 먹지? 앱을 여는 중" style="position: relative; width: {{w}}px; height: {{h}}px; overflow: hidden; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; background: {{K.root}}">
+  <svg width="{{w}}" height="{{h}}" viewBox="0 0 {{w}} {{h}}" aria-hidden="true" style="position: absolute; left: 0; top: 0">
+    <defs>
+      <radialGradient id="sp-light" cx="0.5" cy="0.6" r="0.7">
+        <stop offset="0" stop-color="{{K.c2}}"></stop>
+        <stop offset="1" stop-color="{{K.c3}}"></stop>
+      </radialGradient>
+      <linearGradient id="sp-glass-b" x1="0" y1="0" x2="0.9" y2="1">
+        <stop offset="0" stop-color="hsla(232,100%,95%,0.85)"></stop>
+        <stop offset="1" stop-color="hsla(232,75%,80%,0.6)"></stop>
+      </linearGradient>
+      <radialGradient id="sp-halo" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="{{K.c4}}" stop-opacity="0.95"></stop>
+        <stop offset="1" stop-color="{{K.c4}}" stop-opacity="0"></stop>
+      </radialGradient>
+    </defs>
+
+    <g>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.06;0.92;1" dur="4.2s" repeatCount="indefinite"></animate>
+
+      <circle cx="{{cx}}" cy="{{fy}}" r="{{haloR}}" fill="url(#sp-halo)">
+        <animate attributeName="r" values="{{haloAnim}}" keyTimes="0;0.5;1" dur="4.2s" repeatCount="indefinite"></animate>
+      </circle>
+
+      <g transform="translate({{fx}} {{fTop}}) scale({{fs}})">
+        <ellipse cx="100" cy="192" rx="48" ry="6" fill="{{K.c5}}" opacity="0.13">
+          <animate attributeName="rx" values="16;48;38;48;48" keyTimes="0;0.14;0.2;0.26;1" dur="4.2s" repeatCount="indefinite"></animate>
+        </ellipse>
+
+        <g>
+          <animateTransform attributeName="transform" type="translate" values="0 -110;0 0;0 -16;0 0;0 0" keyTimes="0;0.14;0.2;0.26;1" dur="4.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.55 0 0.9 0.5;0.2 0.6 0.45 1;0.55 0 0.9 0.5;0 0 1 1"></animateTransform>
+          <g transform="translate(100 186)">
+            <g>
+              <animateTransform attributeName="transform" type="scale" values="1 1;1 1;1.1 0.87;0.96 1.05;1 1;1 1" keyTimes="0;0.13;0.15;0.2;0.26;1" dur="4.2s" repeatCount="indefinite"></animateTransform>
+              <g transform="translate(-100 -186)">
+                <rect x="68" y="176" width="14" height="12" rx="4" fill="{{K.c5}}"></rect>
+                <rect x="118" y="176" width="14" height="12" rx="4" fill="{{K.c5}}"></rect>
+                <rect x="46" y="24" width="108" height="156" rx="32" fill="{{K.c6}}" stroke="{{K.c7}}" stroke-width="5"></rect>
+
+                <path d="M50 70 V58 A28 28 0 0 1 78 30 H122 A28 28 0 0 1 150 58 V70 Z" fill="url(#sp-light)">
+                  <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.36;0.42;0.76;0.82;1" dur="4.2s" repeatCount="indefinite"></animate>
+                </path>
+                <g>
+                  <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.38;0.44;0.76;0.8;1" dur="4.2s" repeatCount="indefinite"></animate>
+                  <path d="M58 62 H142" stroke="{{K.c8}}" stroke-width="3" stroke-linecap="round"></path>
+                  <ellipse cx="86" cy="52" rx="8" ry="10" fill="{{K.c9}}" stroke="{{K.c7}}" stroke-width="2.5"></ellipse>
+                  <ellipse cx="104" cy="54" rx="7" ry="8.5" fill="{{K.c9}}" stroke="{{K.c7}}" stroke-width="2.5"></ellipse>
+                  <path d="M122 60 C122 48 128 42 136 40 C134 48 130 56 122 60 Z" fill="{{K.c10}}" stroke="{{K.c7}}" stroke-width="2.5" stroke-linejoin="round"></path>
+                </g>
+
+                <g transform="translate(46 0)">
+                  <g>
+                    <animateTransform attributeName="transform" type="scale" values="1 1;1 1;0.14 1;0.14 1;1 1;1 1" keyTimes="0;0.36;0.44;0.74;0.82;1" dur="4.2s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.3 0 0.2 1;0 0 1 1;0.5 0 0.7 1;0 0 1 1"></animateTransform>
+                    <g transform="translate(-46 0)">
+                      <path d="M46 74 V56 A32 32 0 0 1 78 24 H122 A32 32 0 0 1 154 56 V74 Z" fill="{{K.c6}}" stroke="{{K.c7}}" stroke-width="5" stroke-linejoin="round"></path>
+                      <path d="M56 36 Q52 44 52 60" fill="none" stroke="{{K.c11}}" stroke-opacity="0.75" stroke-width="5" stroke-linecap="round"></path>
+                      <path d="M138 40 v18" fill="none" stroke="{{K.c7}}" stroke-width="5" stroke-linecap="round"></path>
+                      <g transform="rotate(-8 80 48)">
+                        <rect x="66" y="36" width="28" height="24" rx="4" fill="{{K.c12}}" stroke="{{K.c7}}" stroke-width="3"></rect>
+                        <circle cx="80" cy="36" r="3.5" fill="{{K.c13}}" stroke="{{K.c7}}" stroke-width="2"></circle>
+                        <path d="M71 46 h16 M71 52 h10" fill="none" stroke="{{K.c7}}" stroke-width="2.4" stroke-linecap="round"></path>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+
+                <path d="M46 74 H154" fill="none" stroke="{{K.c7}}" stroke-width="5"></path>
+                <path d="M53 90 v12" fill="none" stroke="{{K.c11}}" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round"></path>
+                <path d="M138 88 v26" fill="none" stroke="{{K.c7}}" stroke-width="5" stroke-linecap="round"></path>
+                <circle cx="72" cy="134" r="7" fill="{{K.c14}}" opacity="0.5"></circle>
+                <circle cx="124" cy="134" r="7" fill="{{K.c14}}" opacity="0.5"></circle>
+
+                <g>
+                  <animate attributeName="opacity" values="1;1;0;0;1;1" keyTimes="0;0.43;0.44;0.8;0.81;1" dur="4.2s" repeatCount="indefinite"></animate>
+                  <path d="M79 113 a5 5 0 0 1 10 0 v6 a5 5 0 0 1 -10 0 z M107 113 a5 5 0 0 1 10 0 v6 a5 5 0 0 1 -10 0 z" fill="{{K.c5}}"></path>
+                  <path d="M92 135 q6 5 12 0" fill="none" stroke="{{K.c7}}" stroke-width="5" stroke-linecap="round"></path>
+                </g>
+                <g opacity="0">
+                  <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.43;0.44;0.8;0.81;1" dur="4.2s" repeatCount="indefinite"></animate>
+                  <path d="M77 120 q7 -9 14 0 M105 120 q7 -9 14 0" fill="none" stroke="{{K.c7}}" stroke-width="5" stroke-linecap="round"></path>
+                  <path d="M89 132 q9 12 18 0 z" fill="{{K.c5}}" stroke="{{K.c7}}" stroke-width="3" stroke-linejoin="round"></path>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+
+        <g fill="{{K.c15}}">
+          <g>
+            <animateTransform attributeName="transform" type="translate" values="100 60;100 60;54 -6;54 -6" keyTimes="0;0.43;0.58;1" dur="4.2s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.7 0.4 1;0 0 1 1"></animateTransform>
+            <path d="M0 -9 L2.6 -2.6 L9 0 L2.6 2.6 L0 9 L-2.6 2.6 L-9 0 L-2.6 -2.6 Z">
+              <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.43;0.52;0.68;1" dur="4.2s" repeatCount="indefinite"></animate>
+            </path>
+          </g>
+          <g>
+            <animateTransform attributeName="transform" type="translate" values="100 60;100 60;150 -14;150 -14" keyTimes="0;0.45;0.6;1" dur="4.2s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.7 0.4 1;0 0 1 1"></animateTransform>
+            <path d="M0 -12 L3.4 -3.4 L12 0 L3.4 3.4 L0 12 L-3.4 3.4 L-12 0 L-3.4 -3.4 Z" fill="{{K.c13}}">
+              <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.45;0.54;0.7;1" dur="4.2s" repeatCount="indefinite"></animate>
+            </path>
+          </g>
+          <g>
+            <animateTransform attributeName="transform" type="translate" values="100 60;100 60;182 34;182 34" keyTimes="0;0.47;0.62;1" dur="4.2s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.7 0.4 1;0 0 1 1"></animateTransform>
+            <path d="M0 -7 L2 -2 L7 0 L2 2 L0 7 L-2 2 L-7 0 L-2 -2 Z" fill="{{K.c16}}">
+              <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.47;0.56;0.72;1" dur="4.2s" repeatCount="indefinite"></animate>
+            </path>
+          </g>
+          <g>
+            <animateTransform attributeName="transform" type="translate" values="100 60;100 60;22 30;22 30" keyTimes="0;0.46;0.61;1" dur="4.2s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.7 0.4 1;0 0 1 1"></animateTransform>
+            <circle cx="0" cy="0" r="4.5" fill="{{K.c17}}">
+              <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.46;0.55;0.71;1" dur="4.2s" repeatCount="indefinite"></animate>
+            </circle>
+          </g>
+        </g>
+      </g>
+
+      <g>
+        <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.22;0.34;1" dur="4.2s" repeatCount="indefinite"></animate>
+        <animateTransform attributeName="transform" type="translate" values="0 18;0 18;0 0;0 0" keyTimes="0;0.22;0.34;1" dur="4.2s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.7 0.3 1;0 0 1 1"></animateTransform>
+        <text x="{{cx}}" y="{{titleY}}" text-anchor="middle" font-size="36" font-weight="400" letter-spacing="-0.4" fill="{{K.c0}}" font-family="Jua, Pretendard, sans-serif">오늘 뭐 먹지?</text>
+      </g>
+      <g>
+        <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.3;0.42;1" dur="4.2s" repeatCount="indefinite"></animate>
+        <animateTransform attributeName="transform" type="translate" values="0 14;0 14;0 0;0 0" keyTimes="0;0.3;0.42;1" dur="4.2s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.7 0.3 1;0 0 1 1"></animateTransform>
+        <text x="{{cx}}" y="{{tagY}}" text-anchor="middle" font-size="16" font-weight="500" letter-spacing="-0.3" fill="{{K.c1}}" font-family="Pretendard, 'Apple SD Gothic Neo', sans-serif">말로 관리하는 우리 집 냉장고</text>
+      </g>
+    </g>
+
+    <g fill="{{K.c13}}">
+      <circle cx="{{dot1}}" cy="{{dotY}}" r="4.5" opacity="0.85">
+        <animate attributeName="cy" values="{{dotAnim}}" keyTimes="0;0.2;0.4;1" dur="1.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.3 0 0.3 1;0.3 0 0.3 1;0 0 1 1"></animate>
+      </circle>
+      <circle cx="{{cx}}" cy="{{dotY}}" r="4.5" opacity="0.6">
+        <animate attributeName="cy" values="{{dotAnim}}" keyTimes="0;0.2;0.4;1" dur="1.2s" begin="0.15s" repeatCount="indefinite" calcMode="spline" keySplines="0.3 0 0.3 1;0.3 0 0.3 1;0 0 1 1"></animate>
+      </circle>
+      <circle cx="{{dot3}}" cy="{{dotY}}" r="4.5" opacity="0.35">
+        <animate attributeName="cy" values="{{dotAnim}}" keyTimes="0;0.2;0.4;1" dur="1.2s" begin="0.3s" repeatCount="indefinite" calcMode="spline" keySplines="0.3 0 0.3 1;0.3 0 0.3 1;0 0 1 1"></animate>
+      </circle>
+    </g>
+  </svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"#5F6670","c2":"#FFFBE6","c3":"#FFE7A3","c4":"#FFFFFF","c5":"#333A52","c6":"#C7CFFF","c7":"#333A52","c8":"#E9C46A","c9":"#FFFFFF","c10":"#5FB870","c11":"#FFFFFF","c12":"#FFF3B8","c13":"#5A6BEA","c14":"#FF8A98","c15":"#A99BFF","c16":"#8FA2FF","c17":"#6F7FF0","root":"radial-gradient(120% 75% at 50% 40%, #FFFFFF 0%, #F6F7FF 45%, #E1E6FF 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#5F6670","c2":"#FFFBE6","c3":"#FFE7A3","c4":"#FFFFFF","c5":"#333A52","c6":"#BAC3F7","c7":"#333A52","c8":"#E7BF5D","c9":"#FFFFFF","c10":"#40D75D","c11":"#FFFFFF","c12":"#F6EAAD","c13":"#4C5FE8","c14":"#F28895","c15":"#A093F3","c16":"#8C9EF2","c17":"#6273EE","root":"radial-gradient(120% 45% at 50% 0%, rgba(61,92,245,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"#5F6670","c2":"#FFFBE6","c3":"#FFE7A3","c4":"#FFFFFF","c5":"rgba(64,76,150,0.85)","c6":"url(#sp-glass-b)","c7":"rgba(64,76,150,0.85)","c8":"#E6AA19","c9":"#FFFFFF","c10":"#19E640","c11":"#FFFFFF","c12":"#FFF3B8","c13":"#1932E6","c14":"#FF001F","c15":"#A99BFF","c16":"#002BFF","c17":"#1832E7","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#BDC1C6","c2":"#FFFBE6","c3":"#FFE7A3","c4":"#202124","c5":"#333A52","c6":"#C7CFFF","c7":"#333A52","c8":"#FDD663","c9":"#FFFFFF","c10":"#81C995","c11":"#FFFFFF","c12":"#FFF3B8","c13":"#8AB4F8","c14":"#F28B82","c15":"#A99BFF","c16":"#8AB4F8","c17":"#8AB4F8","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, bottom: 24, fs: 1.25 } : { w: 390, h: 844, bottom: 34, fs: 1.15 };
+    var cx = g.w / 2;
+    var size = 200 * g.fs;
+    // 냉장고 몸통 윗선부터 부제까지 한 덩어리로 보고, 그 중심을 화면 높이 48%에 맞춘다.
+    var fy = Math.round(g.h * 0.48 - 12 * g.fs - 62);
+    var dotY = g.h - g.bottom - 64;
+    var haloR = Math.round(size * 0.72);
+    return { K: K, themeName: THEME, FNT: FNT,
+      w: g.w, h: g.h, cx: cx, fs: g.fs,
+      fx: Math.round(cx - size / 2), fTop: Math.round(fy - size / 2), fy: fy,
+      haloR: haloR, haloAnim: Math.round(haloR * 0.9) + ';' + haloR + ';' + Math.round(haloR * 0.9),
+      titleY: Math.round(fy + size / 2 + 86),
+      tagY: Math.round(fy + size / 2 + 120),
+      dotY: dotY, dot1: cx - 16, dot3: cx + 16,
+      dotAnim: dotY + ';' + (dotY - 9) + ';' + dotY + ';' + dotY
+    };
+  }
+}
+</script>
+</body>
+</html>

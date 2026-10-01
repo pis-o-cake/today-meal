@@ -77,6 +77,8 @@ documentation:
         type: 'design-proposal'
       - path: 'docs/verification'
         type: 'verification-spec'
+      - path: 'docs/verification/results'
+        type: 'verification-result'
       - path: 'docs/runbook'
         type: 'runbook'
     exempt:

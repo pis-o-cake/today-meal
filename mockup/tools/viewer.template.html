@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@TITLE@</title>
+<!-- tools/viewer.js 로 만든 파일. 직접 고치지 말고 다시 만든다. -->
+<style>
+@FONTS@
+:root {
+  --bar: #2C2C2C; --bar-ink: #FFFFFF; --bar-ink-2: #B3B3B3; --bar-hover: #3D3D3D;
+  --ui: #FFFFFF; --ui-2: #F5F5F5; --line: #E6E6E6; --ink: #1E1E1E; --ink-2: #757575; --ink-3: #B3B3B3;
+  --accent: #0D99FF; --accent-soft: #E5F4FF; --canvas: #EFEFEF; --section: rgba(255,255,255,0.72); --section-line: #D9D9D9;
+  --inv: 1;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--canvas); color: var(--ink);
+  font-family: 'Pretendard', system-ui, -apple-system, sans-serif; font-size: 12px; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; }
+.app { display: grid; grid-template-rows: 48px minmax(0, 1fr); grid-template-columns: 248px minmax(0, 1fr) 264px; height: 100vh; }
+
+/* 상단 막대 */
+.top { grid-column: 1 / -1; display: flex; align-items: center; gap: 4px; padding: 0 8px; background: var(--bar); color: var(--bar-ink); }
+.top .brand { width: 36px; height: 36px; border-radius: 6px; display: grid; place-items: center; }
+.top .tool { height: 32px; min-width: 32px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--bar-ink-2);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+.top .tool:hover { background: var(--bar-hover); color: var(--bar-ink); }
+.top .tool[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.top .file { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; }
+.top .file span { color: var(--bar-ink-2); }
+.top .file b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top .right { display: flex; align-items: center; gap: 6px; }
+.top .play { height: 32px; padding: 0 12px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.top .play:hover { filter: brightness(1.08); }
+.zoomwrap { position: relative; }
+.zoommenu { position: absolute; right: 0; top: 38px; z-index: 30; width: 220px; padding: 6px 0; border-radius: 10px; background: #1E1E1E; color: #fff;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: none; }
+.zoommenu.open { display: block; }
+.zoommenu button { width: 100%; display: flex; justify-content: space-between; padding: 7px 14px; border: 0; background: transparent; cursor: pointer; text-align: left; }
+.zoommenu button:hover { background: var(--accent); }
+.zoommenu kbd { color: #9A9A9A; font: inherit; }
+.zoommenu hr { border: 0; border-top: 1px solid #3A3A3A; margin: 6px 0; }
+
+/* 패널 */
+.panel { background: var(--ui); overflow: auto; min-height: 0; }
+.panel.left { border-right: 1px solid var(--line); }
+.panel.right { border-left: 1px solid var(--line); }
+.phead { position: sticky; top: 0; z-index: 2; background: var(--ui); border-bottom: 1px solid var(--line); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.tabs { display: flex; gap: 2px; }
+.tabs button { height: 28px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+.tabs button[aria-selected="true"] { color: var(--ink); background: var(--ui-2); }
+.search { height: 30px; width: 100%; border: 1px solid transparent; border-radius: 6px; background: var(--ui-2); padding: 0 10px; font: inherit; outline: none; }
+.search:focus { border-color: var(--accent); background: #fff; }
+.tree { padding: 6px 0 16px; }
+.sec > .row { font-weight: 600; }
+.row { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 10px 0 8px; cursor: pointer; white-space: nowrap; border-radius: 0; user-select: none; }
+.row:hover { background: var(--ui-2); }
+.row.sel { background: var(--accent-soft); }
+.row .ico { width: 16px; flex: 0 0 16px; color: var(--ink-2); display: grid; place-items: center; }
+.row .name { overflow: hidden; text-overflow: ellipsis; }
+.row .count { margin-left: auto; color: var(--ink-3); font-weight: 500; }
+.sec .kids { display: block; }
+.sec.closed .kids { display: none; }
+.sec.closed .chev { transform: rotate(-90deg); }
+.kids .row { padding-left: 30px; }
+.chev { transition: transform .12s; }
+.pbody { padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 18px; }
+.group h3 { margin: 0 0 10px; font-size: 12px; font-weight: 700; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.field { height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-radius: 6px; background: var(--ui-2); }
+.field i { font-style: normal; color: var(--ink-3); width: 12px; }
+.kv { display: grid; grid-template-columns: 72px 1fr; gap: 8px 10px; }
+.kv dt { color: var(--ink-2); }
+.kv dd { margin: 0; }
+.links { display: flex; flex-direction: column; gap: 4px; }
+.link { height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border: 0; border-radius: 6px; background: var(--ui-2); text-align: left; cursor: pointer; }
+.link:hover { background: var(--accent-soft); }
+.link svg { color: var(--accent); flex: 0 0 auto; }
+.muted { color: var(--ink-2); line-height: 1.6; margin: 0; }
+.btn { height: 32px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn.ghost { background: var(--ui-2); color: var(--ink); }
+.keys { display: grid; grid-template-columns: 1fr auto; gap: 7px 10px; }
+.keys kbd { font: inherit; color: var(--ink-2); background: var(--ui-2); border-radius: 4px; padding: 1px 6px; }
+
+/* 캔버스 */
+.viewport { position: relative; overflow: hidden; background: var(--canvas); cursor: default; touch-action: none; }
+.viewport.panning, .viewport.hand { cursor: grab; }
+.viewport.panning.dragging { cursor: grabbing; }
+.world { position: absolute; left: 0; top: 0; transform-origin: 0 0; user-select: none; }
+.section { position: absolute; border-radius: calc(12px * var(--inv)); background: var(--section); border: calc(1px * var(--inv)) solid var(--section-line); }
+.section .chip { position: absolute; left: 0; bottom: 100%; transform-origin: left bottom; transform: scale(var(--inv)); margin-bottom: 0;
+  height: 26px; padding: 0 10px; border-radius: 6px 6px 0 0; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+  background: #E3E3E3; color: #444; white-space: nowrap; cursor: pointer; }
+.frame { position: absolute; }
+.frame .label { position: absolute; left: 0; bottom: 100%; transform-origin: left bottom; transform: scale(var(--inv)); padding-bottom: 5px;
+  font-size: 11.5px; color: #8A8A8A; white-space: nowrap; cursor: pointer;
+  max-width: calc(var(--fw) * 1px / var(--inv)); overflow: hidden; text-overflow: ellipsis; }
+.world.far .frame .label, .world.far .frame .size { display: none; }
+.frame:hover .label, .frame.sel .label, .frame.hov .label { color: var(--accent); }
+.frame .screen { position: relative; overflow: hidden; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.08); pointer-events: none; }
+.frame .hit { position: absolute; inset: 0; cursor: default; }
+.frame:hover .hit, .frame.hov .hit { box-shadow: 0 0 0 calc(1.5px * var(--inv)) var(--accent); }
+.frame.sel .hit { box-shadow: 0 0 0 calc(2px * var(--inv)) var(--accent); }
+.frame .size { display: none; position: absolute; left: 50%; top: 100%; transform-origin: center top; transform: translateX(-50%) scale(var(--inv)); margin-top: 0;
+  padding: 2px 6px; border-radius: 4px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.frame.sel .size { display: block; }
+.frame .h { display: none; position: absolute; width: 8px; height: 8px; background: #fff; border: 1px solid var(--accent); transform: translate(-50%, -50%) scale(var(--inv)); }
+.frame.sel .h { display: block; }
+.h.a { left: 0; top: 0; } .h.b { left: 100%; top: 0; } .h.c { left: 0; top: 100%; } .h.d { left: 100%; top: 100%; }
+.hint { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 5; padding: 9px 14px; border-radius: 10px; background: rgba(30,30,30,0.92); color: #fff;
+  font-size: 12px; display: flex; gap: 14px; align-items: center; box-shadow: 0 6px 20px rgba(0,0,0,0.2); white-space: nowrap; }
+.hint b { font-weight: 600; }
+.hint button { border: 0; background: transparent; color: #9A9A9A; cursor: pointer; padding: 0 0 0 4px; }
+
+/* 프레젠테이션 */
+.present { position: fixed; inset: 0; z-index: 50; background: #1E1E1E; display: none; grid-template-rows: 48px minmax(0, 1fr); }
+.present.open { display: grid; }
+.pbar { display: flex; align-items: center; gap: 8px; padding: 0 12px; color: #fff; }
+.pbar .t { flex: 1; text-align: center; font-size: 13px; }
+.pbar .t span { color: #9A9A9A; margin-left: 8px; }
+.pbar button { height: 32px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: #D9D9D9; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.pbar button:hover { background: #3A3A3A; color: #fff; }
+.stagewrap { position: relative; overflow: hidden; }
+.stage { position: absolute; left: 50%; top: calc(50% - 16px); transform-origin: center center; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
+.stage [data-go] { cursor: pointer; }
+.stage.flash [data-go] { outline: 2px solid rgba(13,153,255,0.9); outline-offset: -1px; background-color: rgba(13,153,255,0.18) !important; }
+.pnote { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); color: #8A8A8A; font-size: 12px; white-space: nowrap; }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: 0 minmax(0, 1fr) 0; }
+  .panel { display: none; }
+  .top .file span { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="3.5"></rect><path d="M5 9.5h14M8.5 5.5v1.5M8.5 12.5v3"></path></svg>
+    </div>
+    <button class="tool" id="tMove" aria-pressed="true" title="이동 (V)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 8-6.5 1.5L9 19z"></path></svg>
+    </button>
+    <button class="tool" id="tHand" aria-pressed="false" title="손 도구 (H)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v7.5a6.5 6.5 0 0 1-6.5 6.5h-.8a6 6 0 0 1-4.6-2.2L3.6 15a1.5 1.5 0 0 1 2.3-1.9L8 15"></path></svg>
+    </button>
+    <div class="file"><span>@PROJECT@ /</span> <b>@FILE@</b></div>
+    <div class="right">
+      <div class="zoomwrap">
+        <button class="tool" id="zoomBtn" aria-haspopup="true" aria-expanded="false" title="확대/축소"><span id="zoomPct">100%</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+        </button>
+        <div class="zoommenu" id="zoomMenu" role="menu">
+          <button data-z="in">확대 <kbd>+</kbd></button>
+          <button data-z="out">축소 <kbd>−</kbd></button>
+          <button data-z="fit">전체 보기 <kbd>Shift 1</kbd></button>
+          <button data-z="sel">선택한 화면에 맞추기 <kbd>Shift 2</kbd></button>
+          <hr>
+          <button data-z="0.5">50%</button>
+          <button data-z="1">100% <kbd>Shift 0</kbd></button>
+          <button data-z="2">200%</button>
+        </div>
+      </div>
+      <button class="play" id="playBtn" title="프레젠테이션 (Enter)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"></path></svg>
+        프레젠테이션
+      </button>
+    </div>
+  </header>
+
+  <aside class="panel left" aria-label="레이어">
+    <div class="phead">
+      <div class="tabs" role="tablist"><button role="tab" aria-selected="true">레이어</button></div>
+      <input class="search" id="q" type="search" placeholder="화면 찾기" aria-label="화면 찾기">
+    </div>
+    <nav class="tree" id="tree"></nav>
+  </aside>
+
+  <main class="viewport" id="vp" aria-label="캔버스">
+    <div class="world" id="world">
+@FRAMES@
+    </div>
+    <div class="hint" id="hint">
+      <span><b>스크롤</b> 이동</span><span><b>Ctrl/⌘ + 스크롤</b> 확대</span><span><b>더블클릭</b> 화면 맞추기</span><span><b>Enter</b> 프레젠테이션</span>
+      <button id="hintX" aria-label="안내 닫기">✕</button>
+    </div>
+  </main>
+
+  <aside class="panel right" aria-label="속성">
+    <div class="phead">
+      <div class="tabs" role="tablist" id="rtabs">
+        <button role="tab" data-tab="design" aria-selected="true">디자인</button>
+        <button role="tab" data-tab="proto" aria-selected="false">프로토타입</button>
+      </div>
+    </div>
+    <div class="pbody" id="inspector"></div>
+  </aside>
+</div>
+
+<div class="present" id="present" aria-modal="true" role="dialog" aria-label="프레젠테이션">
+  <div class="pbar">
+    <button id="pClose" title="닫기 (Esc)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>닫기
+    </button>
+    <div class="t" id="pTitle"></div>
+    <button id="pRestart" title="처음부터 (R)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5"></path></svg>처음부터
+    </button>
+    <button id="pPrev" title="이전 (←)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+    </button>
+    <button id="pNext" title="다음 (→)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+    </button>
+  </div>
+  <div class="stagewrap" id="stagewrap">
+    <div class="stage" id="stage"></div>
+    <div class="pnote">화면 안의 버튼·탭을 누르면 연결된 화면으로 이동해요 · 빈 곳을 누르면 누를 수 있는 곳이 표시돼요</div>
+  </div>
+</div>
+
+<script>
+const DATA = @DATA@;
+(() => {
+  const $ = s => document.querySelector(s);
+  const vp = $('#vp'), world = $('#world');
+  const frames = new Map();
+  DATA.sections.forEach(sec => sec.frames.forEach((f, i) => frames.set(f.id, Object.assign(f, { sec, idx: i, el: document.getElementById('F-' + f.id) }))));
+  const incoming = new Map();
+  frames.forEach(f => f.links.forEach(t => { if (!incoming.has(t)) incoming.set(t, []); if (!incoming.get(t).includes(f.id)) incoming.get(t).push(f.id); }));
+
+  // ---------- 보기 변환 ----------
+  let z = 1, tx = 0, ty = 0;
+  const apply = () => {
+    world.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`;
+    world.style.setProperty('--inv', (1 / z).toFixed(4));
+    world.classList.toggle('far', z < 0.18);
+    $('#zoomPct').textContent = Math.round(z * 100) + '%';
+    pauseForZoom();
+  };
+  const clampZ = v => Math.min(4, Math.max(0.02, v));
+  const zoomAt = (nz, cx, cy) => {
+    nz = clampZ(nz);
+    const wx = (cx - tx) / z, wy = (cy - ty) / z;
+    z = nz; tx = cx - wx * z; ty = cy - wy * z; apply();
+  };
+  const fitRect = (x, y, w, h, pad = 60, maxZ = 1) => {
+    const W = vp.clientWidth, H = vp.clientHeight;
+    z = clampZ(Math.min((W - pad * 2) / w, (H - pad * 2) / h, maxZ));
+    tx = (W - w * z) / 2 - x * z; ty = (H - h * z) / 2 - y * z; apply();
+  };
+  const fitAll = () => fitRect(DATA.bounds.x, DATA.bounds.y, DATA.bounds.w, DATA.bounds.h, 40, 1);
+  const fitFrame = f => fitRect(f.x, f.y, f.w, f.h, 70, 1);
+  // 섹션은 높이에 맞추고 왼쪽부터 보여 준다(가로로 길어서 전체를 맞추면 너무 작아진다).
+  const fitSection = s => {
+    const W = vp.clientWidth, H = vp.clientHeight;
+    z = clampZ(Math.min((H - 80) / (s.h + 30), 1)); tx = 40 - s.x * z; ty = (H - s.h * z) / 2 - s.y * z + 12;
+    if (s.w * z < W - 80) tx = (W - s.w * z) / 2 - s.x * z;
+    apply();
+  };
+
+  // ---------- 선택 ----------
+  let sel = null;
+  const select = (id, { zoom = false, scroll = true } = {}) => {
+    if (sel) { frames.get(sel).el.classList.remove('sel'); }
+    document.querySelectorAll('.row.sel').forEach(r => r.classList.remove('sel'));
+    sel = id && frames.has(id) ? id : null;
+    if (sel) {
+      const f = frames.get(sel);
+      f.el.classList.add('sel');
+      const row = document.querySelector(`.row[data-id="${CSS.escape(sel)}"]`);
+      if (row) { row.classList.add('sel'); row.closest('.sec').classList.remove('closed'); if (scroll) row.scrollIntoView({ block: 'nearest' }); }
+      if (zoom) fitFrame(f);
+      history.replaceState(null, '', '#' + encodeURIComponent(sel));
+    } else history.replaceState(null, '', location.pathname + location.search);
+    renderInspector();
+  };
+
+  // ---------- 레이어 패널 ----------
+  const ICON_FRAME = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v18M16 3v18M3 8h18M3 16h18"></path></svg>';
+  const ICON_SEC = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3.5" y="5" width="17" height="14" rx="2.5"></rect><path d="M3.5 9h7"></path></svg>';
+  const CHEV = '<svg class="chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>';
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const tree = $('#tree');
+  tree.innerHTML = DATA.sections.map(sec => `<div class="sec" data-sec="${esc(sec.id)}">
+    <div class="row" data-secrow="${esc(sec.id)}"><span class="ico">${CHEV}</span><span class="ico">${ICON_SEC}</span><span class="name">${esc(sec.title)}</span><span class="count">${sec.frames.length}</span></div>
+    <div class="kids">${sec.frames.map(f => `<div class="row" data-id="${esc(f.id)}"><span class="ico">${ICON_FRAME}</span><span class="name">${esc(f.name)}</span></div>`).join('')}</div>
+  </div>`).join('');
+  tree.addEventListener('click', e => {
+    const r = e.target.closest('.row'); if (!r) return;
+    if (r.dataset.secrow) {
+      const sec = DATA.sections.find(s => s.id === r.dataset.secrow);
+      if (e.target.closest('.chev')) { r.parentElement.classList.toggle('closed'); return; }
+      fitSection(sec); return;
+    }
+    select(r.dataset.id, { zoom: true, scroll: false });
+  });
+  tree.addEventListener('dblclick', e => { const r = e.target.closest('.row[data-id]'); if (r) openPresent(r.dataset.id); });
+  tree.addEventListener('mouseover', e => { const r = e.target.closest('.row[data-id]'); document.querySelectorAll('.frame.hov').forEach(x => x.classList.remove('hov')); if (r) frames.get(r.dataset.id).el.classList.add('hov'); });
+  $('#q').addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('.sec').forEach(s => {
+      let any = false;
+      s.querySelectorAll('.row[data-id]').forEach(r => { const hit = !q || r.textContent.toLowerCase().includes(q); r.style.display = hit ? '' : 'none'; any = any || hit; });
+      s.style.display = any ? '' : 'none'; if (q) s.classList.remove('closed');
+    });
+  });
+
+  // ---------- 속성 패널 ----------
+  let tab = 'design';
+  $('#rtabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab;
+    document.querySelectorAll('#rtabs button').forEach(x => x.setAttribute('aria-selected', String(x === b))); renderInspector(); });
+  const linkBtn = id => { const f = frames.get(id); return f ? `<button class="link" data-jump="${esc(id)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg><span>${esc(f.name)}</span></button>` : ''; };
+  const renderInspector = () => {
+    const box = $('#inspector');
+    if (!sel) {
+      box.innerHTML = tab === 'design' ? `
+        <div class="group"><h3>${esc(DATA.file)}</h3><p class="muted">${DATA.sections.length}개 섹션 · 화면 ${frames.size}개. 화면을 누르면 크기와 연결이, 두 번 누르면 그 화면으로 맞춰져요.</p></div>
+        <div class="group"><h3>조작</h3><div class="keys">
+          <span>화면 이동</span><kbd>스크롤 · 드래그</kbd>
+          <span>확대·축소</span><kbd>Ctrl/⌘ + 스크롤</kbd>
+          <span>전체 보기</span><kbd>Shift 1</kbd>
+          <span>선택한 화면 맞추기</span><kbd>Shift 2</kbd>
+          <span>100%</span><kbd>Shift 0</kbd>
+          <span>옆 화면 선택</span><kbd>← →</kbd>
+          <span>프레젠테이션</span><kbd>Enter</kbd>
+          <span>선택 해제·닫기</span><kbd>Esc</kbd>
+        </div></div>` : `<div class="group"><h3>프로토타입</h3><p class="muted">화면을 고르면 버튼·탭이 어느 화면으로 이어지는지 보여요. 프레젠테이션에서 실제로 눌러 이동할 수 있어요.</p></div>`;
+      return;
+    }
+    const f = frames.get(sel);
+    if (tab === 'design') {
+      box.innerHTML = `
+        <div class="group"><h3>${esc(f.name)}</h3>
+          <div class="fields"><div class="field"><i>X</i>${f.x}</div><div class="field"><i>Y</i>${f.y}</div><div class="field"><i>W</i>${f.w}</div><div class="field"><i>H</i>${f.h}</div></div></div>
+        <div class="group"><h3>화면 정보</h3><dl class="kv">
+          <dt>섹션</dt><dd>${esc(f.sec.title)}</dd>
+          ${f.platform ? `<dt>기기</dt><dd>${esc(f.platform)}</dd>` : ''}
+          ${f.theme ? `<dt>테마</dt><dd>${esc(f.theme)}</dd>` : ''}
+          <dt>순서</dt><dd>${f.idx + 1} / ${f.sec.frames.length}</dd>
+        </dl></div>
+        <button class="btn" id="insPlay"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"></path></svg>이 화면부터 프레젠테이션</button>`;
+    } else {
+      const out = f.links.filter(id => frames.has(id)), inn = (incoming.get(f.id) || []).filter(id => frames.has(id));
+      box.innerHTML = `
+        <div class="group"><h3>이 화면에서 가는 곳 (${out.length})</h3>${out.length ? `<div class="links">${out.map(linkBtn).join('')}</div>` : '<p class="muted">연결 없음</p>'}</div>
+        <div class="group"><h3>이 화면으로 오는 곳 (${inn.length})</h3>${inn.length ? `<div class="links">${inn.map(linkBtn).join('')}</div>` : '<p class="muted">연결 없음</p>'}</div>
+        <button class="btn" id="insPlay"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"></path></svg>이 화면부터 프레젠테이션</button>`;
+    }
+    const p = $('#insPlay'); if (p) p.onclick = () => openPresent(sel);
+  };
+  $('#inspector').addEventListener('click', e => { const j = e.target.closest('[data-jump]'); if (j) select(j.dataset.jump, { zoom: true }); });
+
+  // ---------- 캔버스 조작 ----------
+  let hand = false, spaceDown = false, drag = null;
+  const setHand = v => { hand = v; $('#tHand').setAttribute('aria-pressed', String(v)); $('#tMove').setAttribute('aria-pressed', String(!v)); vp.classList.toggle('hand', v); };
+  $('#tMove').onclick = () => setHand(false); $('#tHand').onclick = () => setHand(true);
+  vp.addEventListener('wheel', e => {
+    e.preventDefault();
+    const r = vp.getBoundingClientRect();
+    if (e.ctrlKey || e.metaKey) zoomAt(z * Math.exp(-e.deltaY * (e.deltaMode ? 0.05 : 0.0022)), e.clientX - r.left, e.clientY - r.top);
+    else { const k = e.deltaMode ? 40 : 1; tx -= (e.shiftKey && !e.deltaX ? e.deltaY : e.deltaX) * k; ty -= (e.shiftKey && !e.deltaX ? 0 : e.deltaY) * k; apply(); }
+  }, { passive: false });
+  const pointers = new Map();
+  vp.addEventListener('pointerdown', e => {
+    if (e.target.closest('.hint')) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    vp.setPointerCapture(e.pointerId);
+    const onFrame = e.target.closest('.frame');
+    drag = { x: e.clientX, y: e.clientY, tx, ty, moved: false, frame: onFrame && onFrame.dataset.id, pan: hand || spaceDown || e.button === 1 || !onFrame };
+    if (drag.pan) vp.classList.add('panning', 'dragging');
+  });
+  vp.addEventListener('pointermove', e => {
+    if (!pointers.has(e.pointerId)) return;
+    const prev = pointers.get(e.pointerId); pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      const r = vp.getBoundingClientRect();
+      const other = [...pointers.entries()].find(([k]) => k !== e.pointerId)[1];
+      const d0 = Math.hypot(prev.x - other.x, prev.y - other.y), d1 = Math.hypot(a.x - b.x, a.y - b.y);
+      if (d0 > 0) zoomAt(z * d1 / d0, (a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top);
+      if (drag) drag.moved = true; return;
+    }
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+    if (drag.moved && (drag.pan || drag.frame)) { tx = drag.tx + dx; ty = drag.ty + dy; apply(); }
+  });
+  const end = e => {
+    pointers.delete(e.pointerId);
+    if (!drag || pointers.size) return;
+    if (!drag.moved) { if (drag.frame) select(drag.frame); else select(null); }
+    drag = null; vp.classList.remove('dragging'); if (!hand && !spaceDown) vp.classList.remove('panning');
+  };
+  vp.addEventListener('pointerup', end); vp.addEventListener('pointercancel', end);
+  vp.addEventListener('dblclick', e => { const fr = e.target.closest('.frame'); if (fr) { select(fr.dataset.id); fitFrame(frames.get(fr.dataset.id)); } });
+  world.addEventListener('click', e => { const c = e.target.closest('.section .chip'); if (c) fitSection(DATA.sections.find(x => x.id === c.dataset.sec)); });
+
+  // 줌 메뉴
+  const zm = $('#zoomMenu');
+  $('#zoomBtn').onclick = e => { e.stopPropagation(); zm.classList.toggle('open'); $('#zoomBtn').setAttribute('aria-expanded', String(zm.classList.contains('open'))); };
+  document.addEventListener('click', e => { if (!e.target.closest('.zoomwrap')) zm.classList.remove('open'); });
+  const center = () => [vp.clientWidth / 2, vp.clientHeight / 2];
+  const zoomCmd = c => {
+    if (c === 'in') zoomAt(z * 1.5, ...center()); else if (c === 'out') zoomAt(z / 1.5, ...center());
+    else if (c === 'fit') fitAll(); else if (c === 'sel') { if (sel) fitFrame(frames.get(sel)); else fitAll(); }
+    else zoomAt(parseFloat(c), ...center());
+  };
+  zm.addEventListener('click', e => { const b = e.target.closest('[data-z]'); if (b) { zoomCmd(b.dataset.z); zm.classList.remove('open'); } });
+
+  // 키보드
+  const step = d => {
+    const list = DATA.sections.flatMap(s => s.frames.map(f => f.id));
+    const cur = sel ? list.indexOf(sel) : (d > 0 ? -1 : list.length);
+    const next = list[Math.min(list.length - 1, Math.max(0, cur + d))];
+    select(next); const f = frames.get(next);
+    const W = vp.clientWidth, H = vp.clientHeight, sx = f.x * z + tx, sy = f.y * z + ty;
+    if (sx < 0 || sy < 0 || sx + f.w * z > W || sy + f.h * z > H) { tx += W / 2 - (sx + f.w * z / 2); ty += H / 2 - (sy + f.h * z / 2); apply(); }
+  };
+  document.addEventListener('keydown', e => {
+    if (e.target.closest('input')) return;
+    if ($('#present').classList.contains('open')) {
+      if (e.key === 'Escape') closePresent();
+      else if (e.key === 'ArrowRight') presentStep(1); else if (e.key === 'ArrowLeft') presentStep(-1);
+      else if (e.key === 'r' || e.key === 'R') showInStage(cur, true);
+      return;
+    }
+    if (e.key === ' ' && !spaceDown) { spaceDown = true; vp.classList.add('panning'); e.preventDefault(); }
+    else if (e.shiftKey && (e.code === 'Digit1')) { fitAll(); e.preventDefault(); }
+    else if (e.shiftKey && (e.code === 'Digit2')) { zoomCmd('sel'); e.preventDefault(); }
+    else if (e.shiftKey && (e.code === 'Digit0')) { zoomAt(1, ...center()); e.preventDefault(); }
+    else if (e.key === '+' || e.key === '=') { zoomCmd('in'); e.preventDefault(); }
+    else if (e.key === '-' || e.key === '_') { zoomCmd('out'); e.preventDefault(); }
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { step(1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { step(-1); e.preventDefault(); }
+    else if (e.key === 'Enter') openPresent(sel || DATA.sections[0].frames[0].id);
+    else if (e.key === 'Escape') select(null);
+    else if (e.key === 'h' || e.key === 'H') setHand(true);
+    else if (e.key === 'v' || e.key === 'V') setHand(false);
+  });
+  document.addEventListener('keyup', e => { if (e.key === ' ') { spaceDown = false; if (!hand) vp.classList.remove('panning'); } });
+  $('#playBtn').onclick = () => openPresent(sel || DATA.sections[0].frames[0].id);
+  $('#hintX').onclick = () => $('#hint').remove();
+  setTimeout(() => { const h = $('#hint'); if (h) h.style.opacity = '0.85'; }, 6000);
+
+  // ---------- 애니메이션: 보이는 화면만 돌린다 ----------
+  const visible = new Set();
+  const setAnim = (el, on) => el.querySelectorAll('svg').forEach(s => { if (s.ownerSVGElement) return; try { on ? s.unpauseAnimations() : s.pauseAnimations(); } catch (err) {} });
+  let farOut = false;
+  function pauseForZoom() {
+    const now = z < 0.18;
+    if (now === farOut) return; farOut = now;
+    frames.forEach(f => setAnim(f.el, !farOut && visible.has(f.id)));
+  }
+  const io = new IntersectionObserver(ents => ents.forEach(en => {
+    const id = en.target.dataset.id;
+    if (en.isIntersecting) visible.add(id); else visible.delete(id);
+    setAnim(en.target, en.isIntersecting && !farOut);
+  }), { root: vp });
+  frames.forEach(f => io.observe(f.el));
+
+  // ---------- 프레젠테이션 ----------
+  const present = $('#present'), stage = $('#stage');
+  let cur = null, home = null;
+  const putBack = () => { if (home) { home.node.style.pointerEvents = ''; home.parent.insertBefore(home.node, home.next); home = null; } };
+  const fitStage = () => {
+    if (!cur) return; const f = frames.get(cur), wrap = $('#stagewrap');
+    const s = Math.min((wrap.clientHeight - 70) / f.h, (wrap.clientWidth - 40) / f.w, 1.25);
+    stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+  };
+  const showInStage = (id, restart) => {
+    if (!frames.has(id)) return;
+    putBack();
+    const f = frames.get(id), node = f.el.querySelector('.screen');
+    home = { node, parent: node.parentNode, next: node.nextSibling };
+    stage.style.width = f.w + 'px'; stage.style.height = f.h + 'px';
+    stage.appendChild(node); node.style.pointerEvents = 'auto';
+    node.querySelectorAll('svg').forEach(s => { if (!s.ownerSVGElement) { try { s.unpauseAnimations(); if (restart || cur !== id) s.setCurrentTime(0); } catch (err) {} } });
+    cur = id;
+    $('#pTitle').innerHTML = `${esc(f.name)}<span>${f.idx + 1} / ${f.sec.frames.length}</span>`;
+    fitStage();
+    history.replaceState(null, '', '#play/' + encodeURIComponent(id));
+  };
+  const openPresent = id => { present.classList.add('open'); showInStage(id, true); };
+  const closePresent = () => {
+    putBack(); present.classList.remove('open');
+    const id = cur; cur = null; select(id, { zoom: true });
+  };
+  const presentStep = d => { const f = frames.get(cur); const list = f.sec.frames; showInStage(list[(f.idx + d + list.length) % list.length].id); };
+  $('#pClose').onclick = closePresent; $('#pPrev').onclick = () => presentStep(-1); $('#pNext').onclick = () => presentStep(1);
+  $('#pRestart').onclick = () => showInStage(cur, true);
+  stage.addEventListener('click', e => {
+    const go = e.target.closest('[data-go]');
+    if (go && frames.has(go.dataset.go)) { e.preventDefault(); showInStage(go.dataset.go); return; }
+    stage.classList.add('flash'); setTimeout(() => stage.classList.remove('flash'), 500);
+  });
+  stage.addEventListener('submit', e => e.preventDefault(), true);
+  window.addEventListener('resize', () => { fitStage(); });
+
+  // ---------- 시작 (#화면이름 은 그 화면 선택, #play/화면이름 은 프레젠테이션) ----------
+  const route = first => {
+    const h = decodeURIComponent(location.hash.slice(1));
+    if (h.startsWith('play/') && frames.has(h.slice(5))) { if (first) fitAll(); if (cur !== h.slice(5)) openPresent(h.slice(5)); }
+    else if (frames.has(h)) { if (present.classList.contains('open')) closePresent(); if (sel !== h) select(h, { zoom: true }); }
+    else if (first) { fitAll(); renderInspector(); }
+  };
+  window.addEventListener('hashchange', () => route(false));
+  route(true);
+})();
+</script>
+</body>
+</html>

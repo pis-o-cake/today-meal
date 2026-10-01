@@ -8,9 +8,9 @@
 <body>
 <x-dc>
 <helmet>
-<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(/_blob/b80c3f239a19ae2ac0629973c9271ec7) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
 </helmet>
-<div role="img" aria-label="오늘 뭐 먹지? 앱을 여는 중" style="position: relative; width: {{w}}px; height: {{h}}px; overflow: hidden; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: {{K.root}}">
+<div role="img" aria-label="오늘 뭐 먹지? 앱을 여는 중" style="position: relative; width: {{w}}px; height: {{h}}px; overflow: hidden; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; background: {{K.root}}">
   <svg width="{{w}}" height="{{h}}" viewBox="0 0 {{w}} {{h}}" aria-hidden="true" style="position: absolute; left: 0; top: 0">
     <defs>
       <radialGradient id="sp-light" cx="0.5" cy="0.6" r="0.7">
@@ -128,7 +128,7 @@
       <g>
         <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.22;0.34;1" dur="4.2s" repeatCount="indefinite"></animate>
         <animateTransform attributeName="transform" type="translate" values="0 18;0 18;0 0;0 0" keyTimes="0;0.22;0.34;1" dur="4.2s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.7 0.3 1;0 0 1 1"></animateTransform>
-        <text x="{{cx}}" y="{{titleY}}" text-anchor="middle" font-size="34" font-weight="800" letter-spacing="-1.6" fill="{{K.c0}}" font-family="Pretendard, 'Apple SD Gothic Neo', sans-serif">오늘 뭐 먹지?</text>
+        <text x="{{cx}}" y="{{titleY}}" text-anchor="middle" font-size="36" font-weight="400" letter-spacing="-0.4" fill="{{K.c0}}" font-family="Jua, Pretendard, sans-serif">오늘 뭐 먹지?</text>
       </g>
       <g>
         <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.3;0.42;1" dur="4.2s" repeatCount="indefinite"></animate>
@@ -151,11 +151,12 @@
   </svg>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var THEME = this.props.theme || 'pastel';
     var K = ({"pastel":{"c0":"#15181D","c1":"#5F6670","c2":"#FFFBE6","c3":"#FFE7A3","c4":"#FFFFFF","c5":"#333A52","c6":"#C7CFFF","c7":"#333A52","c8":"#E9C46A","c9":"#FFFFFF","c10":"#5FB870","c11":"#FFFFFF","c12":"#FFF3B8","c13":"#5A6BEA","c14":"#FF8A98","c15":"#A99BFF","c16":"#8FA2FF","c17":"#6F7FF0","root":"radial-gradient(120% 75% at 50% 40%, #FFFFFF 0%, #F6F7FF 45%, #E1E6FF 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#5F6670","c2":"#FFFBE6","c3":"#FFE7A3","c4":"#FFFFFF","c5":"#333A52","c6":"#BAC3F7","c7":"#333A52","c8":"#E7BF5D","c9":"#FFFFFF","c10":"#40D75D","c11":"#FFFFFF","c12":"#F6EAAD","c13":"#4C5FE8","c14":"#F28895","c15":"#A093F3","c16":"#8C9EF2","c17":"#6273EE","root":"radial-gradient(120% 45% at 50% 0%, rgba(61,92,245,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"#5F6670","c2":"#FFFBE6","c3":"#FFE7A3","c4":"#FFFFFF","c5":"rgba(64,76,150,0.85)","c6":"url(#sp-glass-b)","c7":"rgba(64,76,150,0.85)","c8":"#E6AA19","c9":"#FFFFFF","c10":"#19E640","c11":"#FFFFFF","c12":"#FFF3B8","c13":"#1932E6","c14":"#FF001F","c15":"#A99BFF","c16":"#002BFF","c17":"#1832E7","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#BDC1C6","c2":"#FFFBE6","c3":"#FFE7A3","c4":"#202124","c5":"#333A52","c6":"#C7CFFF","c7":"#333A52","c8":"#FDD663","c9":"#FFFFFF","c10":"#81C995","c11":"#FFFFFF","c12":"#FFF3B8","c13":"#8AB4F8","c14":"#F28B82","c15":"#A99BFF","c16":"#8AB4F8","c17":"#8AB4F8","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
     var android = (this.props.platform || 'ios') === 'android';
     var g = android ? { w: 412, h: 915, bottom: 24, fs: 1.25 } : { w: 390, h: 844, bottom: 34, fs: 1.15 };
     var cx = g.w / 2;
@@ -164,7 +165,7 @@ class Component extends DCLogic {
     var fy = Math.round(g.h * 0.48 - 12 * g.fs - 62);
     var dotY = g.h - g.bottom - 64;
     var haloR = Math.round(size * 0.72);
-    return { K: K, themeName: THEME,
+    return { K: K, themeName: THEME, FNT: FNT,
       w: g.w, h: g.h, cx: cx, fs: g.fs,
       fx: Math.round(cx - size / 2), fTop: Math.round(fy - size / 2), fy: fy,
       haloR: haloR, haloAnim: Math.round(haloR * 0.9) + ';' + haloR + ';' + Math.round(haloR * 0.9),

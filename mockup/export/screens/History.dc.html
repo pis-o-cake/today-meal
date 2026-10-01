@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기록</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
+
+  <header style="display: flex; flex-direction: column; gap: 2px; padding: 12px 20px 0">
+    <h1 style="margin: 0; font-size: 30px; line-height: 1.2; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em">기록</h1>
+    <span style="font-size: 14px; font-weight: 500; color: {{K.c1}}">말한 대로 바뀐 내역이에요. 잘못되면 되돌릴 수 있어요</span>
+  </header>
+
+  <div style="flex-grow: 1; min-height: 0; margin-top: 10px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 18px; padding: 0 20px {{listPad}}px; -webkit-mask-image: linear-gradient(180deg, hsla(0,0%,0%,0) 0px, hsl(0,0%,0%) 36px); mask-image: linear-gradient(180deg, hsla(0,0%,0%,0) 0px, hsl(0,0%,0%) 36px)">
+
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; justify-content: flex-end; align-items: flex-end; gap: 8px">
+          <span style="font-size: 12px; font-weight: 500; color: {{K.c2}}; padding-bottom: 4px">{{r.time}}</span>
+          <div style="max-width: 76%; padding: 11px 15px; border-radius: 20px 20px 6px 20px; background: {{K.c3}}; color: {{K.c4}}; font-size: 15px; line-height: 1.4; font-weight: 600; {{K.fxd}}">{{r.said}}</div>
+        </div>
+        <div style="display: flex; align-items: flex-start; gap: 8px">
+          <div style="width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; background: {{K.c5}}; box-shadow: 0 4px 12px {{K.c6}}; display: flex; align-items: center; justify-content: center; {{K.fxc}}">
+            <dc-import name="Mascot2" theme="{{themeName}}" mood="{{r.mood}}" size="32" hint-size="32px,32px"></dc-import>
+          </div>
+          <div style="max-width: 82%; box-sizing: border-box; padding: 12px 14px; border-radius: 6px 20px 20px 20px; background: {{K.c7}}; border: 1px solid {{K.c8}}; box-shadow: 0 8px 22px {{K.c9}}; display: flex; flex-direction: column; gap: 8px; {{K.fx}}">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <span style="{{r.kindStyle}}">{{r.kind}}</span>
+              <span style="font-size: 15px; font-weight: 700">{{r.title}}</span>
+            </div>
+            <sc-if value="{{r.qty}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+                <span style="font-size: 13px; font-weight: 500; color: {{K.c1}}">{{r.item}}</span>
+                <span style="font-size: 15px; font-weight: 600; color: {{K.c2}}">{{r.from}}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{K.c15}}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+                <span style="font-size: 20px; font-weight: 800; letter-spacing: -0.04em">{{r.to}}</span>
+                <span style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: {{K.c10}}; color: {{K.c1}}">{{r.basis}}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{r.noQty}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13px; font-weight: 500; color: {{K.c1}}">
+                <span>{{r.item}}</span>
+                <span>수량 변화 없음</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{r.undo}}" hint-placeholder-val="{{ false }}">
+              <button type="button" style="align-self: flex-start; display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px; border-radius: 22px; border: 0; background: {{K.c11}}; color: {{K.c0}}; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h10a5 5 0 0 1 0 10H8"></path><path d="M8 5L4 9l4 4"></path></svg>
+                되돌리기
+              </button>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <nav aria-label="주요 화면" style="position: absolute; left: 0; right: 0; bottom: 0; height: {{navH}}px; box-sizing: border-box; padding: 0 12px {{bottom}}px; display: flex; border-radius: 28px 28px 0 0; background: {{K.c12}}; border-top: 1px solid {{K.c8}}; box-shadow: 0 -12px 32px {{K.c13}}; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); {{g_nav}}">
+    <a href="{{links.home}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c14}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6.5a3 4 0 1 0 6 0a3 4 0 1 0 -6 0M8 10.5V21M15 3l.5 18M19 3l-1 18"></path></svg>
+      뭐 먹지?
+    </a>
+    <a href="{{links.fridge}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c14}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="3"></rect><path d="M5 10h14M8.5 6v1.5M8.5 13v3"></path></svg>
+      냉장고
+    </a>
+    <a href="{{links.cook}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c14}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M3 13.5h2 M19 13.5h2 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+      조리
+    </a>
+    <a href="{{links.history}}" aria-current="page" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c0}}; font-weight: 700; {{g_tab}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      기록
+    </a>
+    <a href="{{links.my}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c14}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"></path></svg>
+      마이페이지
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"#5F6670","c2":"#8A9199","c3":"#15181D","c4":"#FFFFFF","c5":"rgba(255,255,255,0.9)","c6":"rgba(20,25,35,0.08)","c7":"rgba(255,255,255,0.9)","c8":"rgba(255,255,255,0.95)","c9":"rgba(20,25,35,0.06)","c10":"#F0F1F4","c11":"#F0F1F4","c12":"rgba(255,255,255,0.72)","c13":"rgba(20,25,35,0.07)","c14":"#7C838C","c15":"#8A9199","c16":"#DDF3E4","c17":"#17703C","c18":"#E4E8FF","c19":"#3346B8","c20":"#ECEEF2","c21":"#4E5661","c22":"#F0E6FD","c23":"#6B35B0","root":"radial-gradient(130% 70% at 50% 0%, #FFFFFF 0%, #F6F6F9 45%, #E8EAF0 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#5F6670","c2":"#8A9199","c3":"#15181D","c4":"#FFFFFF","c5":"#FFFFFF","c6":"rgba(20,25,35,0.08)","c7":"#FFFFFF","c8":"rgba(17,20,26,0.07)","c9":"rgba(20,25,35,0.06)","c10":"#F0F1F4","c11":"#F0F1F4","c12":"#FFFFFF","c13":"rgba(20,25,35,0.07)","c14":"#7C838C","c15":"#8A9199","c16":"#D3F3DD","c17":"#0A7D3A","c18":"#DADFFF","c19":"#102AC6","c20":"#ECEEF2","c21":"#4E5661","c22":"#EADBFD","c23":"#6010C6","root":"#F4F5F7","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"#5F6670","c2":"#8A9199","c3":"linear-gradient(180deg, rgba(58,62,72,0.92) 0%, rgba(18,20,26,0.94) 100%)","c4":"#FFFFFF","c5":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c6":"rgba(20,25,45,0.08)","c7":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c8":"rgba(255,255,255,0.92)","c9":"rgba(20,25,45,0.06)","c10":"rgba(120,128,150,0.10)","c11":"rgba(120,128,150,0.10)","c12":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c13":"rgba(20,25,45,0.07)","c14":"#7C838C","c15":"#8A9199","c16":"rgba(60,221,111,0.13)","c17":"#11763B","c18":"rgba(26,59,255,0.13)","c19":"#1D35C9","c20":"rgba(120,128,150,0.10)","c21":"#4E5661","c22":"rgba(127,42,238,0.13)","c23":"#681DC8","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#BDC1C6","c2":"#9AA0A6","c3":"#E8EAED","c4":"#202124","c5":"rgba(45,46,49,0.96)","c6":"rgba(0,0,0,0.14)","c7":"rgba(45,46,49,0.96)","c8":"rgba(232,234,237,0.08)","c9":"rgba(0,0,0,0.11)","c10":"#3C4043","c11":"#3C4043","c12":"rgba(45,46,49,0.96)","c13":"rgba(0,0,0,0.13)","c14":"#9AA0A6","c15":"#9AA0A6","c16":"rgba(129,201,149,0.16)","c17":"#81C995","c18":"rgba(138,180,248,0.16)","c19":"#8AB4F8","c20":"#3C4043","c21":"#BDC1C6","c22":"rgba(197,138,249,0.16)","c23":"#C58AF9","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24 } : { w: 390, h: 844, top: 59, bottom: 34 };
+    var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
+    // 동작마다 칩 색이 다르다. 폐기·이동·소분·개봉은 앱에 따로 정한 색이 없어 중립색이다.
+    var kinds = {
+      '입고': [K.c16, K.c17],
+      '사용': [K.c18, K.c19],
+      '취소': [K.c20, K.c21],
+      '보정': [K.c22, K.c23],
+      '폐기': [K.c20, K.c21],
+      '이동': [K.c20, K.c21],
+      '소분': [K.c20, K.c21],
+      '개봉': [K.c20, K.c21]
+    };
+    // 동작마다 정해진 한 문장. 칩은 동작 이름, 문장은 무엇이 일어났는지.
+    var said = {
+      '입고': '넣은 만큼 채웠어요', '사용': '쓴 만큼 뺐어요', '보정': '남은 양을 맞췄어요', '취소': '방금 것을 되돌렸어요',
+      '폐기': '버린 만큼 뺐어요', '이동': '보관 위치를 옮겼어요', '소분': '나눠 담았어요', '개봉': '개봉으로 표시했어요'
+    };
+    // 오래된 것이 위, 가장 최근이 아래. 화면은 끝(가장 최근)을 보여준다.
+    var raw = [
+      { time: '19:02', said: '“두부 두 모 넣었어”', kind: '입고', item: '두부', from: '0모', to: '2모', est: false },
+      { time: '19:03', said: '“계란 열 개 넣었어”', kind: '입고', item: '계란', from: '0개', to: '10개', est: false },
+      { time: '19:05', said: '“계란 두 개 썼어”', kind: '사용', item: '계란', from: '10개', to: '8개', est: false },
+      { time: '19:06', said: '“두부 하나 뜯었어”', kind: '개봉', item: '두부', from: '', to: '', est: false },
+      { time: '19:09', said: '“계란 네 개쯤 남았어”', kind: '보정', item: '계란', from: '8개', to: '4개', est: true }
+    ];
+    var last = raw.length - 1;
+    var rows = raw.map(function (r, i) {
+      var k = kinds[r.kind];
+      var qty = !!r.to;
+      return {
+        time: r.time, said: r.said, kind: r.kind, title: said[r.kind], item: r.item, from: r.from, to: r.to,
+        qty: qty, noQty: !qty, basis: r.est ? '추정' : '명시값',
+        mood: r.kind === '취소' ? 'soon' : 'done',
+        // 되돌리기는 전체에서 가장 최근 줄에만. 되돌리기 줄 자체는 다시 되돌리지 않는다.
+        undo: i === last && r.kind !== '취소',
+        kindStyle: 'font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: ' + k[0] + '; color: ' + k[1]
+      };
+    });
+    // 글래스 테마 전용: 떠 있는 유리 탭 바 (색은 hsl로 적어 테마 변환에서 제외)
+    var GLASS_ON = THEME === 'glass';
+    var gNav = function (bottomPx) {
+      return 'left: 14px; right: 14px; bottom: ' + bottomPx + 'px; height: 62px; padding: 0 6px; border-radius: 31px; border: 1px solid hsla(0,0%,100%,0.75);'
+        + ' background: linear-gradient(135deg, hsla(0,0%,100%,0.42) 0%, hsla(0,0%,100%,0.1) 50%, hsla(0,0%,100%,0.26) 100%);'
+        + ' backdrop-filter: blur(14px) saturate(190%); -webkit-backdrop-filter: blur(14px) saturate(190%);'
+        + ' box-shadow: inset 1px 1px 0 hsla(0,0%,100%,0.95), inset -1px -1px 0 hsla(0,0%,100%,0.45), inset 0 -12px 20px hsla(0,0%,100%,0.2), 0 0 0 0.5px hsla(230,20%,20%,0.15), 0 12px 30px hsla(230,30%,20%,0.13)';
+    };
+    var gTab = 'margin: 7px 0; border-radius: 24px; background: linear-gradient(135deg, hsla(0,0%,100%,0.72) 0%, hsla(0,0%,100%,0.22) 55%, hsla(0,0%,100%,0.4) 100%);'
+      + ' box-shadow: inset 1px 1px 0 hsla(0,0%,100%,1), inset -1px -1px 0 hsla(0,0%,100%,0.5), 0 0 0 0.5px hsla(230,20%,20%,0.12), 0 4px 12px hsla(230,30%,20%,0.10)';
+
+    return { K: K, themeName: THEME, FNT: FNT, g_nav: GLASS_ON ? gNav(Math.max(g.bottom - 12, 12)) : '', g_tab: GLASS_ON ? gTab : '',
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom, navH: 64 + g.bottom, listPad: 64 + g.bottom + 14,
+      rows: rows,
+      links: { home: L('Main'), fridge: L('Fridge'), cook: L('CookHome'), history: L('History'), my: L('MyPage') }
+    };
+  }
+}
+</script>
+</body>
+</html>

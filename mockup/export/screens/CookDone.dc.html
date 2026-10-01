@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>조리 완료</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
+
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px 0">
+    <a href="{{links.home}}" aria-label="닫기" style="width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: {{K.c1}}; background: {{K.c2}}; border: 1px solid {{K.c3}}; text-decoration: none; {{K.fxc}}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+  </div>
+
+  <main style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 24px; text-align: center">
+    <dc-import name="Mascot2" theme="{{themeName}}" mood="done" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    <div style="font-size: 38px; line-height: 1.15; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em; color: {{K.c4}}; margin-top: 4px">짠, 다 만들었어요!</div>
+    <div style="font-size: 15px; font-weight: 500; color: {{K.c5}}; margin-top: 8px">두부계란전 · 2인분 · 17분 걸렸어요</div>
+  </main>
+
+  <section aria-label="뺀 재료" style="margin: 0 20px; padding: 6px 0; border-radius: 24px; background: {{K.c6}}; border: 1px solid {{K.c7}}; box-shadow: 0 10px 28px {{K.c8}}; {{K.fx}}">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 6px">
+      <span style="font-size: 16px; font-weight: 800; letter-spacing: -0.03em">쓴 재료를 냉장고에서 뺐어요</span>
+      <span style="font-size: 12px; font-weight: 600; color: {{K.c9}}">자동 차감</span>
+    </div>
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+      <div style="{{r.rowStyle}}">
+        <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 16px; font-weight: 700">{{r.name}}</span>
+          <span style="font-size: 13px; font-weight: 500; color: {{K.c10}}">{{r.meta}}</span>
+        </span>
+        <span style="{{r.chipStyle}}">{{r.chip}}</span>
+        <button type="button" aria-label="{{r.editLabel}}" style="width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: {{K.c9}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z M13.5 6.5l4 4"></path></svg>
+        </button>
+      </div>
+    </sc-for>
+  </section>
+  <div style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 24px 0; font-size: 13px; font-weight: 500; color: {{K.c11}}">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z M5.5 11a6.5 6.5 0 0 0 13 0 M12 17.5V21"></path></svg>
+    틀렸으면 “계란은 3개 썼어”라고 말해 주세요
+  </div>
+
+  <div style="display: flex; gap: 10px; padding: 14px 20px 4px">
+    <a href="{{links.cooking}}" style="flex-grow: 1; flex-basis: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 8px; height: 56px; border-radius: 28px; background: {{K.c12}}; border: 1px solid {{K.c13}}; color: {{K.c0}}; text-decoration: none; font-size: 16px; font-weight: 700; {{K.fxc}}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"></path><path d="M4 9h10a6 6 0 0 1 0 12h-3"></path></svg>
+      되돌리기
+    </a>
+    <a href="{{links.home}}" style="flex-grow: 1; flex-basis: 0; box-sizing: border-box; border: 1px solid {{K.c14}}; display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: {{K.c15}}; color: {{K.c16}}; text-decoration: none; font-size: 16px; font-weight: 700; box-shadow: 0 10px 22px {{K.c17}}; {{K.fxd}}">확인</a>
+  </div>
+  <div style="text-align: center; font-size: 13px; font-weight: 500; color: {{K.c5}}; padding: 8px 20px 8px">기록에도 남겼어요</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"#3E454E","c2":"rgba(255,255,255,0.74)","c3":"rgba(255,255,255,0.95)","c4":"#1B7F43","c5":"#5F6670","c6":"rgba(255,255,255,0.9)","c7":"rgba(255,255,255,0.95)","c8":"rgba(20,25,35,0.08)","c9":"#8A9199","c10":"#6B727B","c11":"#4E5661","c12":"rgba(255,255,255,0.86)","c13":"rgba(21,24,29,0.12)","c14":"#15181D","c15":"#15181D","c16":"#FFFFFF","c17":"rgba(20,25,35,0.22)","c18":"rgba(21,24,29,0.06)","c19":"#FFE4DB","c20":"#B0341A","c21":"#F0F1F4","root":"radial-gradient(125% 80% at 50% 22%, #FFFFFF 0%, #F3FBF6 40%, #D3EFDD 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#3E454E","c2":"#FFFFFF","c3":"rgba(17,20,26,0.07)","c4":"#0C8E40","c5":"#5F6670","c6":"#FFFFFF","c7":"rgba(17,20,26,0.07)","c8":"rgba(20,25,35,0.08)","c9":"#8A9199","c10":"#6B727B","c11":"#4E5661","c12":"#FFFFFF","c13":"rgba(21,24,29,0.12)","c14":"#15181D","c15":"#15181D","c16":"#FFFFFF","c17":"rgba(20,25,35,0.22)","c18":"rgba(21,24,29,0.06)","c19":"#FFDCD1","c20":"#BB2D0F","c21":"#F0F1F4","root":"radial-gradient(120% 45% at 50% 0%, rgba(61,245,127,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"#3E454E","c2":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c3":"rgba(255,255,255,0.7)","c4":"#138741","c5":"#5F6670","c6":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c7":"rgba(255,255,255,0.92)","c8":"rgba(20,25,45,0.08)","c9":"#8A9199","c10":"#6B727B","c11":"#4E5661","c12":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c13":"rgba(21,24,29,0.12)","c14":"rgba(255,255,255,0.16)","c15":"linear-gradient(180deg, rgba(58,62,72,0.92) 0%, rgba(18,20,26,0.94) 100%)","c16":"#FFFFFF","c17":"rgba(20,25,45,0.2)","c18":"rgba(21,24,29,0.06)","c19":"rgba(255,83,26,0.13)","c20":"#B13419","c21":"rgba(120,128,150,0.10)","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#BDC1C6","c2":"rgba(45,46,49,0.96)","c3":"rgba(232,234,237,0.08)","c4":"#81C995","c5":"#BDC1C6","c6":"rgba(45,46,49,0.96)","c7":"rgba(232,234,237,0.08)","c8":"rgba(0,0,0,0.14)","c9":"#9AA0A6","c10":"#9AA0A6","c11":"#BDC1C6","c12":"rgba(45,46,49,0.96)","c13":"rgba(232,234,237,0.14)","c14":"#E8EAED","c15":"#E8EAED","c16":"#202124","c17":"rgba(0,0,0,0.3)","c18":"rgba(232,234,237,0.1)","c19":"rgba(252,173,112,0.16)","c20":"#F28B82","c21":"#3C4043","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24, mascot: 170 } : { w: 390, h: 844, top: 59, bottom: 34, mascot: 150 };
+    var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
+    var rows = [
+      { name: '두부', meta: '2모 → 1모', chip: '−1모', used: true },
+      { name: '계란', meta: '4개 → 2개', chip: '−2개', used: true },
+      { name: '대파', meta: '빼지 못했어요', chip: '그대로', used: false }
+    ].map(function (r, i) {
+      return { name: r.name, meta: r.meta, chip: r.chip, editLabel: r.name + ' 뺀 양 고치기',
+        rowStyle: 'display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 4px 8px 4px 16px;' + (i > 0 ? ' border-top: 1px solid ' + K.c18 + ';' : ''),
+        chipStyle: 'flex-shrink: 0; font-size: 13px; font-weight: 700; padding: 4px 9px; border-radius: 8px;' + (r.used ? ' background: ' + K.c19 + '; color: ' + K.c20 + ';' : ' background: ' + K.c21 + '; color: ' + K.c5 + ';') };
+    });
+    return { K: K, themeName: THEME, FNT: FNT,
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom,
+      mascotSize: g.mascot, mascotHint: g.mascot + 'px,' + g.mascot + 'px',
+      rows: rows,
+      links: { home: L('Main'), cooking: L('Cooking') }
+    };
+  }
+}
+</script>
+</body>
+</html>

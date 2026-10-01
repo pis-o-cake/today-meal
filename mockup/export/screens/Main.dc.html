@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>오늘</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{rootBg}}">
+
+  <header style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 24px 0">
+    <div style="align-self: stretch; display: flex; justify-content: flex-end; align-items: center; gap: 4px; height: 20px; margin-right: -6px; font-size: 12px; font-weight: 600; color: {{K.c1}}">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg>
+      10.2 금
+    </div>
+    <h1 style="margin: 0; font-size: 30px; line-height: 1.2; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em">오늘 뭐 먹지?</h1>
+    <div style="display: flex; align-items: center; height: 44px; margin-top: 10px; border-radius: 999px; background: {{K.c2}}; border: 1px solid {{K.c3}}; box-shadow: 0 6px 18px {{K.c4}}; {{K.fxc}}">
+      <a href="{{links.listen}}" style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px 0 16px; color: {{K.c0}}; text-decoration: none">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="{{band.accSoft}}"><animate attributeName="r" values="5.5;7.5;5.5" dur="2.6s" repeatCount="indefinite"></animate></circle><circle cx="8" cy="8" r="4" fill="{{band.acc}}"><animate attributeName="r" values="3.5;4;3.5" dur="2.6s" repeatCount="indefinite"></animate></circle></svg>
+        <span style="font-size: 14px; font-weight: 700">호출 대기 중</span>
+        <span style="font-size: 13px; font-weight: 500; color: {{K.c5}}">“헤이 키친”</span>
+      </a>
+      <span style="width: 1px; height: 18px; background: {{K.c6}}"></span>
+      <button type="button" aria-label="음소거" style="width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; display: flex; align-items: center; justify-content: center; color: {{K.c5}}; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path><path d="M16 9.5l5 5M21 9.5l-5 5"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 24px">
+    <sc-if value="{{c1}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Mascot" mood="{{band.mood}}" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    </sc-if>
+    <sc-if value="{{c2}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="Mascot2" theme="{{themeName}}" mood="{{band.mood}}" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    </sc-if>
+    <sc-if value="{{c3}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Mascot3" mood="{{band.mood}}" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    </sc-if>
+    <div style="font-size: {{wordSize}}px; white-space: nowrap; line-height: 1.15; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em; color: {{band.acc}}; margin-top: 6px">{{band.word}}</div>
+    <div style="font-size: 15px; font-weight: 500; color: {{K.c5}}; margin-top: 6px">{{band.count}}가지 · {{band.hint}}</div>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 14px">
+      <sc-for list="{{band.chips}}" as="it" hint-placeholder-count="1">
+        <span style="font-size: 14px; font-weight: 600; padding: 8px 13px; border-radius: 999px; color: {{K.c7}}; background: {{K.c8}}; border: 1px solid {{K.c9}}; box-shadow: 0 2px 8px {{K.c10}}; {{K.fx}}">{{it}}</span>
+      </sc-for>
+    </div>
+  </main>
+
+  <div style="display: flex; flex-direction: column; align-items: center; padding: 12px 20px 0">
+    <a href="{{band.href}}" style="display: flex; align-items: center; gap: 12px; min-height: 62px; box-sizing: border-box; padding: 8px 18px 8px 8px; border-radius: 999px; background: {{K.c11}}; color: {{K.c0}}; text-decoration: none; box-shadow: 0 12px 28px {{K.c12}}, 0 2px 5px {{K.c13}}; {{K.fxc}}">
+      <span style="width: 46px; height: 46px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: {{band.accSoft}}; color: {{band.acc}}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{band.ctaIcon}}"></path></svg>
+      </span>
+      <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+        <span style="font-size: 17px; line-height: 1.3; font-weight: 700; white-space: nowrap">{{band.cta}}</span>
+        <span style="font-size: 13px; line-height: 1.3; font-weight: 500; color: {{K.c5}}; white-space: nowrap">{{band.ctaMeta}}</span>
+      </span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{band.acc}}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-left: 4px"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </a>
+    <sc-if value="{{band.more}}" hint-placeholder-val="{{ true }}">
+      <a href="{{links.menu}}" style="display: flex; align-items: center; min-height: 40px; padding: 0 12px; font-size: 14px; font-weight: 600; color: {{K.c5}}; text-decoration: none">다른 메뉴 2개</a>
+    </sc-if>
+    <sc-if value="{{band.noMore}}" hint-placeholder-val="{{ false }}">
+      <div style="height: 40px"></div>
+    </sc-if>
+  </div>
+
+  <div style="position: relative; flex-shrink: 0; height: 196px">
+    <sc-if value="{{g_on}}" hint-placeholder-val="{{ false }}">
+      <div aria-hidden="true" style="{{g_glow}}"></div>
+    </sc-if>
+    <div aria-hidden="true" style="position: absolute; left: {{ovalLeft}}px; top: 40px; width: {{ovalW}}px; height: {{ovalH}}px; border-radius: 50%; background: {{K.c14}}; border: 1px solid {{K.c9}}; box-shadow: 0 -14px 40px {{K.c13}}; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); {{g_oval}}"></div>
+
+    <div style="position: absolute; left: 0; right: 0; top: 8px; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 13px; font-weight: 500; color: {{K.c15}}">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10"></path><path d="M12 9.5a1.5 1.5 0 0 1 3 0V11"></path><path d="M15 10.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-.5a6 6 0 0 1-4.6-2.2L4.5 15.6a1.5 1.5 0 0 1 2.3-1.9L9 16"></path></svg>
+      밀어서 재료 상태 보기
+    </div>
+
+    <div role="group" aria-label="재료 상태 고르기">
+      <sc-for list="{{tokens}}" as="t" hint-placeholder-count="5">
+        <button type="button" aria-label="{{t.aria}}" aria-pressed="{{t.pressed}}" onClick="{{t.pick}}" style="{{t.style}}">
+          <sc-if value="{{t.maneOn}}" hint-placeholder-val="{{ false }}">
+            <svg width="68" height="68" viewBox="0 0 64 64" aria-hidden="true" style="{{maneStyle}}">
+              <g>
+                <animateTransform attributeName="transform" type="rotate" values="0 32 32;360 32 32" dur="24s" repeatCount="indefinite"></animateTransform>
+                <path d="M32.00 7.00 A9.06 9.06 0 0 1 48.07 12.85 A9.06 9.06 0 0 1 56.62 27.66 A9.06 9.06 0 0 1 53.65 44.50 A9.06 9.06 0 0 1 40.55 55.49 A9.06 9.06 0 0 1 23.45 55.49 A9.06 9.06 0 0 1 10.35 44.50 A9.06 9.06 0 0 1 7.38 27.66 A9.06 9.06 0 0 1 15.93 12.85 A9.06 9.06 0 0 1 32.00 7.00 Z" fill="{{maneFill}}" stroke="{{maneStroke}}" stroke-width="1.2" stroke-linejoin="round"></path>
+              </g>
+            </svg>
+          </sc-if>
+          <svg width="38" height="38" viewBox="0 0 48 48" aria-hidden="true" style="position: relative">
+            <sc-if value="{{t.maneOn}}" hint-placeholder-val="{{ false }}">
+              <path d="{{t.cheek}}" fill="{{cheekFill}}"></path>
+            </sc-if>
+            <path d="{{t.line}}" fill="none" stroke="{{t.color}}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="{{t.fill}}" fill="{{t.color}}"></path>
+          </svg>
+        </button>
+      </sc-for>
+    </div>
+
+  </div>
+
+  <nav aria-label="주요 화면" style="position: absolute; left: 0; right: 0; bottom: 0; height: {{navH}}px; box-sizing: border-box; padding: 0 12px {{bottom}}px; display: flex; {{g_nav}}">
+    <a href="{{links.home}}" aria-current="page" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c0}}; font-weight: 700; {{g_tab}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6.5a3 4 0 1 0 6 0a3 4 0 1 0 -6 0M8 10.5V21M15 3l.5 18M19 3l-1 18"></path></svg>
+      뭐 먹지?
+    </a>
+    <a href="{{links.fridge}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c16}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="3"></rect><path d="M5 10h14M8.5 6v1.5M8.5 13v3"></path></svg>
+      냉장고
+    </a>
+    <a href="{{links.cook}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c16}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M3 13.5h2 M19 13.5h2 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+      조리
+    </a>
+    <a href="{{links.history}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c16}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      기록
+    </a>
+    <a href="{{links.my}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c16}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"></path></svg>
+      마이페이지
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"character":{"editor":"enum","options":["1","2","3"],"default":"2"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"#8A9199","c2":"rgba(255,255,255,0.74)","c3":"rgba(255,255,255,0.95)","c4":"rgba(20,25,35,0.07)","c5":"#5F6670","c6":"rgba(21,24,29,0.1)","c7":"#3E454E","c8":"rgba(255,255,255,0.72)","c9":"rgba(255,255,255,0.95)","c10":"rgba(20,25,35,0.05)","c11":"#FFFFFF","c12":"rgba(20,25,35,0.13)","c13":"rgba(20,25,35,0.06)","c14":"rgba(255,255,255,0.62)","c15":"#6B727B","c16":"#7C838C","c17":"#4F5B6E","c18":"rgba(79,91,110,0.14)","c19":"#F7F8FA","c20":"#E6E9EE","c21":"#D8431F","c22":"rgba(216,67,31,0.14)","c23":"#FFF8F5","c24":"#FFE0D4","c25":"#A8690A","c26":"rgba(168,105,10,0.14)","c27":"#FFFBF3","c28":"#FFEDCF","c29":"#1B7F43","c30":"rgba(27,127,67,0.14)","c31":"#F6FCF8","c32":"#DAF2E2","c33":"#5F6A80","c34":"rgba(95,106,128,0.16)","c35":"#F8F9FB","c36":"#E7EAF0","root_expired":"radial-gradient(125% 80% at 50% 20%, #FFFFFF 0%, #F7F8FA 42%, #E6E9EE 100%)","root_urgent":"radial-gradient(125% 80% at 50% 20%, #FFFFFF 0%, #FFF8F5 42%, #FFE0D4 100%)","root_soon":"radial-gradient(125% 80% at 50% 20%, #FFFFFF 0%, #FFFBF3 42%, #FFEDCF 100%)","root_fresh":"radial-gradient(125% 80% at 50% 20%, #FFFFFF 0%, #F6FCF8 42%, #DAF2E2 100%)","root_unknown":"radial-gradient(125% 80% at 50% 20%, #FFFFFF 0%, #F8F9FB 42%, #E7EAF0 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#8A9199","c2":"#FFFFFF","c3":"rgba(17,20,26,0.07)","c4":"rgba(20,25,35,0.07)","c5":"#5F6670","c6":"rgba(21,24,29,0.1)","c7":"#3E454E","c8":"#FFFFFF","c9":"rgba(17,20,26,0.07)","c10":"rgba(20,25,35,0.05)","c11":"#FFFFFF","c12":"rgba(20,25,35,0.13)","c13":"rgba(20,25,35,0.06)","c14":"#FFFFFF","c15":"#6B727B","c16":"#7C838C","c17":"#0E4CAF","c18":"rgba(17,93,212,0.14)","c19":"#FFFFFF","c20":"#EEF0F3","c21":"#C63310","c22":"rgba(228,59,19,0.14)","c23":"#FFFFFF","c24":"#EEF0F3","c25":"#A8690A","c26":"rgba(217,135,13,0.14)","c27":"#FFFFFF","c28":"#EEF0F3","c29":"#0C8E40","c30":"rgba(17,212,95,0.14)","c31":"#FFFFFF","c32":"#EEF0F3","c33":"#5F6A80","c34":"rgba(95,106,128,0.16)","c35":"#FFFFFF","c36":"#EEF0F3","root_expired":"#F4F5F7","root_urgent":"radial-gradient(120% 45% at 50% 0%, rgba(245,112,61,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","root_soon":"radial-gradient(120% 45% at 50% 0%, rgba(245,176,61,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","root_fresh":"radial-gradient(120% 45% at 50% 0%, rgba(61,245,122,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","root_unknown":"#F4F5F7","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"#8A9199","c2":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c3":"rgba(255,255,255,0.7)","c4":"rgba(20,25,45,0.07)","c5":"#5F6670","c6":"rgba(21,24,29,0.1)","c7":"#3E454E","c8":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c9":"rgba(255,255,255,0.92)","c10":"rgba(20,25,45,0.05)","c11":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c12":"rgba(20,25,45,0.13)","c13":"rgba(20,25,45,0.06)","c14":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c15":"#6B727B","c16":"#7C838C","c17":"#184EA5","c18":"rgba(29,95,201,0.14)","c19":"#FFFFFF","c20":"#EEF0F4","c21":"#C93E1D","c22":"rgba(216,67,31,0.14)","c23":"#FFFFFF","c24":"#EEF0F4","c25":"#A8690A","c26":"rgba(217,135,13,0.14)","c27":"#FFFFFF","c28":"#EEF0F4","c29":"#138741","c30":"rgba(29,201,98,0.14)","c31":"#FFFFFF","c32":"#EEF0F4","c33":"#5F6A80","c34":"rgba(95,106,128,0.16)","c35":"#FFFFFF","c36":"#EEF0F4","root_expired":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","root_urgent":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","root_soon":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","root_fresh":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","root_unknown":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#9AA0A6","c2":"rgba(45,46,49,0.96)","c3":"rgba(232,234,237,0.08)","c4":"rgba(0,0,0,0.13)","c5":"#BDC1C6","c6":"rgba(232,234,237,0.12)","c7":"#BDC1C6","c8":"rgba(45,46,49,0.96)","c9":"rgba(232,234,237,0.08)","c10":"rgba(0,0,0,0.09)","c11":"#3C4043","c12":"rgba(0,0,0,0.23)","c13":"rgba(0,0,0,0.11)","c14":"rgba(45,46,49,0.96)","c15":"#9AA0A6","c16":"#9AA0A6","c17":"#8AB4F8","c18":"rgba(138,180,248,0.17)","c19":"#202124","c20":"#202124","c21":"#F28B82","c22":"rgba(242,139,130,0.17)","c23":"#202124","c24":"#202124","c25":"#FCAD70","c26":"rgba(252,173,112,0.17)","c27":"#202124","c28":"#202124","c29":"#81C995","c30":"rgba(129,201,149,0.17)","c31":"#202124","c32":"#202124","c33":"#BDC1C6","c34":"#80868B","c35":"#202124","c36":"#202124","root_expired":"#202124","root_urgent":"#202124","root_soon":"#202124","root_fresh":"#202124","root_unknown":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
+    var android = (this.props.platform || 'ios') === 'android';
+    var ch = String(this.props.character || '2');
+    var c2 = ch === '2';
+    var c3 = ch === '3';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24, mascot: 212 } : { w: 390, h: 844, top: 59, bottom: 34, mascot: 172 };
+    var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
+    var links = { home: L('Main'), fridge: L('Fridge'), cook: L('CookHome'), history: L('History'), my: L('MyPage'), listen: L('Listening'), menu: L('Menu') };
+
+    // 이목구비만 있는 얼굴. 캐릭터 표정과 같은 모양을 굵게, 눈 사이를 넓게. 선택된 것만 상태 색 + 볼터치.
+    var pill = function (cx, cy, h) { var r = 2.9; return 'M' + (cx - r) + ' ' + (cy - h / 2 + r) + ' a' + r + ' ' + r + ' 0 0 1 ' + (2 * r) + ' 0 v' + (h - 2 * r) + ' a' + r + ' ' + r + ' 0 0 1 ' + (-2 * r) + ' 0 z'; };
+    var dot = function (cx, cy, r) { return 'M' + (cx - r) + ' ' + cy + ' a' + r + ' ' + r + ' 0 1 0 ' + (2 * r) + ' 0 a' + r + ' ' + r + ' 0 1 0 ' + (-2 * r) + ' 0 z'; };
+    var faceSet = {
+      expired: { line: 'M9 23 h10 M29 23 h10 M20 34 h8', fill: '' },
+      urgent:  { line: 'M8 14 L17 10.5 M40 14 L31 10.5', fill: pill(14, 23, 10) + ' ' + pill(34, 23, 10) + ' ' + dot(24, 34, 3.4) },
+      soon:    { line: 'M20 33.5 h8', fill: pill(14, 22, 10) + ' ' + pill(34, 22, 10) },
+      fresh:   { line: 'M8.5 24 q5.5 -7.5 11 0 M28.5 24 q5.5 -7.5 11 0', fill: 'M17.5 30 h13 a6.5 6.5 0 0 1 -13 0 z' },
+      unknown: { line: 'M18.5 34 q5.5 -3.5 11 0', fill: dot(14, 22, 3.6) + ' ' + dot(34, 22, 3.6) }
+    };
+    var cheekOn = { expired: false, urgent: true, soon: true, fresh: true, unknown: false };
+
+    var bands = [
+      { key: 'expired', mood: 'expired', word: '앗, 때를 놓쳤어요', hint: '먹기 전에 상태를 확인해 주세요', count: 1,
+        items: ['삼겹살 · 소비기한 2일 지남'], acc: K.c17, accSoft: K.c18,
+        bg1: K.c19, bg2: K.c20, ctaIcon: 'M6 3h12a1.5 1.5 0 0 1 1.5 1.5v15A1.5 1.5 0 0 1 18 21H6a1.5 1.5 0 0 1-1.5-1.5v-15A1.5 1.5 0 0 1 6 3z M4.5 10h15 M8 6v1.5 M8 13v3',
+        cta: '냉장고에서 확인하기', ctaMeta: '삼겹살 · 상태 보고 정리해요', href: links.fridge, more: false },
+      { key: 'urgent', mood: 'urgent', word: '빨리 먹어야 해요!', hint: '지금 요리하면 딱 좋아요', count: 1,
+        items: ['두부 2모 · 소비기한 D-1'], acc: K.c21, accSoft: K.c22,
+        bg1: K.c23, bg2: K.c24, ctaIcon: 'M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5',
+        cta: '두부계란전', ctaMeta: '2인분 · 약 15분 · 재료 다 있어요', href: links.menu, more: true },
+      { key: 'soon', mood: 'soon', word: '며칠 안에 먹어요', hint: '이번 주 메뉴로 챙겨 둘게요', count: 3,
+        items: ['애호박 · 점검 알림 D-3', '우유 · 소비기한 D-4', '대파 조금'], acc: K.c25, accSoft: K.c26,
+        bg1: K.c27, bg2: K.c28, ctaIcon: 'M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5',
+        cta: '계란국', ctaMeta: '2인분 · 약 10분 · 재료 다 있어요', href: links.menu, more: true },
+      { key: 'fresh', mood: 'fresh', word: '천천히 먹어도 돼요~', hint: '아직 여유 있어요', count: 2,
+        items: ['다진마늘 · 소비기한 D-22', '감자 · 점검 알림 D-10'], acc: K.c29, accSoft: K.c30,
+        bg1: K.c31, bg2: K.c32, ctaIcon: 'M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5',
+        cta: '감자볶음', ctaMeta: '2인분 · 약 15분 · 재료 다 있어요', href: links.menu, more: true },
+      { key: 'unknown', mood: 'unknown', word: '언제까지 먹어야 해요?', hint: '날짜를 말해 주시면 챙길게요', count: 1,
+        items: ['계란 4개'], acc: K.c33, accSoft: K.c34,
+        bg1: K.c35, bg2: K.c36, ctaIcon: 'M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z M5.5 11a6.5 6.5 0 0 0 13 0 M12 17.5V21',
+        cta: '날짜 말하기', ctaMeta: '“계란은 10월 20일까지야”', href: links.listen, more: false }
+    ];
+
+    // 하단의 큰 타원 유리면. 얼굴은 그 윗선 안쪽을 따라 놓인다.
+    var r1 = function (v) { return Math.round(v * 10) / 10; };
+    var rx = g.w * 0.9, ry = 170, top = 40;
+    var ecy = top + ry;
+    var a = rx - 36, b = ry - 36;
+    var xs = [0.13, 0.315, 0.5, 0.685, 0.87];
+
+    var st = this.state || {};
+    var sel = (st.sel === undefined || st.sel === null) ? 1 : st.sel;
+    var self = this;
+    var tokens = bands.map(function (bd, i) {
+      var on = i === sel;
+      var x = g.w * xs[i];
+      var u = (x - g.w / 2) / a;
+      var root = Math.sqrt(1 - u * u);
+      var y = ecy - b * root;
+      var rot = Math.atan((b * u) / (a * root)) * 180 / Math.PI;
+      return {
+        line: faceSet[bd.key].line, fill: faceSet[bd.key].fill || 'M0 0', color: on ? bd.acc : K.c15,
+        cheek: cheekOn[bd.key] ? dot(7, 31, 3.6) + ' ' + dot(41, 31, 3.6) : 'M0 0',
+        aria: bd.word + ' ' + bd.count + '가지', pressed: on ? 'true' : 'false',
+        pick: function () { self.setState({ sel: i }); },
+        style: 'position: absolute; left: ' + r1(x - 26) + 'px; top: ' + r1(y - 26) + 'px; width: 52px; height: 52px; padding: 0; border: 0; border-radius: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;'
+          + ' transform: rotate(' + r1(rot) + 'deg);'
+          + ' background: transparent; overflow: visible;',
+        maneOn: on
+      };
+    });
+    var band = bands[sel];
+    // 선택된 얼굴 뒤 해바라기 모양 (색은 hsl로 적어 테마별로 직접 고른다)
+    var MANE = {
+      pastel: { fill: 'hsl(0,0%,100%)', stroke: 'hsla(0,0%,100%,0)', shadow: 'hsla(225,27%,11%,0.16)' },
+      white:  { fill: 'hsl(0,0%,100%)', stroke: 'hsla(225,15%,20%,0.08)', shadow: 'hsla(225,27%,11%,0.14)' },
+      glass:  { fill: 'hsla(0,0%,100%,0.55)', stroke: 'hsla(0,0%,100%,0.95)', shadow: 'hsla(230,30%,20%,0.18)' },
+      dark:   { fill: 'hsl(210,5%,25%)', stroke: 'hsla(0,0%,100%,0.06)', shadow: 'hsla(0,0%,0%,0.35)' }
+    }[THEME] || { fill: 'hsl(0,0%,100%)', stroke: 'hsla(0,0%,100%,0)', shadow: 'hsla(225,27%,11%,0.16)' };
+    band.noMore = !band.more;
+    // 재료 칩은 두 개까지. 넘치면 '다른 재료 N개' 칩 하나로 접는다(앱과 같음).
+    band.chips = band.items.length > 2 ? band.items.slice(0, 2).concat(['다른 재료 ' + (band.items.length - 2) + '개']) : band.items;
+    // 글래스 테마 전용: 떠 있는 유리 탭 바 (색은 hsl로 적어 테마 변환에서 제외)
+    var GLASS_ON = THEME === 'glass';
+    var gNav = function (bottomPx) {
+      return 'left: 14px; right: 14px; bottom: ' + bottomPx + 'px; height: 62px; padding: 0 6px; border-radius: 31px; border: 1px solid hsla(0,0%,100%,0.75);'
+        + ' background: linear-gradient(135deg, hsla(0,0%,100%,0.42) 0%, hsla(0,0%,100%,0.1) 50%, hsla(0,0%,100%,0.26) 100%);'
+        + ' backdrop-filter: blur(14px) saturate(190%); -webkit-backdrop-filter: blur(14px) saturate(190%);'
+        + ' box-shadow: inset 1px 1px 0 hsla(0,0%,100%,0.95), inset -1px -1px 0 hsla(0,0%,100%,0.45), inset 0 -12px 20px hsla(0,0%,100%,0.2), 0 0 0 0.5px hsla(230,20%,20%,0.15), 0 12px 30px hsla(230,30%,20%,0.13)';
+    };
+    var gTab = 'margin: 7px 0; border-radius: 24px; background: linear-gradient(135deg, hsla(0,0%,100%,0.72) 0%, hsla(0,0%,100%,0.22) 55%, hsla(0,0%,100%,0.4) 100%);'
+      + ' box-shadow: inset 1px 1px 0 hsla(0,0%,100%,1), inset -1px -1px 0 hsla(0,0%,100%,0.5), 0 0 0 0.5px hsla(230,20%,20%,0.12), 0 4px 12px hsla(230,30%,20%,0.10)';
+
+    var selX = g.w * xs[sel], selU = (selX - g.w / 2) / a, selY = ecy - b * Math.sqrt(1 - selU * selU);
+    var hx = String(band.acc).replace('#', ''), hn = parseInt(hx.length === 6 ? hx : '8A94A8', 16);
+    var tint = function (al) { return 'rgb' + 'a(' + ((hn >> 16) & 255) + ',' + ((hn >> 8) & 255) + ',' + (hn & 255) + ',' + al + ')'; };
+    var gOval = 'border: 1px solid hsla(0,0%,100%,0.85); background: linear-gradient(180deg, hsla(0,0%,100%,0.42) 0%, hsla(0,0%,100%,0.1) 42%, hsla(0,0%,100%,0.05) 100%);'
+      + ' backdrop-filter: blur(16px) saturate(190%); -webkit-backdrop-filter: blur(16px) saturate(190%);'
+      + ' box-shadow: inset 0 2px 1px hsla(0,0%,100%,1), inset 0 14px 24px hsla(0,0%,100%,0.32), 0 -1px 0 hsla(230,20%,20%,0.14), 0 -14px 36px hsla(230,30%,20%,0.10)';
+    var gGlow = 'position: absolute; left: ' + r1(selX - 80) + 'px; top: ' + r1(selY - 64) + 'px; width: 160px; height: 128px; border-radius: 50%;'
+      + ' background: radial-gradient(closest-side, ' + tint(0.42) + ', ' + tint(0) + ');';
+    return { K: K, themeName: THEME, FNT: FNT, rootBg: K['root_' + band.key], g_nav: GLASS_ON ? gNav(Math.max(g.bottom - 12, 12)) : '', navH: 64 + g.bottom, g_tab: GLASS_ON ? gTab : '', g_on: GLASS_ON, g_oval: GLASS_ON ? gOval : '', g_glow: gGlow,
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom,
+      c1: !c2 && !c3, c2: c2, c3: c3,
+      mascotSize: g.mascot, mascotHint: g.mascot + 'px,' + g.mascot + 'px',
+      ovalLeft: r1(g.w / 2 - rx), ovalW: r1(rx * 2), ovalH: ry * 2,
+      cheekFill: 'hsla(352,100%,72%,0.45)', maneFill: MANE.fill, maneStroke: MANE.stroke, maneStyle: 'position: absolute; left: -8px; top: -8px; filter: drop-shadow(0 8px 12px ' + MANE.shadow + ')',
+      band: band, wordSize: band.word.length >= 12 ? 36 : (band.word.length >= 9 ? 38 : 44), tokens: tokens, links: links
+    };
+  }
+}
+</script>
+</body>
+</html>

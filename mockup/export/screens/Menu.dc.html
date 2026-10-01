@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>메뉴 상세</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 16px 0">
+    <a href="{{links.home}}" aria-label="뒤로" style="width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: {{K.c0}}; background: {{K.c1}}; border: 1px solid {{K.c2}}; box-shadow: 0 4px 12px {{K.c3}}; text-decoration: none; {{K.fxc}}">
+      <sc-if value="{{isIOS}}" hint-placeholder-val="{{ true }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+      </sc-if>
+      <sc-if value="{{isAndroid}}" hint-placeholder-val="{{ false }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+      </sc-if>
+    </a>
+    <div style="display: flex; align-items: center; gap: 6px; height: 36px; box-sizing: border-box; padding: 0 12px; border-radius: 999px; background: {{K.c1}}; border: 1px solid {{K.c2}}; box-shadow: 0 4px 12px {{K.c3}}; font-size: 13px; font-weight: 700; {{K.fxc}}">
+      <span style="width: 7px; height: 7px; border-radius: 50%; background: {{K.c4}}; box-shadow: 0 0 0 3px {{K.c5}}"></span>
+      호출 대기 중
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 16px; padding: 14px 20px 0">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; gap: 6px">
+        <span style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; padding: 5px 10px; border-radius: 999px; background: {{K.c6}}; color: {{K.c7}}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          지금 가능
+        </span>
+      </div>
+      <h1 style="margin: 0; font-size: 32px; line-height: 1.2; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em">두부계란전</h1>
+      <div style="font-size: 15px; font-weight: 500; color: {{K.c8}}">약 15분 · 조리 환경에 따라 달라요</div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px; padding: 10px 14px; border-radius: 16px; background: {{K.c9}}; border: 1px solid {{K.c10}}; {{K.fx}}">
+        <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true" style="flex-shrink: 0">
+          <circle cx="24" cy="24" r="20" fill="{{K.c21}}"></circle>
+          <path d="{{urgentFill}}" fill="{{K.c22}}"></path>
+          <path d="M14 18.5 l6 -2 M34 18.5 l-6 -2" fill="none" stroke="{{K.c23}}" stroke-width="2.2" stroke-linecap="round"></path>
+        </svg>
+        <span style="font-size: 15px; font-weight: 600; color: {{K.c11}}">소비기한이 내일인 두부를 먼저 써요</span>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <span style="font-size: 16px; font-weight: 700">인분</span>
+      <div style="display: flex; align-items: center; gap: 4px; padding: 4px; border-radius: 26px; background: {{K.c12}}; border: 1px solid {{K.c10}}; box-shadow: 0 4px 12px {{K.c3}}; {{K.fx}}">
+        <button type="button" aria-label="인분 줄이기" style="width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: {{K.c0}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg>
+        </button>
+        <span style="min-width: 64px; text-align: center; font-size: 18px; font-weight: 700">2인분</span>
+        <button type="button" aria-label="인분 늘리기" style="width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: {{K.c13}}; color: {{K.c14}}; display: flex; align-items: center; justify-content: center; cursor: pointer; {{K.fxd}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <section aria-label="재료" style="border-radius: 22px; background: {{K.c15}}; border: 1px solid {{K.c10}}; box-shadow: 0 6px 18px {{K.c3}}; padding: 6px 0; {{K.fx}}">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 10px 16px 6px">
+        <span style="font-size: 15px; font-weight: 700">재료</span>
+        <span style="font-size: 13px; font-weight: 500; color: {{K.c8}}">2인분 기준</span>
+      </div>
+      <sc-for list="{{ingredients}}" as="i" hint-placeholder-count="5">
+        <div style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 4px 16px; box-sizing: border-box">
+          <span style="{{i.iconStyle}}">{{i.icon}}</span>
+          <span style="font-size: 16px; font-weight: {{i.weight}}">{{i.name}}</span>
+          <span style="flex-grow: 1; font-size: 14px; font-weight: 500; color: {{K.c8}}">{{i.amount}}</span>
+          <span style="font-size: 13px; font-weight: 700; color: {{i.statusColor}}">{{i.status}}</span>
+        </div>
+      </sc-for>
+    </section>
+
+    <section aria-label="조리 순서" style="border-radius: 22px; background: {{K.c15}}; border: 1px solid {{K.c10}}; box-shadow: 0 6px 18px {{K.c3}}; padding: 16px 16px 8px; {{K.fx}}">
+      <div style="font-size: 15px; font-weight: 700; margin-bottom: 10px">조리 순서</div>
+      <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px">
+        <sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
+          <li style="display: flex; gap: 12px; align-items: flex-start">
+            <span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; background: {{K.c16}}; color: {{K.c14}}; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{s.n}}</span>
+            <span style="font-size: 16px; line-height: 1.5; font-weight: 500; padding-top: 2px">{{s.text}}</span>
+          </li>
+        </sc-for>
+      </ol>
+    </section>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: 8px; padding: 28px 20px {{footBottom}}px; background: linear-gradient(to bottom, {{K.c17}} 0%, {{K.c18}} 34%)">
+    <a href="{{links.cook}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 56px; border: 0; text-decoration: none; border-radius: 28px; background: {{K.c13}}; color: {{K.c14}}; font-size: 17px; font-weight: 700; box-shadow: 0 10px 22px {{K.c19}}; {{K.fxd}}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+      조리 모드 시작
+    </a>
+    <div style="text-align: center; font-size: 13px; line-height: 1.5; font-weight: 500; color: {{K.c20}}; white-space: pre-line">단계마다 읽어 주고, 타이머도 말로 맞춰요.
+다 만들면 쓴 재료를 알아서 빼 둘게요.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"rgba(255,255,255,0.8)","c2":"rgba(255,255,255,0.95)","c3":"rgba(20,25,35,0.06)","c4":"#3F4FD1","c5":"rgba(63,79,209,0.18)","c6":"#DDF3E4","c7":"#17703C","c8":"#5F6670","c9":"rgba(255,255,255,0.7)","c10":"rgba(255,255,255,0.95)","c11":"#B0341A","c12":"rgba(255,255,255,0.8)","c13":"#15181D","c14":"#FFFFFF","c15":"rgba(255,255,255,0.86)","c16":"#15181D","c17":"rgba(248,227,217,0)","c18":"rgba(248,227,217,0.96)","c19":"rgba(20,25,35,0.22)","c20":"#4E5661","c21":"#FFB3A0","c22":"#333A52","c23":"#333A52","c24":"#FFEBC7","c25":"#8F5A08","root":"radial-gradient(125% 70% at 50% 0%, #FFFFFF 0%, #FFF8F4 45%, #F8E3D9 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#FFFFFF","c2":"rgba(17,20,26,0.07)","c3":"rgba(20,25,35,0.06)","c4":"#2339ED","c5":"rgba(35,57,237,0.18)","c6":"#D3F3DD","c7":"#0A7D3A","c8":"#5F6670","c9":"#FFFFFF","c10":"rgba(17,20,26,0.07)","c11":"#BB2D0F","c12":"#FFFFFF","c13":"#15181D","c14":"#FFFFFF","c15":"#FFFFFF","c16":"#15181D","c17":"rgba(246,247,249,0)","c18":"rgba(246,247,249,0.97)","c19":"rgba(20,25,35,0.22)","c20":"#4E5661","c21":"#F3AA97","c22":"#333A52","c23":"#333A52","c24":"#FFE9C2","c25":"#8F5A08","root":"radial-gradient(120% 45% at 50% 0%, rgba(245,120,61,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c2":"rgba(255,255,255,0.7)","c3":"rgba(20,25,45,0.06)","c4":"linear-gradient(180deg, rgba(91,107,232,0.94) 0%, rgba(47,66,225,0.94) 100%)","c5":"rgba(32,53,223,0.18)","c6":"rgba(60,221,111,0.13)","c7":"#11763B","c8":"#5F6670","c9":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c10":"rgba(255,255,255,0.92)","c11":"#B13419","c12":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c13":"linear-gradient(180deg, rgba(58,62,72,0.92) 0%, rgba(18,20,26,0.94) 100%)","c14":"#FFFFFF","c15":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c16":"linear-gradient(180deg, rgba(58,62,72,0.92) 0%, rgba(18,20,26,0.94) 100%)","c17":"rgba(238,240,244,0)","c18":"rgba(238,240,244,0.95)","c19":"rgba(20,25,45,0.2)","c20":"#4E5661","c21":"#FFB3A0","c22":"#333A52","c23":"#333A52","c24":"rgba(255,173,26,0.13)","c25":"#8F5A08","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"rgba(45,46,49,0.96)","c2":"rgba(232,234,237,0.08)","c3":"rgba(0,0,0,0.11)","c4":"#8AB4F8","c5":"rgba(138,180,248,0.11)","c6":"rgba(129,201,149,0.16)","c7":"#81C995","c8":"#BDC1C6","c9":"rgba(45,46,49,0.96)","c10":"rgba(232,234,237,0.08)","c11":"#F28B82","c12":"rgba(45,46,49,0.96)","c13":"#E8EAED","c14":"#202124","c15":"rgba(45,46,49,0.96)","c16":"#E8EAED","c17":"rgba(32,33,36,0)","c18":"rgba(32,33,36,0.96)","c19":"rgba(0,0,0,0.3)","c20":"#BDC1C6","c21":"#FFB3A0","c22":"#333A52","c23":"#333A52","c24":"rgba(252,173,112,0.16)","c25":"#FCAD70","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24 } : { w: 390, h: 844, top: 59, bottom: 34 };
+    var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
+    var sp = function (cx, cy, h) { return 'M' + (cx - 2.5) + ' ' + (cy - h / 2 + 2.5) + ' a2.5 2.5 0 0 1 5 0 v' + (h - 5) + ' a2.5 2.5 0 0 1 -5 0 z'; };
+    var dt = function (cx, cy, r) { return 'M' + (cx - r) + ' ' + cy + ' a' + r + ' ' + r + ' 0 1 0 ' + (2 * r) + ' 0 a' + r + ' ' + r + ' 0 1 0 ' + (-2 * r) + ' 0 z'; };
+    var ok = { icon: '✓', bg: K.c6, fg: K.c7 };
+    var chk = { icon: '?', bg: K.c24, fg: K.c25 };
+    // 재료 상태는 있어요 · 확인 필요 · 없어요 세 갈래(앱과 같음). 꼭 필요한 재료는 굵게, 있으면 좋은 재료는 보통 굵기.
+    var mk = function (t, name, amount, status, statusColor, optional) {
+      return {
+        name: name, amount: amount, status: status, statusColor: statusColor, icon: t.icon, weight: optional ? 500 : 700,
+        iconStyle: 'width: 24px; height: 24px; flex-shrink: 0; border-radius: 50%; background: ' + t.bg + '; color: ' + t.fg + '; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center'
+      };
+    };
+    return { K: K, themeName: THEME, FNT: FNT,
+      w: g.w, h: g.h, top: g.top, footBottom: g.bottom + 8,
+      isIOS: !android, isAndroid: android,
+      urgentFill: sp(19, 25, 9) + ' ' + sp(29, 25, 9) + ' ' + dt(24, 32, 2.2),
+      ingredients: [
+        mk(ok, '두부', '1모', '있어요', K.c7),
+        mk(ok, '계란', '2개', '있어요', K.c7),
+        mk(ok, '식용유', '2큰술', '있어요', K.c7),
+        mk(chk, '대파', '약간', '확인 필요', K.c25, true),
+        mk(ok, '소금', '약간', '있어요', K.c7, true)
+      ],
+      steps: [
+        { n: 1, text: '두부를 1cm 두께로 썰어 물기를 뺀다' },
+        { n: 2, text: '계란을 풀어 소금으로 간한다' },
+        { n: 3, text: '두부에 계란물을 묻힌다' },
+        { n: 4, text: '달군 팬에 식용유를 두르고 양면을 노릇하게 부친다' }
+      ],
+      links: { home: L('Main'), cook: L('Cooking') }
+    };
+  }
+}
+</script>
+</body>
+</html>

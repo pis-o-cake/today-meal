@@ -8,12 +8,12 @@
 <body>
 <x-dc>
 <helmet>
-<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(/_blob/b80c3f239a19ae2ac0629973c9271ec7) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
 </helmet>
-<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
 
   <header style="padding: 12px 20px 0">
-    <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800; letter-spacing: -0.045em">마이페이지</h1>
+    <h1 style="margin: 0; font-size: 30px; line-height: 1.2; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em">마이페이지</h1>
   </header>
 
   <div style="flex-grow: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 18px; padding: 16px 20px 0">
@@ -54,8 +54,21 @@
                   <span style="{{r.knobStyle}}"></span>
                 </button>
               </sc-if>
-              <sc-if value="{{r.isLink}}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{r.isStepper}}" hint-placeholder-val="{{ false }}">
+                <div role="group" aria-label="{{r.stepLabel}}" style="display: flex; align-items: center">
+                  <button type="button" aria-label="줄이기" onClick="{{r.dec}}" style="{{r.decStyle}}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"></path></svg>
+                  </button>
+                  <span style="width: 56px; text-align: center; font-size: 16px; font-weight: 700; color: {{K.c0}}">{{r.value}}</span>
+                  <button type="button" aria-label="늘리기" onClick="{{r.inc}}" style="{{r.incStyle}}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12M12 6v12"></path></svg>
+                  </button>
+                </div>
+              </sc-if>
+              <sc-if value="{{r.isValue}}" hint-placeholder-val="{{ true }}">
                 <span style="font-size: 15px; font-weight: 500; color: {{K.c5}}">{{r.value}}</span>
+              </sc-if>
+              <sc-if value="{{r.chev}}" hint-placeholder-val="{{ true }}">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{K.c11}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
               </sc-if>
             </div>
@@ -66,30 +79,35 @@
   </div>
 
   <nav aria-label="주요 화면" style="position: absolute; left: 0; right: 0; bottom: 0; height: {{navH}}px; box-sizing: border-box; padding: 0 12px {{bottom}}px; display: flex; border-radius: 28px 28px 0 0; background: {{K.c8}}; border-top: 1px solid {{K.c2}}; box-shadow: 0 -12px 32px {{K.c9}}; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); {{g_nav}}">
-    <a href="{{links.home}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: {{K.c10}}; text-decoration: none; font-size: 12px; font-weight: 500">
+    <a href="{{links.home}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c10}}; font-weight: 500">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6.5a3 4 0 1 0 6 0a3 4 0 1 0 -6 0M8 10.5V21M15 3l.5 18M19 3l-1 18"></path></svg>
       뭐 먹지?
     </a>
-    <a href="{{links.fridge}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: {{K.c10}}; text-decoration: none; font-size: 12px; font-weight: 500">
+    <a href="{{links.fridge}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c10}}; font-weight: 500">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="3"></rect><path d="M5 10h14M8.5 6v1.5M8.5 13v3"></path></svg>
       냉장고
     </a>
-    <a href="{{links.history}}" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: {{K.c10}}; text-decoration: none; font-size: 12px; font-weight: 500">
+    <a href="{{links.cook}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c10}}; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M3 13.5h2 M19 13.5h2 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+      조리
+    </a>
+    <a href="{{links.history}}" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c10}}; font-weight: 500">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
       기록
     </a>
-    <a href="{{links.my}}" aria-current="page" style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: {{K.c0}}; text-decoration: none; font-size: 12px; font-weight: 700; {{g_tab}}">
+    <a href="{{links.my}}" aria-current="page" style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: {{K.c0}}; font-weight: 700; {{g_tab}}">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"></path></svg>
       마이페이지
     </a>
   </nav>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var THEME = (this.state && this.state.themePick) || this.props.theme || 'pastel';
-    var K = ({"pastel":{"c0":"#15181D","c1":"rgba(255,255,255,0.9)","c2":"rgba(255,255,255,0.95)","c3":"rgba(20,25,35,0.06)","c4":"#EEF0FF","c5":"#5F6670","c6":"#6B727B","c7":"rgba(20,25,35,0.05)","c8":"rgba(255,255,255,0.72)","c9":"rgba(20,25,35,0.07)","c10":"#7C838C","c11":"#A2A8B0","c12":"#5A6BEA","c13":"rgba(21,24,29,0.08)","c14":"#3F4FD1","c15":"#B0341A","c16":"rgba(21,24,29,0.06)","c17":"#5A6BEA","c18":"#D5D9E0","c19":"#FFFFFF","c20":"rgba(20,25,35,0.2)","root":"radial-gradient(130% 70% at 50% 0%, #FFFFFF 0%, #F6F6F9 45%, #E8EAF0 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#FFFFFF","c2":"rgba(17,20,26,0.07)","c3":"rgba(20,25,35,0.06)","c4":"#EEF0FF","c5":"#5F6670","c6":"#6B727B","c7":"rgba(20,25,35,0.05)","c8":"#FFFFFF","c9":"rgba(20,25,35,0.07)","c10":"#7C838C","c11":"#A2A8B0","c12":"#2B42EE","c13":"rgba(21,24,29,0.08)","c14":"#1024C6","c15":"#BB2D0F","c16":"rgba(21,24,29,0.06)","c17":"#2B42EE","c18":"#D5D9E0","c19":"#FFFFFF","c20":"rgba(20,25,35,0.2)","root":"#F4F5F7","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c2":"rgba(255,255,255,0.92)","c3":"rgba(20,25,45,0.06)","c4":"rgba(120,128,150,0.10)","c5":"#5F6670","c6":"#6B727B","c7":"rgba(20,25,45,0.05)","c8":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c9":"rgba(20,25,45,0.07)","c10":"#7C838C","c11":"#A2A8B0","c12":"#1D34E2","c13":"rgba(20,25,45,0.08)","c14":"#1D30C9","c15":"#B13419","c16":"rgba(21,24,29,0.06)","c17":"linear-gradient(180deg, rgba(97,113,235,0.94) 0%, rgba(51,72,229,0.94) 100%)","c18":"rgba(120,128,150,0.21)","c19":"#FFFFFF","c20":"rgba(20,25,45,0.2)","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"rgba(45,46,49,0.96)","c2":"rgba(232,234,237,0.08)","c3":"rgba(0,0,0,0.11)","c4":"#3C4043","c5":"#BDC1C6","c6":"#9AA0A6","c7":"rgba(0,0,0,0.09)","c8":"rgba(45,46,49,0.96)","c9":"rgba(0,0,0,0.13)","c10":"#9AA0A6","c11":"#9AA0A6","c12":"rgba(138,180,248,0.6)","c13":"rgba(0,0,0,0.14)","c14":"#8AB4F8","c15":"#F28B82","c16":"rgba(232,234,237,0.1)","c17":"#8AB4F8","c18":"#5F6368","c19":"#FFFFFF","c20":"rgba(0,0,0,0.3)","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var K = ({"pastel":{"c0":"#15181D","c1":"rgba(255,255,255,0.9)","c2":"rgba(255,255,255,0.95)","c3":"rgba(20,25,35,0.06)","c4":"#EEF0FF","c5":"#5F6670","c6":"#6B727B","c7":"rgba(20,25,35,0.05)","c8":"rgba(255,255,255,0.72)","c9":"rgba(20,25,35,0.07)","c10":"#7C838C","c11":"#A2A8B0","c12":"#5A6BEA","c13":"rgba(21,24,29,0.08)","c14":"#3F4FD1","c15":"#EEF0F3","c16":"#A2A8B0","c17":"#B0341A","c18":"rgba(21,24,29,0.06)","c19":"#5A6BEA","c20":"#D5D9E0","c21":"#FFFFFF","c22":"rgba(20,25,35,0.2)","root":"radial-gradient(130% 70% at 50% 0%, #FFFFFF 0%, #F6F6F9 45%, #E8EAF0 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#FFFFFF","c2":"rgba(17,20,26,0.07)","c3":"rgba(20,25,35,0.06)","c4":"#EEF0FF","c5":"#5F6670","c6":"#6B727B","c7":"rgba(20,25,35,0.05)","c8":"#FFFFFF","c9":"rgba(20,25,35,0.07)","c10":"#7C838C","c11":"#A2A8B0","c12":"#2B42EE","c13":"rgba(21,24,29,0.08)","c14":"#1024C6","c15":"#EEF0F3","c16":"#A2A8B0","c17":"#BB2D0F","c18":"rgba(21,24,29,0.06)","c19":"#2B42EE","c20":"#D5D9E0","c21":"#FFFFFF","c22":"rgba(20,25,35,0.2)","root":"#F4F5F7","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c2":"rgba(255,255,255,0.92)","c3":"rgba(20,25,45,0.06)","c4":"rgba(120,128,150,0.10)","c5":"#5F6670","c6":"#6B727B","c7":"rgba(20,25,45,0.05)","c8":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c9":"rgba(20,25,45,0.07)","c10":"#7C838C","c11":"#A2A8B0","c12":"#1D34E2","c13":"rgba(20,25,45,0.08)","c14":"#1D30C9","c15":"rgba(120,128,150,0.10)","c16":"#A2A8B0","c17":"#B13419","c18":"rgba(21,24,29,0.06)","c19":"linear-gradient(180deg, rgba(97,113,235,0.94) 0%, rgba(51,72,229,0.94) 100%)","c20":"rgba(120,128,150,0.21)","c21":"#FFFFFF","c22":"rgba(20,25,45,0.2)","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"rgba(45,46,49,0.96)","c2":"rgba(232,234,237,0.08)","c3":"rgba(0,0,0,0.11)","c4":"#3C4043","c5":"#BDC1C6","c6":"#9AA0A6","c7":"rgba(0,0,0,0.09)","c8":"rgba(45,46,49,0.96)","c9":"rgba(0,0,0,0.13)","c10":"#9AA0A6","c11":"#9AA0A6","c12":"rgba(138,180,248,0.6)","c13":"rgba(0,0,0,0.14)","c14":"#8AB4F8","c15":"#3C4043","c16":"#80868B","c17":"#F28B82","c18":"rgba(232,234,237,0.1)","c19":"#8AB4F8","c20":"#5F6368","c21":"#FFFFFF","c22":"rgba(0,0,0,0.3)","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
     var android = (this.props.platform || 'ios') === 'android';
     var g = android ? { w: 412, h: 915, top: 40, bottom: 24 } : { w: 390, h: 844, top: 59, bottom: 34 };
     var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
@@ -99,11 +117,11 @@ class Component extends DCLogic {
 
     var raw = [
       { title: '음성', rows: [
-        { label: '호출어', value: '헤이 키친' },
+        { label: '호출어', value: '헤이 키친', fixed: true },
         { label: '음성으로 대답하기', toggle: 'voiceReply', def: true }
       ] },
       { title: '식사', rows: [
-        { label: '기본 인분', value: '2인분' },
+        { label: '기본 인분', stepper: 'servings', def: 2 },
         { label: '늘 있는 양념', value: '간장 외 4가지' },
         { label: '피하는 재료', value: '없음' }
       ] },
@@ -138,15 +156,23 @@ class Component extends DCLogic {
         title: s.title,
         rows: s.rows.map(function (r, i) {
           var isToggle = !!r.toggle;
+          var isStepper = !!r.stepper;
           var val = isToggle ? on(r.toggle, r.def) : false;
+          var n = isStepper ? (self.state && self.state[r.stepper] != null ? self.state[r.stepper] : r.def) : 0;
+          var round = function (enabled) {
+            return 'width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ' + K.c15 + '; cursor: pointer; color: ' + (enabled ? K.c0 : K.c16);
+          };
+          var step = function (d) { return function () { var u = {}; u[r.stepper] = Math.max(1, Math.min(8, n + d)); self.setState(u); }; };
           return {
-            label: r.label, value: r.value || '', isToggle: isToggle, isLink: !isToggle,
+            label: r.label, value: isStepper ? n + '인분' : (r.value || ''), isToggle: isToggle,
+            isStepper: isStepper, isValue: !isToggle && !isStepper, chev: !isToggle && !isStepper && !r.fixed,
+            stepLabel: r.label + ' ' + n + '인분', dec: step(-1), inc: step(1), decStyle: round(n > 1), incStyle: round(n < 8),
             pressed: val ? 'true' : 'false',
-            labelColor: r.danger ? K.c15 : K.c0,
+            labelColor: r.danger ? K.c17 : K.c0,
             toggle: function () { var u = {}; u[r.toggle] = !on(r.toggle, r.def); self.setState(u); },
-            rowStyle: 'display: flex; align-items: center; gap: 8px; min-height: 54px; box-sizing: border-box; padding: 6px 16px;' + (i > 0 ? ' border-top: 1px solid ' + K.c16 + ';' : ''),
-            trackStyle: 'position: relative; width: 52px; height: 32px; padding: 0; border: 0; border-radius: 16px; cursor: pointer; background: ' + (val ? K.c17 : K.c18),
-            knobStyle: 'position: absolute; top: 3px; left: ' + (val ? 23 : 3) + 'px; width: 26px; height: 26px; border-radius: 50%; background: ' + K.c19 + '; box-shadow: 0 2px 6px ' + K.c20 + ''
+            rowStyle: 'display: flex; align-items: center; gap: 8px; min-height: 54px; box-sizing: border-box; padding: 6px 16px;' + (i > 0 ? ' border-top: 1px solid ' + K.c18 + ';' : ''),
+            trackStyle: 'position: relative; width: 52px; height: 32px; padding: 0; border: 0; border-radius: 16px; cursor: pointer; background: ' + (val ? K.c19 : K.c20),
+            knobStyle: 'position: absolute; top: 3px; left: ' + (val ? 23 : 3) + 'px; width: 26px; height: 26px; border-radius: 50%; background: ' + K.c21 + '; box-shadow: 0 2px 6px ' + K.c22 + ''
           };
         })
       };
@@ -162,10 +188,10 @@ class Component extends DCLogic {
     var gTab = 'margin: 7px 0; border-radius: 24px; background: linear-gradient(135deg, hsla(0,0%,100%,0.72) 0%, hsla(0,0%,100%,0.22) 55%, hsla(0,0%,100%,0.4) 100%);'
       + ' box-shadow: inset 1px 1px 0 hsla(0,0%,100%,1), inset -1px -1px 0 hsla(0,0%,100%,0.5), 0 0 0 0.5px hsla(230,20%,20%,0.12), 0 4px 12px hsla(230,30%,20%,0.10)';
 
-    return { K: K, themeName: THEME, g_nav: GLASS_ON ? gNav(Math.max(g.bottom - 12, 12)) : '', g_tab: GLASS_ON ? gTab : '',
+    return { K: K, themeName: THEME, FNT: FNT, g_nav: GLASS_ON ? gNav(Math.max(g.bottom - 12, 12)) : '', g_tab: GLASS_ON ? gTab : '',
       w: g.w, h: g.h, top: g.top, bottom: g.bottom, navH: 64 + g.bottom,
       sections: sections, themes: themes,
-      links: { home: L('Main'), fridge: L('Fridge'), history: L('History'), my: L('MyPage') }
+      links: { home: L('Main'), fridge: L('Fridge'), cook: L('CookHome'), history: L('History'), my: L('MyPage') }
     };
   }
 }

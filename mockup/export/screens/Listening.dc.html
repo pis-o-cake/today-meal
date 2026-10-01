@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>듣는 중</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
+
+  <div style="display: flex; align-items: center; gap: 14px; padding: 10px 16px 0 22px">
+    <sc-if value="{{stepsListen}}" hint-placeholder-val="{{ true }}">
+    <ol aria-label="진행 단계" style="flex-grow: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; align-items: flex-end; gap: 6px">
+      <li aria-current="step" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 9px">
+        <div style="position: relative; height: 6px; border-radius: 3px; overflow: hidden; background: {{K.c1}}; box-shadow: 0 2px 8px #5A6BEA55">
+          <svg width="100%" height="6" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; left: 0; top: 0; display: block">
+            <defs><linearGradient id="stepSheenListen" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="{{K.c17}}" stop-opacity="0"></stop><stop offset="0.5" stop-color="{{K.c17}}" stop-opacity="0.8"></stop><stop offset="1" stop-color="{{K.c17}}" stop-opacity="0"></stop></linearGradient></defs>
+            <rect x="-50" y="0" width="50" height="6" fill="url(#stepSheenListen)"><animate attributeName="x" values="-50;100" dur="1.5s" repeatCount="indefinite"></animate></rect>
+          </svg>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 20px; font-size: 14px; font-weight: 800; letter-spacing: -0.03em; color: {{K.c2}}; white-space: nowrap">
+          <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="4" fill="{{K.c18}}" fill-opacity="0.3"><animate attributeName="r" values="4;8;4" dur="1.4s" repeatCount="indefinite"></animate><animate attributeName="fill-opacity" values="0.35;0;0.35" dur="1.4s" repeatCount="indefinite"></animate></circle><circle cx="8" cy="8" r="4" fill="{{K.c18}}"></circle></svg>
+          듣는 중
+        </div>
+      </li>
+      <li style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 9px">
+        <div style="height: 6px; border-radius: 3px; background: {{K.c3}}"></div>
+        <div style="display: flex; align-items: center; justify-content: center; height: 20px; font-size: 14px; font-weight: 600; color: {{K.c4}}; white-space: nowrap">확인</div>
+      </li>
+      <li style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 9px">
+        <div style="height: 6px; border-radius: 3px; background: {{K.c3}}"></div>
+        <div style="display: flex; align-items: center; justify-content: center; height: 20px; font-size: 14px; font-weight: 600; color: {{K.c4}}; white-space: nowrap">반영</div>
+      </li>
+    </ol>
+    </sc-if>
+    <sc-if value="{{stepsConfirm}}" hint-placeholder-val="{{ false }}">
+    <ol aria-label="진행 단계" style="flex-grow: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; align-items: flex-end; gap: 6px">
+      <li style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 9px">
+        <div style="height: 6px; border-radius: 3px; background: {{K.c1}}; opacity: 0.55"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 4px; height: 20px; font-size: 14px; font-weight: 600; color: {{K.c5}}; white-space: nowrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{K.c19}}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          듣기<span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">완료</span>
+        </div>
+      </li>
+      <li aria-current="step" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 9px">
+        <div style="position: relative; height: 6px; border-radius: 3px; overflow: hidden; background: {{K.c1}}; box-shadow: 0 2px 8px #5A6BEA55">
+          <svg width="100%" height="6" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; left: 0; top: 0; display: block">
+            <defs><linearGradient id="stepSheenCheck" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="{{K.c17}}" stop-opacity="0"></stop><stop offset="0.5" stop-color="{{K.c17}}" stop-opacity="0.8"></stop><stop offset="1" stop-color="{{K.c17}}" stop-opacity="0"></stop></linearGradient></defs>
+            <rect x="-50" y="0" width="50" height="6" fill="url(#stepSheenCheck)"><animate attributeName="x" values="-50;100" dur="1.5s" repeatCount="indefinite"></animate></rect>
+          </svg>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 20px; font-size: 14px; font-weight: 800; letter-spacing: -0.03em; color: {{K.c2}}; white-space: nowrap">
+          <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="4" fill="{{K.c18}}" fill-opacity="0.3"><animate attributeName="r" values="4;8;4" dur="1.4s" repeatCount="indefinite"></animate><animate attributeName="fill-opacity" values="0.35;0;0.35" dur="1.4s" repeatCount="indefinite"></animate></circle><circle cx="8" cy="8" r="4" fill="{{K.c18}}"></circle></svg>
+          확인 중
+        </div>
+      </li>
+      <li style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 9px">
+        <div style="height: 6px; border-radius: 3px; background: {{K.c3}}"></div>
+        <div style="display: flex; align-items: center; justify-content: center; height: 20px; font-size: 14px; font-weight: 600; color: {{K.c4}}; white-space: nowrap">반영</div>
+      </li>
+    </ol>
+    </sc-if>
+    <sc-if value="{{noSteps}}" hint-placeholder-val="{{ false }}">
+      <div style="flex-grow: 1"></div>
+    </sc-if>
+    <a href="{{links.home}}" aria-label="닫기" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: {{K.c6}}; background: {{K.c7}}; border: 1px solid {{K.c8}}; box-sizing: border-box; text-decoration: none; {{K.fxc}}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+  </div>
+
+  <main style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 24px; text-align: center">
+    <div style="position: relative; width: {{stage}}px; height: {{stage}}px; display: flex; align-items: center; justify-content: center">
+      <svg width="{{stage}}" height="{{stage}}" viewBox="-150 -150 300 300" aria-hidden="true" style="position: absolute; left: 0; top: 0">
+        <g opacity="{{waveOp}}">
+        <circle cx="0" cy="8" r="70" fill="none" stroke="{{K.c20}}" stroke-width="2" stroke-opacity="0">
+          <animate attributeName="r" values="70;146" dur="2.4s" repeatCount="indefinite"></animate>
+          <animate attributeName="stroke-opacity" values="0.35;0" dur="2.4s" repeatCount="indefinite"></animate>
+        </circle>
+        <circle cx="0" cy="8" r="70" fill="none" stroke="{{K.c20}}" stroke-width="2" stroke-opacity="0">
+          <animate attributeName="r" values="70;146" dur="2.4s" begin="0.8s" repeatCount="indefinite"></animate>
+          <animate attributeName="stroke-opacity" values="0.35;0" dur="2.4s" begin="0.8s" repeatCount="indefinite"></animate>
+        </circle>
+        <circle cx="0" cy="8" r="70" fill="none" stroke="{{K.c20}}" stroke-width="2" stroke-opacity="0">
+          <animate attributeName="r" values="70;146" dur="2.4s" begin="1.6s" repeatCount="indefinite"></animate>
+          <animate attributeName="stroke-opacity" values="0.35;0" dur="2.4s" begin="1.6s" repeatCount="indefinite"></animate>
+        </circle>
+        </g>
+        <circle cx="0" cy="8" r="96" fill="{{K.c21}}" opacity="0.45"></circle>
+      </svg>
+      <dc-import name="Mascot2" theme="{{themeName}}" mood="listening" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    </div>
+    <div style="font-size: 38px; line-height: 1.15; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em; color: {{K.c2}}; margin-top: 2px">{{title}}</div>
+    <sc-if value="{{showHint}}" hint-placeholder-val="{{ true }}">
+      <div style="font-size: 15px; font-weight: 500; color: {{K.c9}}; margin-top: 8px">말을 마치면 바로 확인해요</div>
+    </sc-if>
+    <sc-if value="{{showAnswer}}" hint-placeholder-val="{{ false }}">
+      <div style="max-width: 320px; font-size: 15px; line-height: 1.5; font-weight: 500; color: {{K.c6}}; margin-top: 8px">{{answer}}</div>
+    </sc-if>
+  </main>
+
+  <section aria-label="받아 적는 중" style="margin: 16px 20px 0; padding: 16px 20px 18px; border-radius: 24px; background: {{K.c10}}; border: 1px solid {{K.c11}}; box-shadow: 0 10px 28px {{K.c12}}; {{K.fx}}">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <svg width="30" height="20" viewBox="0 0 30 20" aria-hidden="true">
+        <rect x="1" y="6" width="4" height="8" rx="2" fill="{{K.c18}}">
+          <animate attributeName="height" values="8;16;6;12;8" dur="1.1s" repeatCount="indefinite"></animate>
+          <animate attributeName="y" values="6;2;7;4;6" dur="1.1s" repeatCount="indefinite"></animate>
+        </rect>
+        <rect x="7" y="3" width="4" height="14" rx="2" fill="{{K.c18}}">
+          <animate attributeName="height" values="14;6;18;9;14" dur="0.9s" repeatCount="indefinite"></animate>
+          <animate attributeName="y" values="3;7;1;5.5;3" dur="0.9s" repeatCount="indefinite"></animate>
+        </rect>
+        <rect x="13" y="1" width="4" height="18" rx="2" fill="{{K.c18}}">
+          <animate attributeName="height" values="18;10;14;6;18" dur="1.2s" repeatCount="indefinite"></animate>
+          <animate attributeName="y" values="1;5;3;7;1" dur="1.2s" repeatCount="indefinite"></animate>
+        </rect>
+        <rect x="19" y="4" width="4" height="12" rx="2" fill="{{K.c18}}">
+          <animate attributeName="height" values="12;18;8;14;12" dur="1s" repeatCount="indefinite"></animate>
+          <animate attributeName="y" values="4;1;6;3;4" dur="1s" repeatCount="indefinite"></animate>
+        </rect>
+        <rect x="25" y="7" width="4" height="6" rx="2" fill="{{K.c18}}">
+          <animate attributeName="height" values="6;12;8;16;6" dur="1.3s" repeatCount="indefinite"></animate>
+          <animate attributeName="y" values="7;4;6;2;7" dur="1.3s" repeatCount="indefinite"></animate>
+        </rect>
+      </svg>
+      <span style="font-size: 13px; font-weight: 700; color: {{K.c2}}">받아 적는 중</span>
+    </div>
+    <p style="margin: 10px 0 0; font-size: 21px; line-height: 1.45; font-weight: 600; letter-spacing: -0.03em">{{heard}}<sc-if value="{{cursor}}" hint-placeholder-val="{{ true }}"><span style="display: inline-block; width: 2px; height: 22px; margin-left: 3px; vertical-align: -4px; background: {{K.c13}}"></span></sc-if></p>
+  </section>
+
+  <div style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 16px 20px 8px">
+    <sc-if value="{{micLine}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 18px; font-size: 13px; font-weight: 500; color: {{K.c9}}">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: {{K.c14}}"></span>
+        마이크 사용 중 · 20초가 지나면 자동으로 끝나요
+      </div>
+    </sc-if>
+    <sc-if value="{{backLine}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; align-items: center; justify-content: center; height: 18px; font-size: 13px; font-weight: 500; color: {{K.c9}}">4초 뒤 호출 대기로 돌아가요</div>
+    </sc-if>
+    <sc-if value="{{blankLine}}" hint-placeholder-val="{{ false }}">
+      <div style="height: 18px"></div>
+    </sc-if>
+    <a href="{{links.home}}" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 26px; background: {{K.c15}}; border: 1px solid {{K.c8}}; box-shadow: 0 6px 18px {{K.c16}}; color: {{K.c0}}; text-decoration: none; font-size: 16px; font-weight: 700; {{K.fxc}}">취소</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"phase":{"editor":"enum","options":["listening","processing","answering"],"default":"listening"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"#5A6BEA","c2":"#3F4FD1","c3":"rgba(21,24,29,0.1)","c4":"#9AA0A8","c5":"#4E5661","c6":"#3E454E","c7":"rgba(255,255,255,0.74)","c8":"rgba(255,255,255,0.95)","c9":"#5F6670","c10":"rgba(255,255,255,0.82)","c11":"rgba(255,255,255,0.95)","c12":"rgba(20,25,35,0.08)","c13":"#3F4FD1","c14":"#D8431F","c15":"rgba(255,255,255,0.8)","c16":"rgba(20,25,35,0.07)","c17":"#FFFFFF","c18":"#3F4FD1","c19":"#5A6BEA","c20":"#6F7FF0","c21":"#FFFFFF","root":"radial-gradient(125% 80% at 50% 30%, #FFFFFF 0%, #F4F5FF 40%, #DCE2FF 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#2B42EE","c2":"#1024C6","c3":"rgba(21,24,29,0.1)","c4":"#9AA0A8","c5":"#4E5661","c6":"#3E454E","c7":"#FFFFFF","c8":"rgba(17,20,26,0.07)","c9":"#5F6670","c10":"#FFFFFF","c11":"rgba(17,20,26,0.07)","c12":"rgba(20,25,35,0.08)","c13":"#2339ED","c14":"#E43B13","c15":"#FFFFFF","c16":"rgba(20,25,35,0.07)","c17":"#FFFFFF","c18":"#3B4CD5","c19":"#4C5FE8","c20":"#6273EE","c21":"#FFFFFF","root":"radial-gradient(120% 45% at 50% 0%, rgba(61,93,245,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"linear-gradient(180deg, rgba(97,113,235,0.94) 0%, rgba(51,72,229,0.94) 100%)","c2":"#1D30C9","c3":"rgba(21,24,29,0.1)","c4":"#9AA0A8","c5":"#4E5661","c6":"#3E454E","c7":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c8":"rgba(255,255,255,0.7)","c9":"#5F6670","c10":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c11":"rgba(255,255,255,0.92)","c12":"rgba(20,25,45,0.08)","c13":"linear-gradient(180deg, rgba(91,107,232,0.94) 0%, rgba(47,66,225,0.94) 100%)","c14":"linear-gradient(180deg, rgba(229,100,69,0.94) 0%, rgba(216,67,31,0.94) 100%)","c15":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c16":"rgba(20,25,45,0.07)","c17":"#FFFFFF","c18":"#1930E6","c19":"#1932E6","c20":"#1832E7","c21":"#FFFFFF","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#8AB4F8","c2":"#8AB4F8","c3":"rgba(232,234,237,0.12)","c4":"#80868B","c5":"#BDC1C6","c6":"#BDC1C6","c7":"rgba(45,46,49,0.96)","c8":"rgba(232,234,237,0.08)","c9":"#BDC1C6","c10":"rgba(45,46,49,0.96)","c11":"rgba(232,234,237,0.08)","c12":"rgba(0,0,0,0.14)","c13":"#8AB4F8","c14":"#F28B82","c15":"rgba(45,46,49,0.96)","c16":"rgba(0,0,0,0.13)","c17":"#FFFFFF","c18":"#8AB4F8","c19":"#8AB4F8","c20":"#8AB4F8","c21":"rgba(232,234,237,0.05)","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24, mascot: 210, stage: 320 } : { w: 390, h: 844, top: 59, bottom: 34, mascot: 180, stage: 280 };
+    var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
+    // 듣기 화면 하나로 세 상태를 그린다: 듣는 중 · 확인하고 있어요(서버 응답 대기) · 답하고 있어요(조회 답·거절·실패).
+    var phase = this.props.phase || 'listening';
+    var listening = phase === 'listening', answering = phase === 'answering';
+    // 글래스는 한 화면에서 끝나므로 단계 막대가 없다.
+    var single = THEME === 'glass';
+    var P = {
+      title: listening ? '쫑긋, 듣고 있어요' : (answering ? '답하고 있어요' : '확인하고 있어요'),
+      heard: answering ? '두부 몇 개 남았어?' : '두부 두 모랑 계란 열 개 넣었어. 두부는 10월 3일까지야',
+      answer: '두부는 2모 남았어요. 소비기한은 10월 3일이에요.'
+    };
+    return { K: K, themeName: THEME, FNT: FNT,
+      stepsListen: !single && listening, stepsConfirm: !single && !listening, noSteps: single,
+      title: P.title, heard: P.heard, answer: P.answer, showHint: !answering, showAnswer: answering,
+      cursor: listening, waveOp: listening ? 1 : 0, micLine: listening, backLine: answering, blankLine: phase === 'processing',
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom,
+      stage: g.stage, mascotSize: g.mascot, mascotHint: g.mascot + 'px,' + g.mascot + 'px',
+      links: { home: L('Main') }
+    };
+  }
+}
+</script>
+</body>
+</html>

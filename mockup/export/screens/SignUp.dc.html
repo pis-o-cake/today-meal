@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>회원가입</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
+
+  <div style="display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; padding: 8px 16px 0">
+    <a href="{{links.login}}" aria-label="뒤로" style="width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: {{K.c0}}; background: {{K.c1}}; border: 1px solid {{K.c2}}; box-shadow: 0 4px 12px {{K.c3}}; text-decoration: none; {{K.fxc}}">
+      <sc-if value="{{isIOS}}" hint-placeholder-val="{{ true }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+      </sc-if>
+      <sc-if value="{{isAndroid}}" hint-placeholder-val="{{ false }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+      </sc-if>
+    </a>
+    <h1 style="margin: 0; text-align: center; font-size: 17px; font-weight: 700; letter-spacing: -0.03em">회원가입</h1>
+    <div></div>
+  </div>
+
+  <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; padding: 16px 20px 0">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 700; color: {{K.c4}}; padding-left: 2px">닉네임</span>
+        <input type="text" name="nickname" autocomplete="nickname" placeholder="냉장고 친구가 불러 줄 이름" style="{{inputStyle}}">
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 700; color: {{K.c4}}; padding-left: 2px">이메일</span>
+        <input type="email" name="email" autocomplete="email" inputmode="email" placeholder="example@email.com" style="{{inputStyle}}">
+      </label>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="position: relative">
+          <label style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 13px; font-weight: 700; color: {{K.c4}}; padding-left: 2px">비밀번호</span>
+            <input type="{{pwType}}" name="new-password" autocomplete="new-password" placeholder="8자 이상 입력" style="{{pwInputStyle}}">
+          </label>
+          <button type="button" aria-label="{{pwLabel}}" aria-pressed="{{pwPressed}}" onClick="{{togglePw}}" style="position: absolute; right: 3px; bottom: 3px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 10px; background: transparent; color: {{K.c5}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+            <sc-if value="{{pwHidden}}" hint-placeholder-val="{{ true }}">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </sc-if>
+            <sc-if value="{{pwShown}}" hint-placeholder-val="{{ false }}">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 5.6A10 10 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.6 6.6C4 8.3 2.5 12 2.5 12S6 18.5 12 18.5a9.4 9.4 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"></path></svg>
+            </sc-if>
+          </button>
+        </div>
+        <ul aria-label="비밀번호 조건" style="list-style: none; margin: 0; padding: 0 0 0 2px; display: flex; gap: 12px">
+          <sc-for list="{{rules}}" as="r" hint-placeholder-count="3">
+            <li style="display: flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 600; color: {{K.c6}}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+              {{r.t}}
+            </li>
+          </sc-for>
+        </ul>
+      </div>
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 700; color: {{K.c4}}; padding-left: 2px">비밀번호 확인</span>
+        <input type="password" name="confirm-password" autocomplete="new-password" placeholder="한 번 더 입력" style="{{inputStyle}}">
+      </label>
+    </div>
+
+    <div role="group" aria-label="약관 동의" style="margin-top: 18px; padding: 4px 0; border-radius: 16px; background: {{K.c7}}; border: 1px solid {{K.c8}}; box-shadow: 0 8px 24px {{K.c3}}; {{K.fx}}">
+      <button type="button" role="checkbox" aria-checked="{{allChecked}}" onClick="{{toggleAll}}" style="width: 100%; display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border: 0; background: transparent; font-family: inherit; font-size: 16px; font-weight: 700; color: {{K.c0}}; letter-spacing: -0.03em; cursor: pointer; text-align: left">
+        <span aria-hidden="true" style="{{allBox}}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{allCheck}}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        </span>
+        약관에 모두 동의해요
+      </button>
+      <div style="height: 1px; margin: 0 14px; background: {{K.c9}}"></div>
+      <sc-for list="{{terms}}" as="t" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; padding-right: 6px">
+          <button type="button" role="checkbox" aria-checked="{{t.checked}}" onClick="{{t.toggle}}" style="flex-grow: 1; display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 14px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 500; color: {{K.c4}}; cursor: pointer; text-align: left">
+            <span aria-hidden="true" style="{{t.box}}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="{{t.check}}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            </span>
+            <span><span style="{{t.tagStyle}}">{{t.tag}}</span> {{t.label}}</span>
+          </button>
+          <sc-if value="{{t.hasDoc}}" hint-placeholder-val="{{ true }}">
+            <a href="{{links.self}}" aria-label="{{t.docLabel}}" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: {{K.c10}}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+            </a>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top: auto; padding-top: 14px; display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px">
+      <sc-if value="{{canSubmit}}" hint-placeholder-val="{{ false }}">
+        <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 12px; background: {{K.c11}}; color: {{K.c12}}; text-decoration: none; font-size: 16px; font-weight: 700; box-shadow: 0 10px 22px {{K.c13}}; {{K.fxa}}">가입하기</a>
+      </sc-if>
+      <sc-if value="{{cannotSubmit}}" hint-placeholder-val="{{ true }}">
+        <span role="button" aria-disabled="true" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 12px; background: {{K.c14}}; color: {{K.c15}}; font-size: 16px; font-weight: 700">가입하기</span>
+      </sc-if>
+      <div style="display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; color: {{K.c5}}">
+        이미 계정이 있나요?
+        <a href="{{links.login}}" style="display: flex; align-items: center; height: 40px; padding: 0 6px; color: {{K.c16}}; text-decoration: none; font-weight: 700">로그인</a>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"rgba(255,255,255,0.8)","c2":"rgba(255,255,255,0.95)","c3":"rgba(20,25,35,0.06)","c4":"#3E454E","c5":"#6B727B","c6":"#8A9199","c7":"rgba(255,255,255,0.9)","c8":"rgba(255,255,255,0.95)","c9":"rgba(21,24,29,0.07)","c10":"#A2A8B0","c11":"#4F5FE0","c12":"#FFFFFF","c13":"rgba(79,95,224,0.28)","c14":"#CDD2F2","c15":"rgba(255,255,255,0.95)","c16":"#3F4FD1","c17":"#4F5FE0","c18":"#4F5FE0","c19":"#FFFFFF","c20":"#C5CAD3","c21":"rgba(79,95,224,0.22)","c22":"rgba(255,255,255,0.94)","c23":"#FFFFFF","c24":"rgba(255,255,255,0)","root":"radial-gradient(125% 80% at 50% 10%, #FFFFFF 0%, #F6F7FF 42%, #E1E6FF 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#FFFFFF","c2":"rgba(17,20,26,0.07)","c3":"rgba(20,25,35,0.06)","c4":"#3E454E","c5":"#6B727B","c6":"#8A9199","c7":"#FFFFFF","c8":"rgba(17,20,26,0.07)","c9":"rgba(21,24,29,0.07)","c10":"#A2A8B0","c11":"#2B40EE","c12":"#FFFFFF","c13":"rgba(43,64,238,0.28)","c14":"#CCD1F5","c15":"rgba(255,255,255,0.95)","c16":"#1024C6","c17":"#2B40EE","c18":"#2B40EE","c19":"#FFFFFF","c20":"#C5CAD3","c21":"rgba(43,64,238,0.22)","c22":"#FFFFFF","c23":"#FFFFFF","c24":"rgba(255,255,255,0)","root":"radial-gradient(120% 45% at 50% 0%, rgba(61,92,245,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c2":"rgba(255,255,255,0.7)","c3":"rgba(20,25,45,0.06)","c4":"#3E454E","c5":"#6B727B","c6":"#8A9199","c7":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c8":"rgba(255,255,255,0.92)","c9":"rgba(21,24,29,0.07)","c10":"#A2A8B0","c11":"linear-gradient(180deg, rgba(99,114,233,0.94) 0%, rgba(54,73,226,0.94) 100%)","c12":"#FFFFFF","c13":"rgba(32,53,223,0.28)","c14":"rgba(60,82,221,0.13)","c15":"rgba(21,24,29,0.32)","c16":"#1D30C9","c17":"linear-gradient(180deg, rgba(99,114,233,0.94) 0%, rgba(54,73,226,0.94) 100%)","c18":"#3649E2","c19":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c20":"#C5CAD3","c21":"rgba(54,73,226,0.22)","c22":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c23":"#FFFFFF","c24":"rgba(255,255,255,0)","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"rgba(45,46,49,0.96)","c2":"rgba(232,234,237,0.08)","c3":"rgba(0,0,0,0.11)","c4":"#BDC1C6","c5":"#9AA0A6","c6":"#9AA0A6","c7":"rgba(45,46,49,0.96)","c8":"rgba(232,234,237,0.08)","c9":"rgba(232,234,237,0.11)","c10":"#80868B","c11":"#8AB4F8","c12":"#202124","c13":"rgba(138,180,248,0.17)","c14":"rgba(138,180,248,0.16)","c15":"rgba(232,234,237,0.38)","c16":"#8AB4F8","c17":"#8AB4F8","c18":"#8AB4F8","c19":"#3C4043","c20":"#5F6368","c21":"rgba(138,180,248,0.29)","c22":"rgba(45,46,49,0.96)","c23":"#FFFFFF","c24":"rgba(255,255,255,0)","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24, inputH: 52 } : { w: 390, h: 844, top: 59, bottom: 34, inputH: 50 };
+    var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
+    var self = this;
+    var st = this.state || {};
+    var shown = !!st.pwShown;
+    var defs = [
+      { key: 'tos', tag: '필수', label: '서비스 이용약관', required: true, doc: true },
+      { key: 'privacy', tag: '필수', label: '개인정보 수집·이용', required: true, doc: true },
+      { key: 'alert', tag: '선택', label: '기한 알림 받기', required: false, doc: false }
+    ];
+    var val = function (k) { return !!st[k]; };
+    var all = defs.every(function (d) { return val(d.key); });
+    var reqOk = defs.every(function (d) { return !d.required || val(d.key); });
+    var box = function (on, size, r) {
+      return 'width: ' + size + 'px; height: ' + size + 'px; flex-shrink: 0; box-sizing: border-box; border-radius: ' + r + 'px; display: flex; align-items: center; justify-content: center; '
+        + (on ? 'background: ' + K.c17 + '; border: 1.5px solid ' + K.c18 + '' : 'background: ' + K.c19 + '; border: 1.5px solid ' + K.c20 + '');
+    };
+    var input = 'width: 100%; height: ' + g.inputH + 'px; box-sizing: border-box; border-radius: 12px; border: 1px solid ' + K.c21 + '; background: ' + K.c22 + '; font-family: inherit; font-size: 16px; color: ' + K.c0 + '; outline-color: ' + K.c18 + '; ';
+    return { K: K, themeName: THEME, FNT: FNT,
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom,
+      isIOS: !android, isAndroid: android,
+      inputStyle: input + 'padding: 0 16px',
+      pwInputStyle: input + 'padding: 0 50px 0 16px',
+      pwShown: shown, pwHidden: !shown,
+      pwType: shown ? 'text' : 'password',
+      pwLabel: shown ? '비밀번호 숨기기' : '비밀번호 보기',
+      pwPressed: shown ? 'true' : 'false',
+      togglePw: function () { self.setState({ pwShown: !shown }); },
+      rules: [{ t: '영문' }, { t: '숫자' }, { t: '8자 이상' }],
+      allChecked: all ? 'true' : 'false',
+      allBox: box(all, 24, 8),
+      allCheck: all ? K.c23 : K.c24,
+      toggleAll: function () { var u = {}; defs.forEach(function (d) { u[d.key] = !all; }); self.setState(u); },
+      terms: defs.map(function (d) {
+        var on = val(d.key);
+        return {
+          tag: '[' + d.tag + ']', label: d.label, hasDoc: d.doc, docLabel: d.label + ' 보기',
+          checked: on ? 'true' : 'false',
+          box: box(on, 20, 6),
+          check: on ? K.c23 : K.c24,
+          tagStyle: 'font-weight: 700; color: ' + (d.required ? K.c16 : K.c6),
+          toggle: function () { var u = {}; u[d.key] = !on; self.setState(u); }
+        };
+      }),
+      canSubmit: reqOk, cannotSubmit: !reqOk,
+      links: { login: L('Login'), next: L('Permission'), self: L('SignUp') }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>캐릭터 시안 3 상태</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="width: 1240px; height: 320px; box-sizing: border-box; padding: 36px 48px; display: flex; align-items: flex-start; justify-content: space-between; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: #15181D; letter-spacing: -0.02em; background: #FAFAFB">
+  <sc-for list="{{moods}}" as="m" hint-placeholder-count="7">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; width: 148px">
+      <dc-import name="Mascot3" mood="{{m.mood}}" size="140" hint-size="140px,140px"></dc-import>
+      <span style="font-size: 16px; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em">{{m.word}}</span>
+      <span style="font-size: 13px; font-weight: 500; color: #5F6670; text-align: center">{{m.where}}</span>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1240,"height":320}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      moods: [
+        { mood: 'expired', word: '앗, 기한이 지났어요', where: '밴드' },
+        { mood: 'urgent', word: '기한이 코앞이에요!', where: '밴드' },
+        { mood: 'soon', word: '기한이 며칠 안 남았어요', where: '밴드' },
+        { mood: 'fresh', word: '기한 넉넉해요~ · 싱싱해요!', where: '밴드 · 결과' },
+        { mood: 'unknown', word: '기한이 언제예요?', where: '밴드' },
+        { mood: 'listening', word: '쫑긋, 듣고 있어요', where: '권한' },
+        { mood: 'asking', word: '하나만 물어볼게요!', where: '대화' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

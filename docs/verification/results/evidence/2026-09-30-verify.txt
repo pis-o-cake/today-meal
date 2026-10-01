@@ -1,0 +1,239 @@
+repository: runtime sources, Dart references, locks and assets are tracked
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.195s
+
+OK
+== server ==
+........................................................................ [ 27%]
+........................................................................ [ 55%]
+........................................................................ [ 83%]
+............................................                             [100%]
+260 passed in 17.75s
+All checks passed!
+== app ==
+Analyzing app...                                                
+No issues found! (ran in 3.6s)
+00:00 +0: loading <project>/app/test/ui/conversation_test.dart
+00:00 +0: <project>/app/test/ui/cook_flow_test.dart: 완료를 누르면 완료 화면으로 넘어가고 예외가 없다
+00:00 +1: <project>/app/test/ui/cook_flow_test.dart: 완료를 누르면 완료 화면으로 넘어가고 예외가 없다
+00:00 +2: <project>/app/test/ui/cook_flow_test.dart: 완료를 누르면 완료 화면으로 넘어가고 예외가 없다
+00:00 +3: <project>/app/test/ui/cook_flow_test.dart: 완료를 누르면 완료 화면으로 넘어가고 예외가 없다
+00:00 +4: <project>/app/test/ui/cook_flow_test.dart: 완료를 누르면 완료 화면으로 넘어가고 예외가 없다
+00:00 +5: <project>/app/test/ui/cook_flow_test.dart: 완료를 누르면 완료 화면으로 넘어가고 예외가 없다
+00:00 +6: <project>/app/test/ui/cook_flow_test.dart: 완료를 누르면 완료 화면으로 넘어가고 예외가 없다
+00:00 +7: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:00 +8: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +9: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +10: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +11: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +12: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +13: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +14: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +15: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +16: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +16: <project>/app/test/ui/shell_smoke_test.dart: 추천 실패가 재고 표시를 막지 않는다
+menu suggestion failed: Bad state: upstream 502
+00:01 +17: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +18: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +19: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +20: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +21: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +22: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +23: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +24: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +25: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +26: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +27: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +28: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +29: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +30: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +31: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +32: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +33: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +34: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +35: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +36: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +37: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +38: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +39: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +39: <project>/app/test/ui/cook_test.dart: 조리 진행 되돌리기 실패를 성공으로 표시하지 않는다
+undo cooked failed: Exception: connection refused
+00:01 +40: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +41: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +42: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +43: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +44: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +45: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +46: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +47: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +48: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +49: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +50: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +51: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +52: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +53: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +54: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +55: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +56: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +57: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:01 +58: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +59: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +60: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +61: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +62: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +63: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +64: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +65: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +66: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +67: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +68: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +69: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +69: <project>/app/test/ui/cook_test.dart: 영상 정리 추천 실패가 영상 정리를 막지 않는다
+cook picks failed: Exception: connection refused
+00:02 +70: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +71: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +72: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +73: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +74: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +75: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:02 +76: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +77: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +78: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +79: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +80: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +81: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +82: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +83: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +84: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +85: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +86: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +87: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +88: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +89: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +90: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:03 +91: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +92: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +93: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +94: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +95: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +96: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +97: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +98: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +99: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +100: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +101: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +102: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +103: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +104: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +105: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +106: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +107: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +108: <project>/app/test/ui/conversation_test.dart: 재고가 바뀌면 반영 결과를 보여준다
+00:04 +109: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +110: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +111: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +112: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +113: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +114: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +115: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +116: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +117: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +118: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +119: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +120: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +121: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:04 +122: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +123: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +124: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +125: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +125: <project>/app/test/core/voice/device_wake_word_detector_test.dart: DeviceSpeechWakeWordDetector 호출어가 섞인 전사에서 감지를 한 번 낸다
+[I]  Wake word detection started
+00:05 +126: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +127: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +128: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +129: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +130: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +130: <project>/app/test/core/voice/device_wake_word_detector_test.dart: DeviceSpeechWakeWordDetector 호출어가 섞인 전사에서 감지를 한 번 낸다
+[I]  Wake phrase detected
+[I]  Wake word detection stopped
+00:05 +131: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +131: <project>/app/test/core/voice/device_wake_word_detector_test.dart: DeviceSpeechWakeWordDetector 들은 말을 구간 번호와 함께 흘린다
+[I]  Wake word detection started
+00:05 +132: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +133: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +133: <project>/app/test/core/voice/device_wake_word_detector_test.dart: DeviceSpeechWakeWordDetector 들은 말을 구간 번호와 함께 흘린다
+[I]  Wake phrase detected
+[I]  Wake word detection stopped
+00:05 +134: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:05 +134: <project>/app/test/core/voice/device_wake_word_detector_test.dart: DeviceSpeechWakeWordDetector 감지 후에는 루프를 멈춘다 — 재기동은 세션 매니저가 부른다
+[I]  Wake phrase detected
+[I]  Wake word detection started
+[I]  Wake word detection stopped
+00:06 +135: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:06 +135: <project>/app/test/core/voice/device_wake_word_detector_test.dart: DeviceSpeechWakeWordDetector 구간이 실패해도 감지를 포기하지 않는다
+[I]  Wake word detection started
+[W]  Wake listen segment failed (1): Bad state: segment failed
+00:06 +136: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:06 +136: <project>/app/test/core/voice/device_wake_word_detector_test.dart: DeviceSpeechWakeWordDetector 구간이 실패해도 감지를 포기하지 않는다
+[I]  Wake phrase detected
+[I]  Wake word detection stopped
+00:06 +137: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:06 +137: <project>/app/test/core/voice/device_wake_word_detector_test.dart: DeviceSpeechWakeWordDetector stop 이후에는 구간을 더 듣지 않는다
+[I]  Wake word detection started
+[I]  Wake word detection stopped
+00:06 +138: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기가 마이크를 놓은 뒤에 전사가 시작된다
+00:07 +139: <project>/app/test/ui/conversation_test.dart: 조회는 답만 읽고 반영 결과를 보여주지 않는다
+00:08 +140: <project>/app/test/core/voice/voice_session_manager_test.dart: 정상 처리 후 대기로 복귀한다
+00:11 +141: <project>/app/test/ui/conversation_test.dart: 거절은 반영 결과를 보여주지 않는다
+00:11 +141: <project>/app/test/core/voice/voice_session_manager_test.dart: 낭독이 실패해도 대기로 복귀한다
+[W]  TTS did not complete; result remains on screen only
+00:12 +142: <project>/app/test/core/voice/voice_session_manager_test.dart: 낭독이 실패해도 대기로 복귀한다
+00:12 +142: <project>/app/test/ui/conversation_test.dart: 통신 실패는 반영 결과를 보여주지 않는다
+[W]  Turn failed: Bad state: connection refused
+00:15 +143: <project>/app/test/ui/conversation_test.dart: 통신 실패는 반영 결과를 보여주지 않는다
+00:15 +143: <project>/app/test/core/voice/voice_session_manager_test.dart: 서버 호출이 실패해도 대기로 복귀한다
+[W]  Turn failed: upstream 502
+00:16 +144: <project>/app/test/core/voice/voice_session_manager_test.dart: 서버 호출이 실패해도 대기로 복귀한다
+00:19 +145: <project>/app/test/ui/conversation_test.dart: 메뉴를 물으면 대화가 끝난 뒤에 추천을 열라고 알린다
+00:19 +145: <project>/app/test/core/voice/voice_session_manager_test.dart: 말이 없었으면 아무것도 읽지 않고 닫는다
+[W]  Command transcription produced no result
+00:19 +146: <project>/app/test/ui/conversation_test.dart: 메뉴를 물으면 대화가 끝난 뒤에 추천을 열라고 알린다
+00:20 +147: <project>/app/test/core/voice/voice_session_manager_test.dart: 바뀐 것이 없으면 반영 결과를 보여주지 않는다
+00:23 +148: <project>/app/test/ui/conversation_test.dart: 재고를 바꾼 말에는 추천을 열지 않는다
+00:23 +149: <project>/app/test/ui/conversation_test.dart: 재고를 바꾼 말에는 추천을 열지 않는다
+00:23 +149: <project>/app/test/core/voice/voice_session_manager_test.dart: 실패는 반영 결과 없이 알린다
+[W]  Turn failed: upstream 502
+00:24 +150: <project>/app/test/core/voice/voice_session_manager_test.dart: 실패는 반영 결과 없이 알린다
+00:24 +151: <project>/app/test/core/voice/voice_session_manager_test.dart: 실패는 반영 결과 없이 알린다
+00:24 +152: <project>/app/test/core/voice/voice_session_manager_test.dart: 실패는 반영 결과 없이 알린다
+00:24 +153: <project>/app/test/core/voice/voice_session_manager_test.dart: 실패는 반영 결과 없이 알린다
+00:24 +154: <project>/app/test/core/voice/voice_session_manager_test.dart: 실패는 반영 결과 없이 알린다
+00:24 +155: <project>/app/test/core/voice/voice_session_manager_test.dart: 실패는 반영 결과 없이 알린다
+00:24 +156: <project>/app/test/core/voice/voice_session_manager_test.dart: 실패는 반영 결과 없이 알린다
+00:27 +157: <project>/app/test/core/voice/voice_session_manager_test.dart: 확인 중에 들린 말에는 반응하지 않는다
+00:31 +158: <project>/app/test/core/voice/voice_session_manager_test.dart: 안내를 읽는 동안 감지를 멈추고 다 읽으면 다시 세운다
+00:31 +159: <project>/app/test/core/voice/voice_session_manager_test.dart: 확인하는 동안 확인 중임을 말하고 결과는 그 뒤에 읽는다
+00:35 +160: <project>/app/test/core/voice/voice_session_manager_test.dart: 음소거 중에는 전사하지 않는다
+[D]  Wake word ignored: session is muted
+00:35 +161: <project>/app/test/core/voice/voice_session_manager_test.dart: 배경에서는 감지하지 않고 Suspended 로 표시한다
+[D]  Wake word ignored: app is not in foreground
+00:35 +162: <project>/app/test/core/voice/voice_session_manager_test.dart: 전경 복귀 시 감지를 다시 시작한다
+00:35 +163: <project>/app/test/core/voice/voice_session_manager_test.dart: 되묻지 않으면 빠진 것을 알리고 닫는다
+00:39 +164: <project>/app/test/core/voice/voice_session_manager_test.dart: 되묻기 후 응답이 없으면 임시 변경을 적용하지 않는다
+[I]  Clarification timed out; pending change discarded
+00:39 +165: <project>/app/test/core/voice/voice_session_manager_test.dart: 되묻고 나면 응답 창만큼 말을 기다린다
+00:43 +166: <project>/app/test/core/voice/voice_session_manager_test.dart: 감지기 기동이 실패하면 사용 불가로 표시한다
+[E]  Failed to resume wake word detection  ERROR: Bad state: access key missing
+00:43 +167: <project>/app/test/core/voice/voice_session_manager_test.dart: bindWakeWord 이후 감지 이벤트가 세션을 시작한다
+[I]  Wake word detected; starting session
+00:43 +168: <project>/app/test/core/voice/voice_session_manager_test.dart: 호출하면 듣기 → 확인 → 반영 순서로만 간다
+00:47 +169: <project>/app/test/core/voice/voice_session_manager_test.dart: 호출 즉시 듣기 상태로 바꾼다
+00:51 +170: <project>/app/test/core/voice/voice_session_manager_test.dart: 낭독이 응답하지 않아도 대기로 돌아온다
+[W]  TTS timed out after 15s
+[W]  TTS did not complete; result remains on screen only
+00:51 +171: <project>/app/test/core/voice/voice_session_manager_test.dart: 전경이 아니면 감지를 무시한다
+[I]  Wake word detected; starting session
+[D]  Wake word ignored: app is not in foreground
+00:51 +172: All tests passed!
+verify: done

@@ -26,7 +26,7 @@ FK와 마이그레이션에 포함돼 있으므로 폴더 삭제만으로 제거
 | 재고 | `ingredient_batch` · `batch_date` · `batch_state_event` | 묶음 잔량 · 기한 · 개봉·소분·냉동 |
 | 명령 | `command` · `change_event` | 발화 해석 · 수량 변경 이력 · 정정·취소 |
 | 레시피 | `recipe` · `recipe_ingredient` · `menu_suggestion` | 레시피 · 재료 · 추천과 조리 확인 |
-| 추가 | `video_recipe` · `shopping_item` · `app_user` | 영상 레시피 · 장보기 · 사용자 식별 |
+| 추가 | `video_recipe` · `shopping_item` · `app_user` · `user_session` | 영상 레시피 · 장보기 · 계정 · 세션 |
 
 ### 이 설계가 지키는 것
 
@@ -230,7 +230,7 @@ erDiagram
         bigint user_id PK
         bigint household_id FK
         varchar provider "kakao google apple device"
-        varchar provider_user_id "제공자가 준 식별자"
+        varchar provider_user_id "제공자가 준 식별자. 소셜은 서버가 확인"
         varchar display_name
         timestamptz last_signed_in_at
     }
@@ -571,9 +571,9 @@ GIN 인덱스로 포함 검색이 된다. 문자열만으로 재고를 매칭하
 
 #### `menu_suggestion`
 
-**설명**: 추천 결과와 기존 조리 확인 API의 상태. **관련 기능**: F-13 F-14.
-현행 [메뉴 UI](../ui/mobile.md)는 조리 모드 시작과 명시적 사용 발화를 사용하므로
-`cooked_at`·`consumption_applied`를 조리 시작 버튼에서 변경하지 않는다.
+**설명**: 추천 결과와 조리 확인 상태. **관련 기능**: F-13 F-14 F-25.
+`cooked_at`·`consumption_applied`는 **조리 완료(UI-11)**에서만 바뀐다. 메뉴 선택과 조리
+시작은 이 값을 건드리지 않는다.
 
 | 컬럼 | 타입 | PK | FK | NOT NULL | 기본값 | 설명 |
 |---|---|---|---|---|---|---|
@@ -583,17 +583,17 @@ GIN 인덱스로 포함 검색이 된다. 문자열만으로 재고를 매칭하
 | `recipe_id` | BIGINT | | ✅ | ✅ | | → `recipe` |
 | `rank_order` | SMALLINT | | | ✅ | | 1~3 |
 | `reason` | TEXT | | | | | 추천 이유 |
-| `servings` | SMALLINT | | | ✅ | | 적용 인분 |
+| `servings` | SMALLINT | | | ✅ | | 적용 인분. **조리 완료 차감의 기준**이므로 화면에서 바꾼 인분을 여기에 반영해야 한다 |
 | `priority_ingredient_ids` | BIGINT[] | | | ✅ | `'{}'` | 먼저 쓰는 재료 |
 | `availability` | VARCHAR(20) | | | ✅ | | `ready` `needs_check` `needs_purchase` |
-| `cooked_at` | TIMESTAMPTZ | | | | | 기존 조리 확인 API의 시점 |
+| `cooked_at` | TIMESTAMPTZ | | | | | 조리 완료를 확인한 시점 |
 | `consumption_applied` | BOOLEAN | | | ✅ | `false` | **사용 이벤트 반영 여부** |
 | `created_at` | TIMESTAMPTZ | | | ✅ | `now()` | |
 
 **인덱스**: `IDX_suggestion_household_recent`: `(household_id, created_at DESC)`
 
-**비고**: `consumption_applied`가 중복 차감을 막는다. "볶음밥 해먹었어"로 사용량을 반영한 뒤
-같은 추천에 다시 확인이 오면 이 플래그로 막는다. `availability`는 추천 시점의 스냅샷이며,
+**비고**: `consumption_applied`가 중복 차감을 막는다. 조리 완료가 두 번 오거나 네트워크가
+재시도해도 재고가 두 번 줄지 않는다. 차감은 명령 행을 남기므로 되돌릴 수 있다. `availability`는 추천 시점의 스냅샷이며,
 **보유 여부의 정본이 아니다.** 화면에 그릴 때는 그 시점의 재고로 다시 계산한다.
 
 #### `video_recipe` — 추가 범위
@@ -653,28 +653,46 @@ GIN 인덱스로 포함 검색이 된다. 문자열만으로 재고를 매칭하
 확인을 요청하는 편이 낫다. `status`가 `purchased`가 되어도 **재고는 바뀌지 않는다.** 입고는
 "버터 200g 왔어"라는 별도 발화로만 일어난다.
 
-#### `app_user` — 추가 범위
+#### `app_user`
 
-**설명**: 사용자 식별. **보안은 전부 배제한다.** **관련 기능**: F-22.
+**설명**: 계정 하나. 한 사용자는 가구 하나에 속한다. **관련 기능**: F-22.
 
 | 컬럼 | 타입 | PK | FK | NOT NULL | 설명 |
 |---|---|---|---|---|---|
 | `user_id` | BIGINT | ✅ | | ✅ | IDENTITY |
-| `household_id` | BIGINT | | ✅ | ✅ | → `household`. 사용자 하나가 가구 하나에 속함 |
-| `provider` | VARCHAR(20) | | | ✅ | `kakao` `google` `apple` `device` |
-| `provider_user_id` | VARCHAR(100) | | | ✅ | 제공자가 준 식별자. **검증하지 않는다** |
+| `household_id` | BIGINT | | ✅ | ✅ | → `household` ON DELETE CASCADE. 가입 시 새로 만든 가구 |
+| `provider` | VARCHAR(20) | | | ✅ | `email` `kakao` `google` `apple` `device`. `AuthProvider` CHECK |
+| `provider_user_id` | VARCHAR(100) | | | ✅ | 이메일 가입이면 이메일과 같음. 소셜은 제공자에게 물어 확인한 값 |
+| `email` | VARCHAR(320) | | | | 이메일 가입에만 있음 |
+| `password_hash` | VARCHAR(100) | | | | **bcrypt 해시만.** 원문은 어디에도 없음 |
 | `display_name` | VARCHAR(50) | | | | 화면 표시용 |
 | `last_signed_in_at` | TIMESTAMPTZ | | | | |
 | `created_at` `updated_at` | TIMESTAMPTZ | | | ✅ | |
 
-**제약**: `UNIQUE (provider, provider_user_id)`
+**제약**: `UNIQUE (provider, provider_user_id)` · `UNIQUE (email)`
 
-**비고**: 이 테이블에 **없는 것이 설계의 요점이다.** 비밀번호·해시·솔트·토큰·세션·만료·역할·권한이
-전부 없다. `provider_user_id`를 그대로 신뢰하며 서명이나 만료를 검증하지 않는다. 근거는
-[기술 설계](0001-mvp-technical-design.md)의 「인증 — 하지 않는다」에 있다.
+#### `user_session`
 
-세션 테이블을 만들지 않은 이유는 세션이 없기 때문이다. 요청마다 `X-User-Id` 헤더로 식별하고,
-헤더가 없으면 기본 가구로 처리한다. **로그인은 기능을 막는 관문이 아니다** — MVP는 제한된 시연 가구에서 쓰므로 로그인 없이도 전 기능이 돌아야 한다.
+**설명**: 로그인 한 번. 폐기 가능한 서버 세션. **관련 기능**: F-22.
+
+| 컬럼 | 타입 | PK | FK | NOT NULL | 설명 |
+|---|---|---|---|---|---|
+| `session_id` | BIGINT | ✅ | | ✅ | IDENTITY |
+| `user_id` | BIGINT | | ✅ | ✅ | → `app_user` ON DELETE CASCADE |
+| `token_hash` | VARCHAR(64) | | | ✅ | 토큰 원문이 아니라 **SHA-256 해시**. UNIQUE |
+| `expires_at` | TIMESTAMPTZ | | | ✅ | |
+| `revoked_at` | TIMESTAMPTZ | | | | 로그아웃 시각. 있으면 만료 전이라도 못 씀 |
+| `last_used_at` | TIMESTAMPTZ | | | | |
+| `created_at` | TIMESTAMPTZ | | | ✅ | |
+
+**비고**: 호출자는 `Authorization: Bearer` 로 판정한다. `X-User-Id`·`X-Household-Id` 헤더는
+읽지 않는다. 토큰이 없으면 게스트로 기본 가구를 쓰고, 토큰이 있는데 유효하지 않으면 401이다 —
+조용히 게스트로 떨어뜨리면 사용자가 남의 데이터를 자기 것으로 믿는다.
+JWT 를 쓰지 않은 이유는 로그아웃이 실제로 세션을 끝내야 하기 때문이다.
+결정과 남은 위험은 [ADR-0001](../adr/0001-verified-sessions.md)에 있다.
+
+두 테이블은 `0003_add_email_login_and_sessions.py` 가 만든다. 초기 스키마의
+“보안은 전부 배제한다”·“세션이 없다” 는 이 마이그레이션으로 폐기된 설명이다.
 
 `household_id`를 처음부터 모든 주요 테이블에 넣어둔 값이 여기서 나온다. 이 테이블은 FK 하나로
 붙고 기존 조회를 고치지 않는다.
@@ -687,7 +705,7 @@ DB 실행 검증 결과가 아니다. 실행 인수는 [검증 기준](../verifi
 | 항목 | 결과 |
 |---|---|
 | 필수 기능 F-04~F-16이 1개 이상 테이블에 반영 | 통과. F-01~F-03은 음성 계층이라 저장 대상이 없음 |
-| 추가 기능 F-17~F-22가 테이블에 반영 | 통과. F-17 검색 결과는 저장하지 않고 F-18 분석만 저장. F-22는 `app_user` |
+| 추가 기능 F-17~F-22가 테이블에 반영 | 통과. F-17 검색 결과는 저장하지 않고 F-18 분석만 저장. F-22는 `app_user`·`user_session` |
 | 모든 FK가 참조 PK와 타입 일치 | 통과. `command_id` 참조는 전부 `UUID` |
 | N:M 관계가 중간 테이블로 분해 | 통과. `recipe_ingredient` · `household_ingredient_preference` |
 | 자기참조 컬럼 | `command.target_command_id` · `ingredient_batch.split_from_batch_id` · `change_event.reverses_event_id` |
@@ -701,6 +719,10 @@ DB 실행 검증 결과가 아니다. 실행 인수는 [검증 기준](../verifi
 - `unit` 허용값 목록의 정본. `server/app/core/units.py`가 갖고 이 문서는 예시만 든다.
 - 잔량 현재값과 `change_event` 누적의 정합성 확인 쿼리. 검증 항목으로 올린다.
 - SQLAlchemy 모델과 초기 Alembic 마이그레이션은 존재한다. 변경 시 DB 실물·모델·마이그레이션을 함께 대조한다.
+- 재료 수동 수정·버리기(F-24)의 복구 보장. 이름·날짜 변경의 이전 값 보존과 `deleted_at` 해제를
+  `change_event` 로 표현할지 별도 필드를 둘지 정해야 한다. 현재는 되돌려도 복원되지 않는다.
+- 조리 완료(F-25)의 차감 인분. 지금은 `menu_suggestion.servings` 를 쓰므로 화면에서 바꾼
+  인분을 반영하려면 그 값을 저장하거나 요청에서 받아야 한다.
 
 
 ### 추가 설계가 필요한 계약 — R-01·R-05·R-07

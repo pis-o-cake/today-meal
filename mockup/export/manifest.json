@@ -1,0 +1,1128 @@
+{
+  "title": "오늘 뭐 먹지? · 앱 목업",
+  "source": "mockup/canvas",
+  "canvas_json_sha256": "52a41bc10a8f195f701f86f9e0561826985041c5d9864df530a9531731e187b6",
+  "runtime_sha256": "454cb23fe5f5b1c4c7cd178795ec6cf3c32047eae4434e975a6104c53183fbd6",
+  "boards": [
+    {
+      "file": "screens/Splash.dc.html",
+      "png": "png/Splash.png",
+      "title": "iOS · 스플래시",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "8b40f8b282d7de768c98b394c519f842afc18666344e85fb3b1c6f802487c588",
+      "export_sha256": "b0859e2024e2e92e3a177078bea5e14ad75201ffe03cbfc15114d33abc96bea7"
+    },
+    {
+      "file": "screens/Login.dc.html",
+      "png": "png/Login.png",
+      "title": "iOS · 로그인",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "9c1bb574104659e336b5538e084ea765479b52b39ba661dd253ee326752bba96",
+      "export_sha256": "83a9184b364d781fdd3327ac3902570146dda3b597f63b34d6b9904b2eeac974"
+    },
+    {
+      "file": "screens/SignUp.dc.html",
+      "png": "png/SignUp.png",
+      "title": "iOS · 회원가입",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "e5720cb43f45758c12b5288ea83d8fd587acb56c1e7904ef733af369c07e1eaf",
+      "export_sha256": "21405b72e2cd3516a58a558040ea4f2c5bf05b039ff4a715d3764006467b295f"
+    },
+    {
+      "file": "screens/Permission.dc.html",
+      "png": "png/Permission.png",
+      "title": "iOS · 권한 안내",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "5278c820ecafa4eac5774f351ca9952d4a580e9cb75ccb8dd9d38c2b78d9c36f",
+      "export_sha256": "953e2f1a6b5c5d966523b20e368bed65bbcb1a7d14b43b086d8b6e2eda6efb2d"
+    },
+    {
+      "file": "screens/Main.dc.html",
+      "png": "png/Main.png",
+      "title": "iOS · 뭐 먹지?",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "f2b295b970440eec447518522002682cbf1dca192aabb72fe6197a7246fd4ac3",
+      "export_sha256": "7df3d0114bc21b402af6060cbdc258e049059f6335ff71f82cf963b8abef8fa7"
+    },
+    {
+      "file": "screens/Listening.dc.html",
+      "png": "png/Listening.png",
+      "title": "iOS · 듣는 중",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "f6c9254a8e12e0099ddfbb62d6b1f3ffa94b949b964a34f7e4a96e73986258bc",
+      "export_sha256": "0a1c8c9f4d8339bfc3b9f60affeaf00a3d9edbf407c0826206d666985ecc9968"
+    },
+    {
+      "file": "screens/Clarify.dc.html",
+      "png": "png/Clarify.png",
+      "title": "iOS · 확인 질문",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "a9db6d7cebb17dd2802e0f5b55ddd162f61e9d088af4e9ea0adaa068a7b2f115",
+      "export_sha256": "86bab1d511fff0ed121439f923b73b14d85b7c92242a0e594c869b9525b2d1ee"
+    },
+    {
+      "file": "screens/Result.dc.html",
+      "png": "png/Result.png",
+      "title": "iOS · 반영 결과",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "6051c4f09e53fab575541260c85b7d79760be14b97e741fdcb2d795c7a5ff3df",
+      "export_sha256": "8275831b3b141030a465722dac1bd9484ac42bc187f821a52612ad6c742ef91f"
+    },
+    {
+      "file": "screens/Fridge.dc.html",
+      "png": "png/Fridge.png",
+      "title": "iOS · 냉장고",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "9a6bd272de97ef43e73189d08cd677557afade2997329cd90353bfc9cff4814a",
+      "export_sha256": "4a6025fa230b84d375b1b85dd3d43a9841281424ad79da98d36cef98df80d2a5"
+    },
+    {
+      "file": "screens/FridgeItem.dc.html",
+      "png": "png/FridgeItem.png",
+      "title": "iOS · 재료 정보",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "b974a5d6a9ed6fdae2159b080dac2e79ac3de2a2f977fc474a613c378904a895",
+      "export_sha256": "2968a8841c94d69cda0221609888f95dc420bf3938303985cef626ceab1d449a"
+    },
+    {
+      "file": "screens/Menu.dc.html",
+      "png": "png/Menu.png",
+      "title": "iOS · 메뉴 상세",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "f103197660dada672dc64a9d7540d07b537ebd093f03277aa516c956d351cc04",
+      "export_sha256": "5a5a20696fa6fe0b7b4ea29dbb1fc23ac51b2a7614ae8dfc70d2e65728fcd7a7"
+    },
+    {
+      "file": "screens/CookHome.dc.html",
+      "png": "png/CookHome.png",
+      "title": "iOS · 조리",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "b77aba4d80f42d5ea0de465cbcef2b23f8ded9e27a75b851be7d28749a0f7e0f",
+      "export_sha256": "7fa38b42516fc94ec7b6abddd9dd8d1c5cd985c4474062ff52a14cdf5c548fde"
+    },
+    {
+      "file": "screens/Cooking.dc.html",
+      "png": "png/Cooking.png",
+      "title": "iOS · 조리 중",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "542b333aa0cffcc72b813bf0005783bd34118117de1661cc73bf81e3b277dc43",
+      "export_sha256": "323a215067c96be8a36c5d623deb257b78b26289b81c9a59e50a36aea452951e"
+    },
+    {
+      "file": "screens/CookDone.dc.html",
+      "png": "png/CookDone.png",
+      "title": "iOS · 조리 완료",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "c45af150177942f3eb53d83567d53f2dd4f4d9ca3327dc8303c5b33647dee295",
+      "export_sha256": "13126fa55d9bdeb3c8b154b026d063ba3cbedb65698037f375541f7526191260"
+    },
+    {
+      "file": "screens/History.dc.html",
+      "png": "png/History.png",
+      "title": "iOS · 기록",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "562f4d29f7928a0b19637d5dae64b0dcfe8495099ed65762dff0fa1bc213c162",
+      "export_sha256": "26e1b731a3e79dd63cec01354926e8372500616ed748ef074b44e5c5ec202936"
+    },
+    {
+      "file": "screens/MyPage.dc.html",
+      "png": "png/MyPage.png",
+      "title": "iOS · 마이페이지",
+      "group": "iOS · 390 × 844",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "bad6e2ce85c6cae39cb8a597d2f7d5f8b9865a1d95e0fd5e1c1a5d79b78125b6",
+      "export_sha256": "de742a2bf7ca54168da2457e4f2ed8e8375529eecf5811a4f6891b57c5021da3"
+    },
+    {
+      "file": "screens/Jua-Login.dc.html",
+      "png": "png/Jua-Login.png",
+      "title": "주아체 · 로그인",
+      "group": "주아체 전체 (비교용) · 본문·입력칸·숫자까지 모두 Jua, 가짜 굵게 없이",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "bafb80758d2771a496a1bbdd9105e62998c82524fd40eed9403cfad66fa5934b",
+      "export_sha256": "ac60618408550a9f9f46bb5626ed8106dd24e97f442e4819993505f29eb769a9"
+    },
+    {
+      "file": "screens/Jua-Main.dc.html",
+      "png": "png/Jua-Main.png",
+      "title": "주아체 · 뭐 먹지?",
+      "group": "주아체 전체 (비교용) · 본문·입력칸·숫자까지 모두 Jua, 가짜 굵게 없이",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "e3cc2f12001a41dd29b9c58e94919a5fecb0bdf591ad87683ba76304a0f29f03",
+      "export_sha256": "d812356b270b5c001095725924a2422503c685494a71db155fbcb79865001aa3"
+    },
+    {
+      "file": "screens/Jua-Listening.dc.html",
+      "png": "png/Jua-Listening.png",
+      "title": "주아체 · 듣는 중",
+      "group": "주아체 전체 (비교용) · 본문·입력칸·숫자까지 모두 Jua, 가짜 굵게 없이",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "741b435dfdf6a65d747fa7f8a67f1201722a1f8d53bc52fd8233030555ddcc14",
+      "export_sha256": "68e5c45dc08e0b3714ddc5483b87b8e9a6b318f5db4869bb6cbec715e49de5db"
+    },
+    {
+      "file": "screens/Jua-Result.dc.html",
+      "png": "png/Jua-Result.png",
+      "title": "주아체 · 반영 결과",
+      "group": "주아체 전체 (비교용) · 본문·입력칸·숫자까지 모두 Jua, 가짜 굵게 없이",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "f0dfa949bda4114d075d3b1a9d5bb5eb5fd684eed4c30320bf5ccf88eb89e34a",
+      "export_sha256": "9069702c5f38bf0ace8891328c08e82516381c32408e5ef4a1465f39642f3dc8"
+    },
+    {
+      "file": "screens/Jua-Fridge.dc.html",
+      "png": "png/Jua-Fridge.png",
+      "title": "주아체 · 냉장고",
+      "group": "주아체 전체 (비교용) · 본문·입력칸·숫자까지 모두 Jua, 가짜 굵게 없이",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "cee1f3e0fb45f2adefd39123ec425a7abf171b6b497c263941c90931a03fddd5",
+      "export_sha256": "96d1e50021da4fe56c197e1c223021ac77cc64bbf3cf1dd09ca1c86f7ab2f47b"
+    },
+    {
+      "file": "screens/Jua-FridgeItem.dc.html",
+      "png": "png/Jua-FridgeItem.png",
+      "title": "주아체 · 재료 정보",
+      "group": "주아체 전체 (비교용) · 본문·입력칸·숫자까지 모두 Jua, 가짜 굵게 없이",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "a1d88854cc5d003a3dea5b4e8b67dd28c346978d7efb021799dee562f4caa9e6",
+      "export_sha256": "70afbd40212547178433c00266c678bebce988e55e18dcf5497d4cb066c615ec"
+    },
+    {
+      "file": "screens/Jua-Cooking.dc.html",
+      "png": "png/Jua-Cooking.png",
+      "title": "주아체 · 조리 중",
+      "group": "주아체 전체 (비교용) · 본문·입력칸·숫자까지 모두 Jua, 가짜 굵게 없이",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "1c795bd669a50aa54af75becc69c69826166990944dab1bc4527aa4e62617ba0",
+      "export_sha256": "96aa3708fe44c68f42b37f84bb995bd2624136b7af935c0af7512269330981d3"
+    },
+    {
+      "file": "screens/Jua-MyPage.dc.html",
+      "png": "png/Jua-MyPage.png",
+      "title": "주아체 · 마이페이지",
+      "group": "주아체 전체 (비교용) · 본문·입력칸·숫자까지 모두 Jua, 가짜 굵게 없이",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "a07c3e14583dcdee24435e53298de40356d65799ac48426aecfe8c2749b26261",
+      "export_sha256": "e4b7987ad6fbd3000508e3a74ee7ff2eaf28c6312641dc2d437b3f604deb8d77"
+    },
+    {
+      "file": "screens/Listening-Processing.dc.html",
+      "png": "png/Listening-Processing.png",
+      "title": "추가 · 확인 중",
+      "group": "추가 상태 · 앱에서 먼저 만든 화면 (iOS 390 × 844)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "af620a2b9e8c76afd406da011e9de22d4695e1abf542f186305e02facd6dc54f",
+      "export_sha256": "2351fe7475c88b139bc9bcad363c884c0f15f33d625ec9601799a59373164b80"
+    },
+    {
+      "file": "screens/Listening-Answering.dc.html",
+      "png": "png/Listening-Answering.png",
+      "title": "추가 · 답하는 중",
+      "group": "추가 상태 · 앱에서 먼저 만든 화면 (iOS 390 × 844)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "4bb7bdb4ccfcccc85d0b11fde1cf9ecbe4bcb7ee15d37357adadaf6e38f30bad",
+      "export_sha256": "478cb5bfc092f0a763e173f7d92269582d3c4a2bcae19316af84081f5d94fcc8"
+    },
+    {
+      "file": "screens/Glass-Listening-Processing.dc.html",
+      "png": "png/Glass-Listening-Processing.png",
+      "title": "추가 · 글래스 확인 중",
+      "group": "추가 상태 · 앱에서 먼저 만든 화면 (iOS 390 × 844)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "d440e1156c31be06af51ab2c468fdc93b14cb00b2161b51869d120820f0c7b24",
+      "export_sha256": "f17c559102dcf92f4f0a559c321748a83134b1e2abbdecec4026927fe4d86b3d"
+    },
+    {
+      "file": "screens/Glass-Listening-Answering.dc.html",
+      "png": "png/Glass-Listening-Answering.png",
+      "title": "추가 · 글래스 답하는 중",
+      "group": "추가 상태 · 앱에서 먼저 만든 화면 (iOS 390 × 844)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "867ff636de145a1dbf6be21e00a3442c8d6fb9da659b83d2735327f7c3dc3441",
+      "export_sha256": "d277d647984d318eb3e7bc2d8ed775b894cc13a26eb6370c8e500dd5046d2dd0"
+    },
+    {
+      "file": "screens/Fridge-Search.dc.html",
+      "png": "png/Fridge-Search.png",
+      "title": "추가 · 냉장고 검색",
+      "group": "추가 상태 · 앱에서 먼저 만든 화면 (iOS 390 × 844)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "a7be9728a9f0996ee95f67103633f538b2168159869c25bcc74373e3d8359fd5",
+      "export_sha256": "8ea9864ff32641378e5fa94219c29a75fa1460a27562dad51b613b28108a828e"
+    },
+    {
+      "file": "screens/FridgeItem-Delete.dc.html",
+      "png": "png/FridgeItem-Delete.png",
+      "title": "추가 · 재료 삭제 확인",
+      "group": "추가 상태 · 앱에서 먼저 만든 화면 (iOS 390 × 844)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "ae59ae71bb093f09a2da48328a860788640a9bea71edfa8ef5d60a10004d6e93",
+      "export_sha256": "99092db8e12d2591d9446eb68cdfee385f393cd46ab1d5f0cf88687d11a79d66"
+    },
+    {
+      "file": "screens/CookHome-Thinking.dc.html",
+      "png": "png/CookHome-Thinking.png",
+      "title": "추가 · 추천 고르는 중",
+      "group": "추가 상태 · 앱에서 먼저 만든 화면 (iOS 390 × 844)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "795d9fbdd20f66f5f53176938598cde30e1f858f3624ad8c0c936da2cf33dd10",
+      "export_sha256": "2c51febadf007afc2b729cabbbbee832eecb6e2dd281ddab601ee290ff981bd9"
+    },
+    {
+      "file": "screens/Android-Splash.dc.html",
+      "png": "png/Android-Splash.png",
+      "title": "Android · 스플래시",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "aade3958ba8d27a40e0e3f577a88a8dbfc23b9afda9c1aabc471fb27c2c3d358",
+      "export_sha256": "57ae51fa96f7098f11a213772ebfa5e7cf2cbcb9f52f373dc95a816b6e6febda"
+    },
+    {
+      "file": "screens/Android-Login.dc.html",
+      "png": "png/Android-Login.png",
+      "title": "Android · 로그인",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "c47eec152d4738b8a84ee4026f4f5bdd912ca99bfd4ab6ec2ee184b23e9cd94c",
+      "export_sha256": "0163c8845b50653ef6bc4190ac565e724c9ec0c816125263a106f74e848ef92f"
+    },
+    {
+      "file": "screens/Android-SignUp.dc.html",
+      "png": "png/Android-SignUp.png",
+      "title": "Android · 회원가입",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "88da6e7eb352499b3ed10e287a188c0f4bfacaef7969dfbcfd92160f6d9fb76d",
+      "export_sha256": "649825b82a67583cb05ff4819ecdd48d24b7ea0876f978b4ca6c614805e2bc77"
+    },
+    {
+      "file": "screens/Android-Permission.dc.html",
+      "png": "png/Android-Permission.png",
+      "title": "Android · 권한 안내",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "f3d1a14d510f8903968cdd8996b8f0c8f5b52e5a359aefe7373adb8336fe09df",
+      "export_sha256": "ee89ebc7ce906ff7b7211826b73aa48f1029a60c7fe3717ea5a2d273444138f6"
+    },
+    {
+      "file": "screens/Android-Main.dc.html",
+      "png": "png/Android-Main.png",
+      "title": "Android · 뭐 먹지?",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "064a9aa77e1f98b82f305acda791ad997521650df35637cb451f7330e37ac466",
+      "export_sha256": "a68bfd99cc67f7a0e7294a583033e9e2689d8dd2c04f0965acf1e5911e0784d8"
+    },
+    {
+      "file": "screens/Android-Listening.dc.html",
+      "png": "png/Android-Listening.png",
+      "title": "Android · 듣는 중",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "12e7e232d877bd2171c4200f4af12b1a5e52267b2d3d7f1e3d550eb9325cce80",
+      "export_sha256": "9753de2aa2f18923fa7a23f56ae9f5a514f15d507ba9eb236174102c88c30002"
+    },
+    {
+      "file": "screens/Android-Clarify.dc.html",
+      "png": "png/Android-Clarify.png",
+      "title": "Android · 확인 질문",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "b2c3b3a5d606df5a484a2e4c0b6a542206531a619fb1147b397580123a97ccc8",
+      "export_sha256": "dbeb09489469db186720eca3dc51e0c35a7a7a78bc1270a74c7b3753bff83700"
+    },
+    {
+      "file": "screens/Android-Result.dc.html",
+      "png": "png/Android-Result.png",
+      "title": "Android · 반영 결과",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "f01c6b6a834625464f52bb00ae1bcacce8d4529f8e2320d9950b33c27b5441b1",
+      "export_sha256": "330e351b9f89b6eefabfed4dd9a593f787eb411a2fe857f916df2e5eea6bb3d1"
+    },
+    {
+      "file": "screens/Android-Fridge.dc.html",
+      "png": "png/Android-Fridge.png",
+      "title": "Android · 냉장고",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "8fad1e1bd1cb6ea646e3ca97e438cbc165d2bb9c5259bb5c1f11bb8380458b66",
+      "export_sha256": "1477bc5b89ff506d8b7dd0b8761b601f8fda2b991edc57236a01f29d5e01043e"
+    },
+    {
+      "file": "screens/Android-FridgeItem.dc.html",
+      "png": "png/Android-FridgeItem.png",
+      "title": "Android · 재료 정보",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "5840d8ff7bbab3e49225955bf00e4e0dbb1d5755c702849ff3133cf0d4f60c7d",
+      "export_sha256": "37f8e91717d6856c5c7e1c4741a1017f857815cf4bf15dd345144d7eb1e634ff"
+    },
+    {
+      "file": "screens/Android-Menu.dc.html",
+      "png": "png/Android-Menu.png",
+      "title": "Android · 메뉴 상세",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "e628267d67de5f301bf7b2b288556c70cdd72eb5035a623b54379b620e3f45b3",
+      "export_sha256": "94d5239e6c4b09118b8717f7a2e3896a22d9930e91ae85b97a095096abca8ec5"
+    },
+    {
+      "file": "screens/Android-CookHome.dc.html",
+      "png": "png/Android-CookHome.png",
+      "title": "Android · 조리",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "c069bc0593d4218d1e502bc804c48a9c39884f0013ade288d944702bd407b614",
+      "export_sha256": "c11525c65986c24df13078b6bbf2744a98477a46f841c93c2db60e939f34601d"
+    },
+    {
+      "file": "screens/Android-Cooking.dc.html",
+      "png": "png/Android-Cooking.png",
+      "title": "Android · 조리 중",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "f3160bc9eaa596714e55313484cf0586bf04c73277aba96b0dacc36aa4ce486c",
+      "export_sha256": "b4608b5300941c50a80f615c3f447430dc0ec27a30f0c4b9dc4911becde4dd9d"
+    },
+    {
+      "file": "screens/Android-CookDone.dc.html",
+      "png": "png/Android-CookDone.png",
+      "title": "Android · 조리 완료",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "b7476d782b7677d1aa9c88893a75761773ce702278aface8221d005e67fc115f",
+      "export_sha256": "95e2161841a3bb4164ea49291e345a0515f71d7bf7ba928d61de54a59a778886"
+    },
+    {
+      "file": "screens/Android-History.dc.html",
+      "png": "png/Android-History.png",
+      "title": "Android · 기록",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "0b795abae57b5b6bdc6dd57c0ad3f3ba2a28e7c9f8f1a400dc33f7a723131705",
+      "export_sha256": "0206904c9fb4249e9b5ee7da312340e92eda0edec62e7f3790911979738bc066"
+    },
+    {
+      "file": "screens/Android-MyPage.dc.html",
+      "png": "png/Android-MyPage.png",
+      "title": "Android · 마이페이지",
+      "group": "Android · 412 × 915",
+      "width": 412,
+      "height": 915,
+      "source_sha256": "b89f64931722f9d0a7b74e8d4756dabe6eefa983beabb52f122a75586e6cf06f",
+      "export_sha256": "f3c0c2e44a69232409d570cc319ab93bba2a37cfdd0806c09baccc29cd5011aa"
+    },
+    {
+      "file": "screens/TabIcons.dc.html",
+      "png": "png/TabIcons.png",
+      "title": "‘뭐 먹지?’ 탭 아이콘 · A 수저 적용",
+      "group": "‘뭐 먹지?’ 탭 아이콘 · A 수저 적용",
+      "width": 1240,
+      "height": 400,
+      "source_sha256": "2a26e627dce0c1ccf0c538edc776159c983c81566f2c49c78cdc1bb79dd85bc5",
+      "export_sha256": "50674443edbf590714fcec0dab8c7be8c964159a85308dc0b94a269fe4d819b6"
+    },
+    {
+      "file": "screens/AppIcon.dc.html",
+      "png": "png/AppIcon.png",
+      "title": "앱 아이콘",
+      "group": "앱 아이콘",
+      "width": 1380,
+      "height": 540,
+      "source_sha256": "1306c05c49fb5f556a2d7ec8e7fbf231a73f1b506a1d3be582fbf028f8dc4309",
+      "export_sha256": "6d03bc7631b3c2d48498bf7775675f2021677f253e9df74a74769a34b56ac571"
+    },
+    {
+      "file": "screens/White-Splash.dc.html",
+      "png": "png/White-Splash.png",
+      "title": "화이트 · 스플래시",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "383f56f48ba0c59762061129ac5141119f4629af4e646ce24d727959f0b3e5f9",
+      "export_sha256": "028d14d7c47418cd9cfc961312c105c3a9d26890cd6cb85ec8bc7c0e42394783"
+    },
+    {
+      "file": "screens/White-Login.dc.html",
+      "png": "png/White-Login.png",
+      "title": "화이트 · 로그인",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "ccd94234a69bc80567ab0b8fc7142884cef85db5bcbde1ee9245520ae6f0bba5",
+      "export_sha256": "5bf5f832d92ed119cf27177a51c0970a0aa74ac064072cfa3ad31828ce459ebc"
+    },
+    {
+      "file": "screens/White-SignUp.dc.html",
+      "png": "png/White-SignUp.png",
+      "title": "화이트 · 회원가입",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "7e98cc811cd501930fc0cfbec7af5457198b9c9b7b5ea3d52a37f02995d8a03f",
+      "export_sha256": "3bd137d84b96d738069bd36e97e4d899c1fc5f3e6c105ff19bcac46fa8247480"
+    },
+    {
+      "file": "screens/White-Permission.dc.html",
+      "png": "png/White-Permission.png",
+      "title": "화이트 · 권한 안내",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "a0f3b5ad814dc24674797b4d297016119080a624fd893ff7b7e44d6361341493",
+      "export_sha256": "322c0a24782495350c6859df6b7f3facc4c9452e2cda9c304dc15c41884dbf30"
+    },
+    {
+      "file": "screens/White-Main.dc.html",
+      "png": "png/White-Main.png",
+      "title": "화이트 · 뭐 먹지?",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "2cd3e3090420a005e609c664392081002ef276e615d6adff0f597f0a65d4c9e6",
+      "export_sha256": "bb89a4cc038e72890e998c09e36e1ffb83cae8f79f2816f4232e37fb2ebed34a"
+    },
+    {
+      "file": "screens/White-Listening.dc.html",
+      "png": "png/White-Listening.png",
+      "title": "화이트 · 듣는 중",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "6bd281d1ed9491a84f29bfb4fef67b6cdafccdbaa519c486328ada19f2508d6c",
+      "export_sha256": "ca658a25dcd20ed3198bbbd3addc7d89014aa2e1fd0639df10ce3329e6810fd7"
+    },
+    {
+      "file": "screens/White-Clarify.dc.html",
+      "png": "png/White-Clarify.png",
+      "title": "화이트 · 확인 질문",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "8bf0dd782f5d3c92bd35ea2f076f7ec5233017943e436aff9e9379ba082e90a1",
+      "export_sha256": "1ebc57b4a2e0e536029a6e988c5dd2c7fed15a26d0a730767fa1a3e8a62e47eb"
+    },
+    {
+      "file": "screens/White-Result.dc.html",
+      "png": "png/White-Result.png",
+      "title": "화이트 · 반영 결과",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "54c8d943bb3bb5c233f92ab9008e58d5e69440aa34fa59d40cdb0ad8d48b15f3",
+      "export_sha256": "b6485c05e2c13aa448d8cd11a4f161553a5384be6db101a6569c33fce233bb45"
+    },
+    {
+      "file": "screens/White-Fridge.dc.html",
+      "png": "png/White-Fridge.png",
+      "title": "화이트 · 냉장고",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "b857505b0c2cf6b5668aa83c9b7ad6450e33f56ca35c2ebd338bb982fe7d0e35",
+      "export_sha256": "43fb2858709a307262add11094da03a3d8a48d2c9f7db798b7544314c683928e"
+    },
+    {
+      "file": "screens/White-FridgeItem.dc.html",
+      "png": "png/White-FridgeItem.png",
+      "title": "화이트 · 재료 정보",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "674a87d7453ee5f932540c680fa028c66c2cdf653d9e013f931ca0a258559844",
+      "export_sha256": "12898865105d83477b520fec4ec85f69d9992c167f1e34498b0065955bb0a089"
+    },
+    {
+      "file": "screens/White-Menu.dc.html",
+      "png": "png/White-Menu.png",
+      "title": "화이트 · 메뉴 상세",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "a8111705c65ac6956420b38c7b777d070f53bf4f18117d7ce87a2ef96535301b",
+      "export_sha256": "0b14479733b6a3e3d1ac2f7c6a2eb1d7bc2019cb090e01736c4be36e96e9674a"
+    },
+    {
+      "file": "screens/White-CookHome.dc.html",
+      "png": "png/White-CookHome.png",
+      "title": "화이트 · 조리",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "89484216373f6d0ed0141e4def3ee77ba42f16dc14ce380718f3094e9a95070e",
+      "export_sha256": "86c151fb10794e4660ceb060198411a06742628d7b3369a17cf93c27f97ca8ed"
+    },
+    {
+      "file": "screens/White-Cooking.dc.html",
+      "png": "png/White-Cooking.png",
+      "title": "화이트 · 조리 중",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "dd407b08a2ab2a82cb295a05aec128278d63b49dff2180717114dd2b5a6ec7cd",
+      "export_sha256": "faeb7ea36101385c1f0adbda63821b7f8a6c2bbd6415a5c6bbb5e5282fa733a4"
+    },
+    {
+      "file": "screens/White-CookDone.dc.html",
+      "png": "png/White-CookDone.png",
+      "title": "화이트 · 조리 완료",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "5ae82a8cf6b3802e3e39fd2f6418ed358f53aeb2a2a041dff620f5c5fc9396ba",
+      "export_sha256": "d3e18bd92b67e9c5e58f873ee794e7ae3948ca1923fd669ac852f412170b7071"
+    },
+    {
+      "file": "screens/White-History.dc.html",
+      "png": "png/White-History.png",
+      "title": "화이트 · 기록",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "85b1a99cbf064c98ad8bc790a734a541e98eccfb2689660be55b2e24ff7b0582",
+      "export_sha256": "b1ea9ce319548fba89ebfdeea998a4a5f30089c80cdb51e93dc661db420682ab"
+    },
+    {
+      "file": "screens/White-MyPage.dc.html",
+      "png": "png/White-MyPage.png",
+      "title": "화이트 · 마이페이지",
+      "group": "테마 · 화이트 (흰 바탕 + 선명한 포인트)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "b5bc0f1fd62c87c2a2f8d6b41b2db9dcdc49cf114c1f46cfff12e9aaa6a73316",
+      "export_sha256": "3daf059c0c8183f46805fa1237fc2f06ba199a9ce6afcb3ee00439421916e11d"
+    },
+    {
+      "file": "screens/Glass-Splash.dc.html",
+      "png": "png/Glass-Splash.png",
+      "title": "글래스 · 스플래시",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "300a63dceb522715a56863272dcd68a5ee21113348e8a31f9f4a2bc9304cbbf6",
+      "export_sha256": "b6bcee3f1e0868f7a040fe97a48d6997f5b0b83f9713ffe63a376bf62764537d"
+    },
+    {
+      "file": "screens/Glass-Login.dc.html",
+      "png": "png/Glass-Login.png",
+      "title": "글래스 · 로그인",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "2f4584ad349071a5891b015482b4676148aa22702dba7a5b72f6e45ecd78d9fa",
+      "export_sha256": "db0ce3dbe78a8e007995a3fbb17877f154dfe524b91fe5f1ab4c4b2e9ab2857a"
+    },
+    {
+      "file": "screens/Glass-SignUp.dc.html",
+      "png": "png/Glass-SignUp.png",
+      "title": "글래스 · 회원가입",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "74b43f3384f934fb372ad4f69ca970c72c5d88f5a570eef21419b33397f2407c",
+      "export_sha256": "345aaa78b1164cc992e1e197454156961f69b60a13c4dc4e17542357ad2b075b"
+    },
+    {
+      "file": "screens/Glass-Permission.dc.html",
+      "png": "png/Glass-Permission.png",
+      "title": "글래스 · 권한 안내",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "69c28d62ba314a33b88384f2d5c57c511f87bc6f9a1fb6b221e44bc21366057f",
+      "export_sha256": "a6d2393af721082ef62533a384593918afdd37b5503fb3776fec184da3c7cd95"
+    },
+    {
+      "file": "screens/Glass-Main.dc.html",
+      "png": "png/Glass-Main.png",
+      "title": "글래스 · 뭐 먹지?",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "e6d91a151479cec4ca20088e680748ee9f9cf3b3d3a65a771f5f708b6b56deba",
+      "export_sha256": "2eb2759eccaa3996fc1c26c0d00d59f694251150e3e8cc325ba366fff5fb7400"
+    },
+    {
+      "file": "screens/Glass-Listening.dc.html",
+      "png": "png/Glass-Listening.png",
+      "title": "글래스 · 듣는 중",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "adc322e08d0e883f009a769acf05afa4a5ea0e63d8be7a7a22149db65f54e3ab",
+      "export_sha256": "1c0e93987ede4e0c3052865629d5ad113af73dc939fda415fa748b2f2d384a3e"
+    },
+    {
+      "file": "screens/Glass-Clarify.dc.html",
+      "png": "png/Glass-Clarify.png",
+      "title": "글래스 · 확인 질문",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "8e43945020fe9c4c78b0323a0982148108b45ec56115c6656138d5646505903a",
+      "export_sha256": "934d3755ce24ed54f47f286c15eefb25d6ef571e660eb7094c10f79ba84474bc"
+    },
+    {
+      "file": "screens/Glass-Result.dc.html",
+      "png": "png/Glass-Result.png",
+      "title": "글래스 · 반영 결과",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "d87027df45d56554bfca0cd97b43fad545c448da5f65c2af55fedfb6f781790e",
+      "export_sha256": "7b1efd1f6617cfa24b2d662f69766b3b497b655217ba391fc78be1a0b393a5f0"
+    },
+    {
+      "file": "screens/Glass-Fridge.dc.html",
+      "png": "png/Glass-Fridge.png",
+      "title": "글래스 · 냉장고",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "8456855f2bb035908bf7260ae6960b1d7f2e152098b848a25820e836dd35a95d",
+      "export_sha256": "b275022d0e4711335e311e86c6b5ea67c2f45a69746846680a5bf638ae5a9c4d"
+    },
+    {
+      "file": "screens/Glass-FridgeItem.dc.html",
+      "png": "png/Glass-FridgeItem.png",
+      "title": "글래스 · 재료 정보",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "8cf30bdbae2e0fc0b620dcf8a3eb01d78b43be3537f29a2e71cd384e32cd36db",
+      "export_sha256": "0f40252cd4c94d233a8b7f36079196632b34745b80ef482404a9567ae4b2f72c"
+    },
+    {
+      "file": "screens/Glass-Menu.dc.html",
+      "png": "png/Glass-Menu.png",
+      "title": "글래스 · 메뉴 상세",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "216f03929b5f1d850d1fe2fc9f9d2e4b393bd44b1a1c48d06e15be96ba6445ef",
+      "export_sha256": "71a1d65b793a3ae7ed20e1ece4ae75a1221611474d08327797436a0ed68b0d50"
+    },
+    {
+      "file": "screens/Glass-CookHome.dc.html",
+      "png": "png/Glass-CookHome.png",
+      "title": "글래스 · 조리",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "9af5c8701bc23a6f37489765730acaad5896d1007035d7732561e6dd4620f4c5",
+      "export_sha256": "cabb87acc8430b1594edd8fb9c141cc6314131c97c1fe2713608bc8403fadb3b"
+    },
+    {
+      "file": "screens/Glass-Cooking.dc.html",
+      "png": "png/Glass-Cooking.png",
+      "title": "글래스 · 조리 중",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "1e11e063969f9242c6fd8dead71b3967acfd091998aa9c0704903cbe1161c099",
+      "export_sha256": "74ec767af30181e862e4ff0b33a8fb5397e2842b76674d9f427e4940ecb75bef"
+    },
+    {
+      "file": "screens/Glass-CookDone.dc.html",
+      "png": "png/Glass-CookDone.png",
+      "title": "글래스 · 조리 완료",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "7999538bfd6eb57cb23babcfd7766c992ac0094d3cae42ec944c042159bb4506",
+      "export_sha256": "7010dc44d22a85beb6ca451b7fa30000cf86ca9ff4ef4aeefc5c1e5e644bc3b2"
+    },
+    {
+      "file": "screens/Glass-History.dc.html",
+      "png": "png/Glass-History.png",
+      "title": "글래스 · 기록",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "9b53c987b6871619bb1ca1e9f18644906ac13b1cceaba61cfc1e8302ca27f66a",
+      "export_sha256": "66411ca38359c71dceda95a2e8188a5804946cd4cc47385e8286c79bbfde8fa2"
+    },
+    {
+      "file": "screens/Glass-MyPage.dc.html",
+      "png": "png/Glass-MyPage.png",
+      "title": "글래스 · 마이페이지",
+      "group": "테마 · 글래스 (깨끗한 배경 + 유리 탭 바·슬라이드·캐릭터)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "4b30c87a8ef464754a52bfb20a94d2e765cde68c65886267ec66152c49179783",
+      "export_sha256": "b5b73dcc617e81134086d6cc26d010ab06908d25c5b4b3ba36edc06c8fd6f5b9"
+    },
+    {
+      "file": "screens/Dark-Splash.dc.html",
+      "png": "png/Dark-Splash.png",
+      "title": "다크 · 스플래시",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "a64f6cffe4b12c2ebd17fe5058a8d33ad990376c8d0e4653df97a0fe6aa86a64",
+      "export_sha256": "be50566b2eac29150cc153ef08a11352186fd733c47d319b2d7e5f56a8fde69e"
+    },
+    {
+      "file": "screens/Dark-Login.dc.html",
+      "png": "png/Dark-Login.png",
+      "title": "다크 · 로그인",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "d05f765223adc35ebf7bb0632cca516be637337e7b177c4e3b2097f323727bfa",
+      "export_sha256": "c36320e7908ed7d773282cd7b623e78c7f05583f0ccd918e84cd17ca8bd0aa71"
+    },
+    {
+      "file": "screens/Dark-SignUp.dc.html",
+      "png": "png/Dark-SignUp.png",
+      "title": "다크 · 회원가입",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "c96493c2375afe7a3e6323eb65ba0607cbc7d4039b42f3a9eeafefd8e0866caf",
+      "export_sha256": "d0522290905fb586aa88010a6cdd8605401d9ceb46ae9f3a00c51f5c85790978"
+    },
+    {
+      "file": "screens/Dark-Permission.dc.html",
+      "png": "png/Dark-Permission.png",
+      "title": "다크 · 권한 안내",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "84e55c46cd9966f3c20ddb162e0c9b314167fb1e8881190ae77ffbe7ef218893",
+      "export_sha256": "e5b373b04ed11f316876c19c83753eea495e9d586cd6beec9e4b27f360c6861e"
+    },
+    {
+      "file": "screens/Dark-Main.dc.html",
+      "png": "png/Dark-Main.png",
+      "title": "다크 · 뭐 먹지?",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "9afb50e9850e2f6f35fe638d2adcda6dd515a4ba9028a237cb44dbee2b9128a5",
+      "export_sha256": "daa82d0f384bd7e314d42626d0bacf985e7481fad756fa4b9c21a93c547580f0"
+    },
+    {
+      "file": "screens/Dark-Listening.dc.html",
+      "png": "png/Dark-Listening.png",
+      "title": "다크 · 듣는 중",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "9a91c76e5cca8ea118eb091c650735d2fa116e0550413a1bef2aa5b6df271aa5",
+      "export_sha256": "9ac3390d9d159b1504fd6a73081961feecffc55d219fe035511f3c1fecdda9ba"
+    },
+    {
+      "file": "screens/Dark-Clarify.dc.html",
+      "png": "png/Dark-Clarify.png",
+      "title": "다크 · 확인 질문",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "0113a291355433273fb1db216128c8ce8ed2a2c87a252398929302a3fc529c2e",
+      "export_sha256": "e555b1e1e02c7e0514e2b5210aba398cf9ea5f4fdf25910238b99a8283c9828f"
+    },
+    {
+      "file": "screens/Dark-Result.dc.html",
+      "png": "png/Dark-Result.png",
+      "title": "다크 · 반영 결과",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "de52c5b06173a833c778b8221a827941d88922025eb57579c9d832f4afabf514",
+      "export_sha256": "4d3263b714c56794bc60e3b2bf73f0ec1d855f69c81670abeec422982562a1c6"
+    },
+    {
+      "file": "screens/Dark-Fridge.dc.html",
+      "png": "png/Dark-Fridge.png",
+      "title": "다크 · 냉장고",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "fec08e9754cf18c26b3b111a5d9f6a3cf054713d468501f8086e231842faac09",
+      "export_sha256": "e22bbe929aeacf1cd38797e3d1da88030ca932771821efa7928fcb19a73479ac"
+    },
+    {
+      "file": "screens/Dark-FridgeItem.dc.html",
+      "png": "png/Dark-FridgeItem.png",
+      "title": "다크 · 재료 정보",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "f1bb137b7168b477067bfa4dd80d20f9c1e72a28dda5cecc5d9f3db834e431ab",
+      "export_sha256": "878913504cb58b7a7bc449ea8dd21ba4b2c955e6d526384ee1d91fe9a4c87e15"
+    },
+    {
+      "file": "screens/Dark-Menu.dc.html",
+      "png": "png/Dark-Menu.png",
+      "title": "다크 · 메뉴 상세",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "2ac1577e8eddc76b390f1a430ad5b427a28bcd8c28a33c2715eecf6dae6710c1",
+      "export_sha256": "6d7552b8fd68b4c8306a8203af4215d0fba03fac347febee8116bc60dbfcf892"
+    },
+    {
+      "file": "screens/Dark-CookHome.dc.html",
+      "png": "png/Dark-CookHome.png",
+      "title": "다크 · 조리",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "b74fd2f43c7db920d211df90dcd45b657760c2051cc6d71cca245d6a4c0c0bb1",
+      "export_sha256": "738b9e61eaa1292f9d5d75c4e760fef60bad0c6c44195b28d6806b7086696b52"
+    },
+    {
+      "file": "screens/Dark-Cooking.dc.html",
+      "png": "png/Dark-Cooking.png",
+      "title": "다크 · 조리 중",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "3e4c49407a7ca9824ce48b310ff9115f84403714ae0459afe243a1ed0d02845d",
+      "export_sha256": "afc246d6bcc9e4474c3d15ef9d18d74c8ef18b8d81f32df20964d6556422a72b"
+    },
+    {
+      "file": "screens/Dark-CookDone.dc.html",
+      "png": "png/Dark-CookDone.png",
+      "title": "다크 · 조리 완료",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "6a0527a3baaa4e0e9e18baeb54dcf2b96d0367d7139f477e8fb8e0c043595e2c",
+      "export_sha256": "5b59f6abacaf106a74ec6983975a71c9f81bdfedea466c3685e7f95400ca1467"
+    },
+    {
+      "file": "screens/Dark-History.dc.html",
+      "png": "png/Dark-History.png",
+      "title": "다크 · 기록",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "dddd4f05e0ec0ef58b29df38f5cf006cefab613abb74cc8c28c16d3a5f992d74",
+      "export_sha256": "48ec7a716782d0338fa96c26de93e6317b63987f2a25dfca40bff7e0213a2a85"
+    },
+    {
+      "file": "screens/Dark-MyPage.dc.html",
+      "png": "png/Dark-MyPage.png",
+      "title": "다크 · 마이페이지",
+      "group": "테마 · 다크 (Google Nest Hub 느낌)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "d42bd2e5e8d6ba13e01a0e3a018c424207c1469105fa17978fc61f2891d9f6eb",
+      "export_sha256": "27e2a6200c5f1a5a53d03c2ee63ca97ae963fbbe6c0a3ce1e98139ef08e4e6e7"
+    },
+    {
+      "file": "screens/Mascot-states.dc.html",
+      "png": "png/Mascot-states.png",
+      "title": "캐릭터 시안 1 · 상태 7종",
+      "group": "캐릭터 시안 1 · 젤리",
+      "width": 1240,
+      "height": 320,
+      "source_sha256": "2ef2756a42155903dc0ecbe2866191c3f55c9d889d1d8cd3da3a04311dbf8a4d",
+      "export_sha256": "5bed6a36485eb7ea4ca8bc73a1fbce7bb744e030bb0344776b9ca90a43026652"
+    },
+    {
+      "file": "screens/Mascot.dc.html",
+      "png": "png/Mascot.png",
+      "title": "캐릭터 시안 1 · 컴포넌트",
+      "group": "캐릭터 시안 1 · 젤리",
+      "width": 220,
+      "height": 220,
+      "source_sha256": "59ca052c0bb2963781750cb766301a360c2eb97103ef36d50a3c43963c684076",
+      "export_sha256": "ede9f6397d5de517e80cdfbf4f9a710b0aeff863351606c37bf34887e9d910bf"
+    },
+    {
+      "file": "screens/Mascot2-states.dc.html",
+      "png": "png/Mascot2-states.png",
+      "title": "캐릭터 시안 2 · 상태 7종",
+      "group": "캐릭터 시안 2 · 냉장고 친구 (적용)",
+      "width": 1240,
+      "height": 320,
+      "source_sha256": "9531b6daad94cb2167d85900af6f033b7412ad3747c22bbc4565d80c222b4d4a",
+      "export_sha256": "d1e0cfa012080f9ea08c8e561ac68b5dd0952f1a4f34f20e78a003f7d8f31bb1"
+    },
+    {
+      "file": "screens/Mascot2.dc.html",
+      "png": "png/Mascot2.png",
+      "title": "캐릭터 시안 2 · 컴포넌트",
+      "group": "캐릭터 시안 2 · 냉장고 친구 (적용)",
+      "width": 220,
+      "height": 220,
+      "source_sha256": "02358be29e2ad77d96d589d7b9ee279adff04c004269939080ca166e123b9f74",
+      "export_sha256": "8ef096d7f464e7574e20c747e4b6cdb6ac70a236d8f067703b1d320a16689115"
+    },
+    {
+      "file": "screens/C2-Permission.dc.html",
+      "png": "png/C2-Permission.png",
+      "title": "시안 2 · 권한 안내",
+      "group": "캐릭터 시안 2 · 냉장고 친구 (적용)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "7872db608378339a582db9de251b825c08787cf33f5375bb73e499833163d21f",
+      "export_sha256": "688f7adeb66366bed013cfa40c2622ed083d5a365e892bae0a043e35b5a84abb"
+    },
+    {
+      "file": "screens/C2-Main.dc.html",
+      "png": "png/C2-Main.png",
+      "title": "시안 2 · 뭐 먹지?",
+      "group": "캐릭터 시안 2 · 냉장고 친구 (적용)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "b290a22da34c5149150909c30a957d290765490ee07b4dd15a45348554abedac",
+      "export_sha256": "a03303a5b09156daaa6fc50312e1ba5d2f74e9e4d3462826816323a103971676"
+    },
+    {
+      "file": "screens/C2-Clarify.dc.html",
+      "png": "png/C2-Clarify.png",
+      "title": "시안 2 · 확인 질문",
+      "group": "캐릭터 시안 2 · 냉장고 친구 (적용)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "bcd505425ffc5d606492b20be9d25d2ec7f7f1091a55c3443908aa29de62a198",
+      "export_sha256": "29d34aad27edd6a69012d0b831f884500dd9150874478458fce5ca87155aa9b6"
+    },
+    {
+      "file": "screens/C2-Result.dc.html",
+      "png": "png/C2-Result.png",
+      "title": "시안 2 · 반영 결과",
+      "group": "캐릭터 시안 2 · 냉장고 친구 (적용)",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "bf8e8fe99bfa3fc38d4db4e7bf0f80673b68fe84b8772a5138ff70edf0ce6101",
+      "export_sha256": "cd15556977034e119b023bbf1366d49d195f7e0671b289b3938c02aa06cbb823"
+    },
+    {
+      "file": "screens/Mascot3-states.dc.html",
+      "png": "png/Mascot3-states.png",
+      "title": "캐릭터 시안 3 · 상태 7종",
+      "group": "캐릭터 시안 3 · 밥그릇",
+      "width": 1240,
+      "height": 320,
+      "source_sha256": "249f40ff370bfd711d7c0ad6e2175efed5932971c3830717563d71eef2cd1e91",
+      "export_sha256": "e3bcca7a552add59e9b17b67fbedfedbf4671611ab7aad6e0c109ad011f1d59a"
+    },
+    {
+      "file": "screens/Mascot3.dc.html",
+      "png": "png/Mascot3.png",
+      "title": "캐릭터 시안 3 · 컴포넌트",
+      "group": "캐릭터 시안 3 · 밥그릇",
+      "width": 220,
+      "height": 220,
+      "source_sha256": "8987d7b400d20734debb31450e0d9befbdffe6d81fa02dd1de7c5a4cb0ca94bd",
+      "export_sha256": "2f970a8dd2a624ea65411c2cb4fc39646c35d83c51e7d316309eb397ab484218"
+    },
+    {
+      "file": "screens/C3-Permission.dc.html",
+      "png": "png/C3-Permission.png",
+      "title": "시안 3 · 권한 안내",
+      "group": "캐릭터 시안 3 · 밥그릇",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "6f1f41102d63edd49ea7451c460c255ae490b518f6e0ec843bab7d26d5416745",
+      "export_sha256": "0051b9707862b611d46bb605ec2d3bee399b96b37d3158291c19a37fa9e48bc2"
+    },
+    {
+      "file": "screens/C3-Main.dc.html",
+      "png": "png/C3-Main.png",
+      "title": "시안 3 · 뭐 먹지?",
+      "group": "캐릭터 시안 3 · 밥그릇",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "0c0dfef7dccc79554486caad228af4e626600cf930aaa916b0a28b8b9f42c467",
+      "export_sha256": "4887fa1cd490ee7ec60f2ab2449af8a5be92828f49e0e4c27c9b9a853bf491de"
+    },
+    {
+      "file": "screens/C3-Clarify.dc.html",
+      "png": "png/C3-Clarify.png",
+      "title": "시안 3 · 확인 질문",
+      "group": "캐릭터 시안 3 · 밥그릇",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "dd2217b41c85ab3d7c68a15693da2a754d1bfc2776f66256b937c60d14885fc6",
+      "export_sha256": "6b6194b9192320af656d934db6ebd9befc746b8d17a796b4315675b429d5de8a"
+    },
+    {
+      "file": "screens/C3-Result.dc.html",
+      "png": "png/C3-Result.png",
+      "title": "시안 3 · 반영 결과",
+      "group": "캐릭터 시안 3 · 밥그릇",
+      "width": 390,
+      "height": 844,
+      "source_sha256": "7603dc43393832f62c7b5ab889c56f5bc941f576c79a15f2dccf5084bd7674db",
+      "export_sha256": "516022c59de37e209a15c496ede748e251ba370fd3323cd253ceef98df7e35c9"
+    },
+    {
+      "file": "screens/Neuron.dc.html",
+      "png": null,
+      "title": "Neuron",
+      "group": "캔버스에 배치되지 않은 파일",
+      "width": null,
+      "height": null,
+      "source_sha256": "b578cd0991b8c892ca67c7d9a6b75953a63722d91e2e1c4dc1b292b4a30c127d",
+      "export_sha256": "1cc42977694b332dba87e1e730930f2de71f54d3ff274cc727e8b64eb9f7c6bc"
+    }
+  ]
+}

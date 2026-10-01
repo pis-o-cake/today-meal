@@ -8,13 +8,13 @@
 <body>
 <x-dc>
 <helmet>
-<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(/_blob/b80c3f239a19ae2ac0629973c9271ec7) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
 </helmet>
-<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
 
   <header style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 24px 0; text-align: center">
     <dc-import name="Mascot2" theme="{{themeName}}" mood="hello" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
-    <h1 style="margin: 6px 0 0; font-size: 28px; line-height: 1.2; font-weight: 800; letter-spacing: -0.05em">오늘 뭐 먹지?</h1>
+    <h1 style="margin: 6px 0 0; font-size: 32px; line-height: 1.2; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em">오늘 뭐 먹지?</h1>
     <div style="font-size: 15px; font-weight: 500; color: {{K.c1}}; margin-top: 4px">말로 관리하는 우리 집 냉장고</div>
   </header>
 
@@ -55,36 +55,30 @@
     <a href="{{links.next}}" aria-label="카카오 로그인" style="display: flex; align-items: center; justify-content: center; height: {{socialH}}px; border-radius: 12px; background: {{K.c14}}; text-decoration: none; overflow: hidden">
       <img src="/_blob/69ecee9619b1c88dd107131b69a677bc" width="336" height="46" alt="" style="display: block; flex-shrink: 0">
     </a>
-    <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; gap: {{googleGap}}px; height: {{socialH}}px; box-sizing: border-box; border-radius: 12px; background: {{K.c15}}; border: 1px solid {{K.c16}}; color: {{K.c17}}; text-decoration: none; font-size: 15px; font-weight: 500">
+    <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; gap: {{googleGap}}px; height: {{socialH}}px; box-sizing: border-box; border-radius: 12px; background: {{K.c15}}; border: 1px solid {{K.c16}}; color: {{K.c17}}; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; font-synthesis: weight style; text-decoration: none; font-size: 15px; font-weight: 500">
       <img src="/_blob/4067c758bf8f92094da22e1402c20ef2" width="20" height="20" alt="" style="display: block; flex-shrink: 0">
       Google 계정으로 로그인
     </a>
-    <sc-if value="{{isIOS}}" hint-placeholder-val="{{ true }}">
-      <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: {{socialH}}px; border-radius: 12px; background: {{K.c18}}; color: {{K.c8}}; text-decoration: none; font-size: 15px; font-weight: 600">
-        <span aria-hidden="true" title="Apple 로고 (공식 에셋)" style="width: 20px; height: 20px; box-sizing: border-box; border-radius: 5px; border: 1.5px dashed {{K.c19}}"></span>
-        Apple로 로그인
-      </a>
-    </sc-if>
 
     <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; height: 40px; margin-top: 2px; color: {{K.c1}}; text-decoration: underline; text-underline-offset: 3px; font-size: 14px; font-weight: 600">로그인 없이 둘러보기</a>
   </section>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var THEME = this.props.theme || 'pastel';
-    var K = ({"pastel":{"c0":"#15181D","c1":"#5F6670","c2":"#3E454E","c3":"rgba(79,95,224,0.22)","c4":"rgba(255,255,255,0.94)","c5":"#4F5FE0","c6":"#6B727B","c7":"#4F5FE0","c8":"#FFFFFF","c9":"rgba(79,95,224,0.28)","c10":"#C5CAD3","c11":"#3F4FD1","c12":"#8A9199","c13":"rgba(21,24,29,0.1)","c14":"#FEE500","c15":"#FFFFFF","c16":"#747775","c17":"#1F1F1F","c18":"#000000","c19":"rgba(255,255,255,0.5)","root":"radial-gradient(125% 80% at 50% 22%, #FFFFFF 0%, #F6F7FF 42%, #E1E6FF 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#5F6670","c2":"#3E454E","c3":"rgba(43,64,238,0.22)","c4":"#FFFFFF","c5":"#2B40EE","c6":"#6B727B","c7":"#2B40EE","c8":"#FFFFFF","c9":"rgba(43,64,238,0.28)","c10":"#C5CAD3","c11":"#1024C6","c12":"#8A9199","c13":"rgba(21,24,29,0.1)","c14":"#FEE500","c15":"#FFFFFF","c16":"#747775","c17":"#1F1F1F","c18":"#000000","c19":"rgba(17,20,26,0.07)","root":"radial-gradient(120% 45% at 50% 0%, rgba(61,92,245,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"#5F6670","c2":"#3E454E","c3":"rgba(54,73,226,0.22)","c4":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c5":"#3649E2","c6":"#6B727B","c7":"linear-gradient(180deg, rgba(99,114,233,0.94) 0%, rgba(54,73,226,0.94) 100%)","c8":"#FFFFFF","c9":"rgba(32,53,223,0.28)","c10":"rgba(120,128,150,0.3)","c11":"#1D30C9","c12":"#8A9199","c13":"rgba(21,24,29,0.1)","c14":"#FEE500","c15":"#FFFFFF","c16":"#747775","c17":"#1F1F1F","c18":"#000000","c19":"rgba(255,255,255,0.92)","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#BDC1C6","c2":"#BDC1C6","c3":"rgba(138,180,248,0.29)","c4":"rgba(45,46,49,0.96)","c5":"#8AB4F8","c6":"#9AA0A6","c7":"#8AB4F8","c8":"#202124","c9":"rgba(138,180,248,0.17)","c10":"#5F6368","c11":"#8AB4F8","c12":"#9AA0A6","c13":"rgba(232,234,237,0.12)","c14":"#FEE500","c15":"#131314","c16":"#8E918F","c17":"#E3E3E3","c18":"#FFFFFF","c19":"rgba(232,234,237,0.08)","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var K = ({"pastel":{"c0":"#15181D","c1":"#5F6670","c2":"#3E454E","c3":"rgba(79,95,224,0.22)","c4":"rgba(255,255,255,0.94)","c5":"#4F5FE0","c6":"#6B727B","c7":"#4F5FE0","c8":"#FFFFFF","c9":"rgba(79,95,224,0.28)","c10":"#C5CAD3","c11":"#3F4FD1","c12":"#8A9199","c13":"rgba(21,24,29,0.1)","c14":"#FEE500","c15":"#FFFFFF","c16":"#747775","c17":"#1F1F1F","root":"radial-gradient(125% 80% at 50% 22%, #FFFFFF 0%, #F6F7FF 42%, #E1E6FF 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#5F6670","c2":"#3E454E","c3":"rgba(43,64,238,0.22)","c4":"#FFFFFF","c5":"#2B40EE","c6":"#6B727B","c7":"#2B40EE","c8":"#FFFFFF","c9":"rgba(43,64,238,0.28)","c10":"#C5CAD3","c11":"#1024C6","c12":"#8A9199","c13":"rgba(21,24,29,0.1)","c14":"#FEE500","c15":"#FFFFFF","c16":"#747775","c17":"#1F1F1F","root":"radial-gradient(120% 45% at 50% 0%, rgba(61,92,245,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"#5F6670","c2":"#3E454E","c3":"rgba(54,73,226,0.22)","c4":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c5":"#3649E2","c6":"#6B727B","c7":"linear-gradient(180deg, rgba(99,114,233,0.94) 0%, rgba(54,73,226,0.94) 100%)","c8":"#FFFFFF","c9":"rgba(32,53,223,0.28)","c10":"rgba(120,128,150,0.3)","c11":"#1D30C9","c12":"#8A9199","c13":"rgba(21,24,29,0.1)","c14":"#FEE500","c15":"#FFFFFF","c16":"#747775","c17":"#1F1F1F","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#BDC1C6","c2":"#BDC1C6","c3":"rgba(138,180,248,0.29)","c4":"rgba(45,46,49,0.96)","c5":"#8AB4F8","c6":"#9AA0A6","c7":"#8AB4F8","c8":"#202124","c9":"rgba(138,180,248,0.17)","c10":"#5F6368","c11":"#8AB4F8","c12":"#9AA0A6","c13":"rgba(232,234,237,0.12)","c14":"#FEE500","c15":"#131314","c16":"#8E918F","c17":"#E3E3E3","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
     var android = (this.props.platform || 'ios') === 'android';
     var g = android ? { w: 412, h: 915, top: 40, bottom: 24, mascot: 112, socialH: 52, googleGap: 10 } : { w: 390, h: 844, top: 59, bottom: 34, mascot: 84, socialH: 50, googleGap: 12 };
     var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
     var self = this;
     var shown = !!(this.state && this.state.pwShown);
-    return { K: K, themeName: THEME,
+    return { K: K, themeName: THEME, FNT: FNT,
       w: g.w, h: g.h, top: g.top, bottom: g.bottom,
       mascotSize: g.mascot, mascotHint: g.mascot + 'px,' + g.mascot + 'px',
       socialH: g.socialH, googleGap: g.googleGap,
-      isIOS: !android,
       pwShown: shown, pwHidden: !shown,
       pwType: shown ? 'text' : 'password',
       pwLabel: shown ? '비밀번호 숨기기' : '비밀번호 보기',

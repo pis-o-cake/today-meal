@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>재료 정보</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
+
+  <div style="display: grid; grid-template-columns: 64px 1fr 64px; align-items: center; padding: 8px 16px 0">
+    <a href="{{links.fridge}}" aria-label="뒤로" style="width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: {{K.c0}}; background: {{K.c1}}; border: 1px solid {{K.c2}}; box-shadow: 0 4px 12px {{K.c3}}; text-decoration: none; {{K.fxc}}">
+      <sc-if value="{{isIOS}}" hint-placeholder-val="{{ true }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+      </sc-if>
+      <sc-if value="{{isAndroid}}" hint-placeholder-val="{{ false }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+      </sc-if>
+    </a>
+    <h1 style="margin: 0; text-align: center; font-size: 17px; font-weight: 700; letter-spacing: -0.03em">재료 정보</h1>
+    <a href="{{links.del}}" style="justify-self: end; display: flex; align-items: center; height: 44px; padding: 0 4px; color: {{K.c4}}; text-decoration: none; font-size: 15px; font-weight: 600">삭제</a>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 14px; padding: 14px 20px 0">
+    <div style="width: 76px; height: 76px; flex-shrink: 0; border-radius: 24px; background: {{K.c5}}; display: flex; align-items: center; justify-content: center">
+      <dc-import name="Mascot2" theme="{{themeName}}" mood="urgent" size="68" hint-size="68px,68px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+      <span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; padding: 3px 8px 3px 6px; border-radius: 8px; background: {{K.c5}}; color: {{K.c4}}">
+        <svg width="14" height="14" viewBox="0 0 48 48" aria-hidden="true"><path d="M18 19 v6 M30 19 v6 M13 15 l6 -2 M35 15 l-6 -2 M22 30 a2.4 2.4 0 1 0 4.8 0 a2.4 2.4 0 1 0 -4.8 0" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        기한 코앞
+      </span>
+      <span style="font-size: 30px; line-height: 1.15; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em">두부</span>
+      <span style="font-size: 14px; font-weight: 600; color: {{K.c4}}">{{dtypeLabel}} 2026.10.03 · D-1</span>
+    </div>
+  </div>
+
+  <section aria-label="재료 고치기" style="margin: 16px 20px 0; border-radius: 22px; background: {{K.c6}}; border: 1px solid {{K.c7}}; box-shadow: 0 8px 24px {{K.c3}}; {{K.fx}}">
+    <div style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 12px 0 16px">
+      <span style="width: 64px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: {{K.c8}}">이름</span>
+      <span style="flex-grow: 1; font-size: 16px; font-weight: 700">두부</span>
+      <button type="button" aria-label="이름 고치기" style="width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: {{K.c9}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z M13.5 6.5l4 4"></path></svg>
+      </button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 12px 0 16px; border-top: 1px solid {{K.c10}}">
+      <span style="width: 64px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: {{K.c8}}">수량</span>
+      <span style="flex-grow: 1"></span>
+      <div style="display: flex; align-items: center; gap: 2px; padding: 3px; border-radius: 22px; background: {{K.c11}}">
+        <button type="button" aria-label="수량 줄이기" onClick="{{dec}}" style="width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: {{K.c12}}; color: {{K.c0}}; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 1px 3px {{K.c13}}; {{K.fxc}}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"></path></svg>
+        </button>
+        <span title="눌러서 수량 직접 입력" style="min-width: 56px; text-align: center; font-size: 16px; font-weight: 700; text-decoration: underline; text-decoration-color: {{K.c9}}; text-decoration-thickness: 1.5px; text-underline-offset: 4px; cursor: text">{{qty}}모</span>
+        <button type="button" aria-label="수량 늘리기" onClick="{{inc}}" style="width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: {{K.c12}}; color: {{K.c0}}; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 1px 3px {{K.c13}}; {{K.fxc}}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12M12 6v12"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 12px 0 16px; border-top: 1px solid {{K.c10}}">
+      <span style="width: 64px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: {{K.c8}}">보관</span>
+      <div role="radiogroup" aria-label="보관 위치" style="flex-grow: 1; display: flex; gap: 2px; padding: 3px; border-radius: 20px; background: {{K.c11}}">
+        <sc-for list="{{locs}}" as="o" hint-placeholder-count="3">
+          <button type="button" role="radio" aria-checked="{{o.checked}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 12px 0 16px; border-top: 1px solid {{K.c10}}">
+      <span style="width: 64px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: {{K.c8}}">날짜 종류</span>
+      <div role="radiogroup" aria-label="날짜 종류" style="flex-grow: 1; display: flex; gap: 2px; padding: 3px; border-radius: 20px; background: {{K.c11}}">
+        <sc-for list="{{dtypes}}" as="o" hint-placeholder-count="3">
+          <button type="button" role="radio" aria-checked="{{o.checked}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 12px 0 16px; border-top: 1px solid {{K.c10}}">
+      <span style="width: 64px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: {{K.c8}}">날짜</span>
+      <span style="flex-grow: 1; font-size: 16px; font-weight: 700">2026.10.03 (토)</span>
+      <button type="button" aria-label="날짜 고르기" style="width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: {{K.c9}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg>
+      </button>
+    </div>
+  </section>
+  <div style="display: flex; align-items: center; gap: 6px; padding: 10px 24px 0; font-size: 13px; font-weight: 500; color: {{K.c14}}">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z M5.5 11a6.5 6.5 0 0 0 13 0 M12 17.5V21"></path></svg>
+    말로도 고쳐요 · “두부 기한 10월 5일로 바꿔”
+  </div>
+
+  <section aria-label="이 재료로 만들 수 있는 요리" style="display: flex; flex-direction: column; gap: 10px; padding: 18px 0 0 20px">
+    <div style="display: flex; align-items: baseline; justify-content: space-between; padding-right: 20px">
+      <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.03em">두부로 만들 수 있어요</span>
+      <a href="{{links.cook}}" style="font-size: 13px; font-weight: 600; color: {{K.c8}}; text-decoration: none">모두 보기</a>
+    </div>
+    <div style="display: flex; gap: 10px; overflow: hidden">
+      <sc-for list="{{recipes}}" as="r" hint-placeholder-count="3">
+        <a href="{{links.menu}}" style="flex-shrink: 0; width: 148px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 20px; background: {{K.c15}}; border: 1px solid {{K.c2}}; box-shadow: 0 6px 18px {{K.c3}}; color: {{K.c0}}; text-decoration: none; {{K.fxc}}">
+          <span style="width: 34px; height: 34px; border-radius: 12px; background: {{K.c16}}; color: {{K.c17}}; display: flex; align-items: center; justify-content: center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+          </span>
+          <span style="font-size: 15px; font-weight: 700">{{r.name}}</span>
+          <span style="font-size: 12px; font-weight: 500; color: {{K.c14}}">{{r.time}}</span>
+          <span style="{{r.matchStyle}}">{{r.match}}</span>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <div style="margin-top: auto; padding: 12px 20px 8px">
+    <a href="{{links.fridge}}" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: {{K.c18}}; color: {{K.c19}}; text-decoration: none; font-size: 17px; font-weight: 700; box-shadow: 0 10px 22px {{K.c20}}; {{K.fxd}}">저장</a>
+  </div>
+  <sc-if value="{{showDelete}}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-modal="true" aria-label="재료 버리기 확인" style="position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 0 32px; background: {{K.c21}}">
+      <div style="width: 100%; max-width: 320px; box-sizing: border-box; padding: 24px 22px 16px; border-radius: 28px; background: {{K.c22}}; box-shadow: 0 24px 60px {{K.c23}}; display: flex; flex-direction: column; gap: 8px; {{K.fx}}">
+        <span style="font-size: 20px; font-weight: 700; letter-spacing: -0.03em">두부를 버릴까요?</span>
+        <span style="font-size: 14px; line-height: 1.5; font-weight: 500; color: {{K.c8}}">기록에는 남아요. 되돌리려면 다시 등록해야 해요.</span>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px">
+          <a href="{{links.item}}" style="display: flex; align-items: center; height: 44px; padding: 0 16px; border-radius: 22px; color: {{K.c24}}; text-decoration: none; font-size: 15px; font-weight: 700">취소</a>
+          <a href="{{links.fridge}}" style="display: flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 22px; background: {{K.c25}}; color: {{K.c19}}; text-decoration: none; font-size: 15px; font-weight: 700; {{K.fxa}}">삭제</a>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"dialog":{"editor":"enum","options":["none","delete"],"default":"none"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"rgba(255,255,255,0.8)","c2":"rgba(255,255,255,0.95)","c3":"rgba(20,25,35,0.06)","c4":"#B0341A","c5":"#FFE4DB","c6":"rgba(255,255,255,0.9)","c7":"rgba(255,255,255,0.95)","c8":"#5F6670","c9":"#8A9199","c10":"rgba(21,24,29,0.06)","c11":"#F1F2F5","c12":"#FFFFFF","c13":"rgba(20,25,35,0.1)","c14":"#6B727B","c15":"rgba(255,255,255,0.9)","c16":"#FFF1EB","c17":"#D8431F","c18":"#15181D","c19":"#FFFFFF","c20":"rgba(20,25,35,0.22)","c21":"rgba(15,17,22,0.38)","c22":"#FFFFFF","c23":"rgba(15,17,22,0.24)","c24":"#3E454E","c25":"#D8431F","c26":"#DDF3E4","c27":"#17703C","c28":"#F0F1F4","root":"radial-gradient(130% 70% at 50% 0%, #FFFFFF 0%, #F6F6F9 45%, #E8EAF0 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#FFFFFF","c2":"rgba(17,20,26,0.07)","c3":"rgba(20,25,35,0.06)","c4":"#BB2D0F","c5":"#FFDCD1","c6":"#FFFFFF","c7":"rgba(17,20,26,0.07)","c8":"#5F6670","c9":"#8A9199","c10":"rgba(21,24,29,0.06)","c11":"#F1F2F5","c12":"#FFFFFF","c13":"rgba(20,25,35,0.1)","c14":"#6B727B","c15":"#FFFFFF","c16":"#FFEAE1","c17":"#C63310","c18":"#15181D","c19":"#FFFFFF","c20":"rgba(20,25,35,0.22)","c21":"rgba(15,17,22,0.38)","c22":"#FFFFFF","c23":"rgba(15,17,22,0.24)","c24":"#3E454E","c25":"#E43B13","c26":"#D3F3DD","c27":"#0A7D3A","c28":"#F0F1F4","root":"#F4F5F7","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c2":"rgba(255,255,255,0.7)","c3":"rgba(20,25,45,0.06)","c4":"#B13419","c5":"rgba(255,83,26,0.13)","c6":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c7":"rgba(255,255,255,0.92)","c8":"#5F6670","c9":"#8A9199","c10":"rgba(21,24,29,0.06)","c11":"rgba(120,128,150,0.10)","c12":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c13":"rgba(20,25,45,0.1)","c14":"#6B727B","c15":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c16":"rgba(255,94,26,0.13)","c17":"#C93E1D","c18":"linear-gradient(180deg, rgba(58,62,72,0.92) 0%, rgba(18,20,26,0.94) 100%)","c19":"#FFFFFF","c20":"rgba(20,25,45,0.2)","c21":"rgba(15,17,22,0.38)","c22":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c23":"rgba(20,25,45,0.2)","c24":"#3E454E","c25":"linear-gradient(180deg, rgba(229,100,69,0.94) 0%, rgba(216,67,31,0.94) 100%)","c26":"rgba(60,221,111,0.13)","c27":"#11763B","c28":"rgba(120,128,150,0.10)","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"rgba(45,46,49,0.96)","c2":"rgba(232,234,237,0.08)","c3":"rgba(0,0,0,0.11)","c4":"#F28B82","c5":"rgba(252,173,112,0.16)","c6":"rgba(45,46,49,0.96)","c7":"rgba(232,234,237,0.08)","c8":"#BDC1C6","c9":"#9AA0A6","c10":"rgba(232,234,237,0.1)","c11":"#3C4043","c12":"#3C4043","c13":"rgba(0,0,0,0.18)","c14":"#9AA0A6","c15":"rgba(45,46,49,0.96)","c16":"rgba(252,173,112,0.16)","c17":"#F28B82","c18":"#E8EAED","c19":"#202124","c20":"rgba(0,0,0,0.3)","c21":"rgba(232,234,237,0.12)","c22":"#3C4043","c23":"rgba(0,0,0,0.3)","c24":"#BDC1C6","c25":"#F28B82","c26":"rgba(129,201,149,0.16)","c27":"#81C995","c28":"#3C4043","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24 } : { w: 390, h: 844, top: 59, bottom: 34 };
+    var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
+    var self = this;
+    var st = this.state || {};
+    var qty = st.qty === undefined ? 2 : st.qty;
+    var loc = st.loc || '냉장';
+    var dtype = st.dtype || '소비기한';
+    var seg = function (on) {
+      return 'flex-grow: 1; flex-basis: 0; height: 34px; padding: 0; border: 0; border-radius: 17px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em;'
+        + (on ? ' background: ' + K.c22 + '; color: ' + K.c0 + '; font-weight: 700; box-shadow: 0 2px 6px ' + K.c13 + ';' : ' background: transparent; color: ' + K.c8 + '; font-weight: 500;');
+    };
+    var locs = ['냉장', '냉동', '실온'].map(function (n) {
+      var on = n === loc;
+      return { label: n, checked: on ? 'true' : 'false', style: seg(on), pick: function () { self.setState({ loc: n }); } };
+    });
+    var dtypes = ['소비기한', '유통기한', '점검 알림'].map(function (n) {
+      var on = n === dtype;
+      return { label: n, checked: on ? 'true' : 'false', style: seg(on), pick: function () { self.setState({ dtype: n }); } };
+    });
+    var recipes = [
+      { name: '두부계란전', time: '2인분 · 15분', match: '재료 다 있어요', ok: true },
+      { name: '두부조림', time: '2인분 · 20분', match: '재료 다 있어요', ok: true },
+      { name: '마파두부', time: '2인분 · 25분', match: '다진 고기 필요', ok: false }
+    ].map(function (r) {
+      return { name: r.name, time: r.time, match: r.match,
+        matchStyle: 'align-self: flex-start; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 7px;' + (r.ok ? ' background: ' + K.c26 + '; color: ' + K.c27 + ';' : ' background: ' + K.c28 + '; color: ' + K.c8 + ';') };
+    });
+    // 삭제는 확인 창을 거친다(앱과 같음). 날짜 종류의 '모름'은 종류가 아니라 날짜가 없는 상태라 '점검 알림'으로 바뀌었다.
+    var showDelete = this.props.dialog === 'delete';
+    return { K: K, themeName: THEME, FNT: FNT, showDelete: showDelete,
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom, isIOS: !android, isAndroid: android,
+      qty: qty, locs: locs, dtypes: dtypes, recipes: recipes,
+      dtypeLabel: dtype,
+      dec: function () { self.setState({ qty: Math.max(0, qty - 1) }); },
+      inc: function () { self.setState({ qty: qty + 1 }); },
+      links: { fridge: L('Fridge'), menu: L('Menu'), cook: L('CookHome'), item: L('FridgeItem'),
+        del: (!android && THEME === 'pastel') ? 'FridgeItem-Delete.dc.html' : L('Fridge') }
+    };
+  }
+}
+</script>
+</body>
+</html>

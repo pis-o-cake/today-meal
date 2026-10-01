@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>회원가입</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(/_blob/b80c3f239a19ae2ac0629973c9271ec7) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: #15181D; letter-spacing: -0.02em; background: radial-gradient(125% 80% at 50% 10%, #FFFFFF 0%, #F6F7FF 42%, #E1E6FF 100%)">
+
+  <div style="display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; padding: 8px 16px 0">
+    <a href="{{links.login}}" aria-label="뒤로" style="width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #15181D; background: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 4px 12px rgba(20,25,35,0.06); text-decoration: none">
+      <sc-if value="{{isIOS}}" hint-placeholder-val="{{ true }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+      </sc-if>
+      <sc-if value="{{isAndroid}}" hint-placeholder-val="{{ false }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+      </sc-if>
+    </a>
+    <h1 style="margin: 0; text-align: center; font-size: 17px; font-weight: 700; letter-spacing: -0.03em">회원가입</h1>
+    <div></div>
+  </div>
+
+  <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; padding: 16px 20px 0">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 700; color: #3E454E; padding-left: 2px">닉네임</span>
+        <input type="text" name="nickname" autocomplete="nickname" placeholder="냉장고 친구가 불러 줄 이름" style="{{inputStyle}}">
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 700; color: #3E454E; padding-left: 2px">이메일</span>
+        <input type="email" name="email" autocomplete="email" inputmode="email" placeholder="example@email.com" style="{{inputStyle}}">
+      </label>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="position: relative">
+          <label style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 13px; font-weight: 700; color: #3E454E; padding-left: 2px">비밀번호</span>
+            <input type="{{pwType}}" name="new-password" autocomplete="new-password" placeholder="8자 이상 입력" style="{{pwInputStyle}}">
+          </label>
+          <button type="button" aria-label="{{pwLabel}}" aria-pressed="{{pwPressed}}" onClick="{{togglePw}}" style="position: absolute; right: 3px; bottom: 3px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 10px; background: transparent; color: #6B727B; display: flex; align-items: center; justify-content: center; cursor: pointer">
+            <sc-if value="{{pwHidden}}" hint-placeholder-val="{{ true }}">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </sc-if>
+            <sc-if value="{{pwShown}}" hint-placeholder-val="{{ false }}">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 5.6A10 10 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.6 6.6C4 8.3 2.5 12 2.5 12S6 18.5 12 18.5a9.4 9.4 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"></path></svg>
+            </sc-if>
+          </button>
+        </div>
+        <ul aria-label="비밀번호 조건" style="list-style: none; margin: 0; padding: 0 0 0 2px; display: flex; gap: 12px">
+          <sc-for list="{{rules}}" as="r" hint-placeholder-count="3">
+            <li style="display: flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 600; color: #8A9199">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+              {{r.t}}
+            </li>
+          </sc-for>
+        </ul>
+      </div>
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 700; color: #3E454E; padding-left: 2px">비밀번호 확인</span>
+        <input type="password" name="confirm-password" autocomplete="new-password" placeholder="한 번 더 입력" style="{{inputStyle}}">
+      </label>
+    </div>
+
+    <div role="group" aria-label="약관 동의" style="margin-top: 18px; padding: 4px 0; border-radius: 16px; background: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.95); box-shadow: 0 8px 24px rgba(20,25,35,0.06)">
+      <button type="button" role="checkbox" aria-checked="{{allChecked}}" onClick="{{toggleAll}}" style="width: 100%; display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border: 0; background: transparent; font-family: inherit; font-size: 16px; font-weight: 700; color: #15181D; letter-spacing: -0.03em; cursor: pointer; text-align: left">
+        <span aria-hidden="true" style="{{allBox}}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{allCheck}}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        </span>
+        약관에 모두 동의해요
+      </button>
+      <div style="height: 1px; margin: 0 14px; background: rgba(21,24,29,0.07)"></div>
+      <sc-for list="{{terms}}" as="t" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; padding-right: 6px">
+          <button type="button" role="checkbox" aria-checked="{{t.checked}}" onClick="{{t.toggle}}" style="flex-grow: 1; display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 14px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 500; color: #3E454E; cursor: pointer; text-align: left">
+            <span aria-hidden="true" style="{{t.box}}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="{{t.check}}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            </span>
+            <span><span style="{{t.tagStyle}}">{{t.tag}}</span> {{t.label}}</span>
+          </button>
+          <sc-if value="{{t.hasDoc}}" hint-placeholder-val="{{ true }}">
+            <a href="{{links.self}}" aria-label="{{t.docLabel}}" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: #A2A8B0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+            </a>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top: auto; padding-top: 14px; display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px">
+      <sc-if value="{{canSubmit}}" hint-placeholder-val="{{ false }}">
+        <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 12px; background: #4F5FE0; color: #FFFFFF; text-decoration: none; font-size: 16px; font-weight: 700; box-shadow: 0 10px 22px rgba(79,95,224,0.28)">가입하기</a>
+      </sc-if>
+      <sc-if value="{{cannotSubmit}}" hint-placeholder-val="{{ true }}">
+        <span role="button" aria-disabled="true" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 12px; background: #CDD2F2; color: rgba(255,255,255,0.95); font-size: 16px; font-weight: 700">가입하기</span>
+      </sc-if>
+      <div style="display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; color: #6B727B">
+        이미 계정이 있나요?
+        <a href="{{links.login}}" style="display: flex; align-items: center; height: 40px; padding: 0 6px; color: #3F4FD1; text-decoration: none; font-weight: 700">로그인</a>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24, inputH: 52 } : { w: 390, h: 844, top: 59, bottom: 34, inputH: 50 };
+    var L = function (n) { return (android ? 'Android-' : '') + n + '.dc.html'; };
+    var self = this;
+    var st = this.state || {};
+    var shown = !!st.pwShown;
+    var defs = [
+      { key: 'tos', tag: '필수', label: '서비스 이용약관', required: true, doc: true },
+      { key: 'privacy', tag: '필수', label: '개인정보 수집·이용', required: true, doc: true },
+      { key: 'alert', tag: '선택', label: '기한 알림 받기', required: false, doc: false }
+    ];
+    var val = function (k) { return !!st[k]; };
+    var all = defs.every(function (d) { return val(d.key); });
+    var reqOk = defs.every(function (d) { return !d.required || val(d.key); });
+    var box = function (on, size, r) {
+      return 'width: ' + size + 'px; height: ' + size + 'px; flex-shrink: 0; box-sizing: border-box; border-radius: ' + r + 'px; display: flex; align-items: center; justify-content: center; '
+        + (on ? 'background: #4F5FE0; border: 1.5px solid #4F5FE0' : 'background: #FFFFFF; border: 1.5px solid #C5CAD3');
+    };
+    var input = 'width: 100%; height: ' + g.inputH + 'px; box-sizing: border-box; border-radius: 12px; border: 1px solid rgba(79,95,224,0.22); background: rgba(255,255,255,0.94); font-family: inherit; font-size: 16px; color: #15181D; outline-color: #4F5FE0; ';
+    return {
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom,
+      isIOS: !android, isAndroid: android,
+      inputStyle: input + 'padding: 0 16px',
+      pwInputStyle: input + 'padding: 0 50px 0 16px',
+      pwShown: shown, pwHidden: !shown,
+      pwType: shown ? 'text' : 'password',
+      pwLabel: shown ? '비밀번호 숨기기' : '비밀번호 보기',
+      pwPressed: shown ? 'true' : 'false',
+      togglePw: function () { self.setState({ pwShown: !shown }); },
+      rules: [{ t: '영문' }, { t: '숫자' }, { t: '8자 이상' }],
+      allChecked: all ? 'true' : 'false',
+      allBox: box(all, 24, 8),
+      allCheck: all ? '#FFFFFF' : 'rgba(255,255,255,0)',
+      toggleAll: function () { var u = {}; defs.forEach(function (d) { u[d.key] = !all; }); self.setState(u); },
+      terms: defs.map(function (d) {
+        var on = val(d.key);
+        return {
+          tag: '[' + d.tag + ']', label: d.label, hasDoc: d.doc, docLabel: d.label + ' 보기',
+          checked: on ? 'true' : 'false',
+          box: box(on, 20, 6),
+          check: on ? '#FFFFFF' : 'rgba(255,255,255,0)',
+          tagStyle: 'font-weight: 700; color: ' + (d.required ? '#3F4FD1' : '#8A9199'),
+          toggle: function () { var u = {}; u[d.key] = !on; self.setState(u); }
+        };
+      }),
+      canSubmit: reqOk, cannotSubmit: !reqOk,
+      links: { login: L('Login'), next: L('Permission'), self: L('SignUp') }
+    };
+  }
+}
+</script>
+</body>
+</html>

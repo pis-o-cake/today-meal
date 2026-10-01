@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>로그인</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(/_blob/b80c3f239a19ae2ac0629973c9271ec7) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: #15181D; letter-spacing: -0.02em; background: radial-gradient(125% 80% at 50% 22%, #FFFFFF 0%, #F6F7FF 42%, #E1E6FF 100%)">
+
+  <header style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 24px 0; text-align: center">
+    <dc-import name="Mascot2" mood="hello" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    <h1 style="margin: 6px 0 0; font-size: 32px; line-height: 1.2; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em">오늘 뭐 먹지?</h1>
+    <div style="font-size: 15px; font-weight: 500; color: #5F6670; margin-top: 4px">말로 관리하는 우리 집 냉장고</div>
+  </header>
+
+  <section aria-label="이메일로 로그인" style="display: flex; flex-direction: column; gap: 12px; padding: 20px 20px 0">
+    <label style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 700; color: #3E454E; padding-left: 2px">이메일</span>
+      <input type="email" name="email" autocomplete="email" inputmode="email" placeholder="example@email.com" style="width: 100%; height: 52px; box-sizing: border-box; padding: 0 16px; border-radius: 12px; border: 1px solid rgba(79,95,224,0.22); background: rgba(255,255,255,0.94); font-family: inherit; font-size: 16px; color: #15181D; outline-color: #4F5FE0">
+    </label>
+    <div style="position: relative">
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 700; color: #3E454E; padding-left: 2px">비밀번호</span>
+        <input type="{{pwType}}" name="password" autocomplete="current-password" placeholder="비밀번호 입력" style="width: 100%; height: 52px; box-sizing: border-box; padding: 0 52px 0 16px; border-radius: 12px; border: 1px solid rgba(79,95,224,0.22); background: rgba(255,255,255,0.94); font-family: inherit; font-size: 16px; color: #15181D; outline-color: #4F5FE0">
+      </label>
+      <button type="button" aria-label="{{pwLabel}}" aria-pressed="{{pwPressed}}" onClick="{{togglePw}}" style="position: absolute; right: 4px; bottom: 4px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 10px; background: transparent; color: #6B727B; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <sc-if value="{{pwHidden}}" hint-placeholder-val="{{ true }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </sc-if>
+        <sc-if value="{{pwShown}}" hint-placeholder-val="{{ false }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 5.6A10 10 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.6 6.6C4 8.3 2.5 12 2.5 12S6 18.5 12 18.5a9.4 9.4 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"></path></svg>
+        </sc-if>
+      </button>
+    </div>
+    <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; height: 52px; margin-top: 4px; border-radius: 12px; background: #4F5FE0; color: #FFFFFF; text-decoration: none; font-size: 16px; font-weight: 700; box-shadow: 0 10px 22px rgba(79,95,224,0.28)">로그인</a>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 4px">
+      <a href="{{links.self}}" style="display: flex; align-items: center; height: 44px; padding: 0 12px; color: #5F6670; text-decoration: none; font-size: 14px; font-weight: 600">비밀번호 찾기</a>
+      <span aria-hidden="true" style="width: 1px; height: 12px; background: #C5CAD3"></span>
+      <a href="{{links.signup}}" style="display: flex; align-items: center; height: 44px; padding: 0 12px; color: #3F4FD1; text-decoration: none; font-size: 14px; font-weight: 700">회원가입</a>
+    </div>
+  </section>
+
+  <section aria-label="간편 로그인" style="display: flex; flex-direction: column; gap: 8px; padding: 6px 20px 0">
+    <div aria-hidden="true" style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: #8A9199">
+      <span style="flex-grow: 1; height: 1px; background: rgba(21,24,29,0.1)"></span>
+      또는 간편 로그인
+      <span style="flex-grow: 1; height: 1px; background: rgba(21,24,29,0.1)"></span>
+    </div>
+
+    <a href="{{links.next}}" aria-label="카카오 로그인" style="display: flex; align-items: center; justify-content: center; height: {{socialH}}px; border-radius: 12px; background: #FEE500; text-decoration: none; overflow: hidden">
+      <img src="/_blob/69ecee9619b1c88dd107131b69a677bc" width="336" height="46" alt="" style="display: block; flex-shrink: 0">
+    </a>
+    <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; gap: {{googleGap}}px; height: {{socialH}}px; box-sizing: border-box; border-radius: 12px; background: #FFFFFF; border: 1px solid #747775; color: #1F1F1F; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; font-synthesis: weight style; text-decoration: none; font-size: 15px; font-weight: 500">
+      <img src="/_blob/4067c758bf8f92094da22e1402c20ef2" width="20" height="20" alt="" style="display: block; flex-shrink: 0">
+      Google 계정으로 로그인
+    </a>
+
+    <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; height: 40px; margin-top: 2px; color: #5F6670; text-decoration: underline; text-underline-offset: 3px; font-size: 14px; font-weight: 600">로그인 없이 둘러보기</a>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24, mascot: 112, socialH: 52, googleGap: 10 } : { w: 390, h: 844, top: 59, bottom: 34, mascot: 84, socialH: 50, googleGap: 12 };
+    var L = function (n) { return (android ? 'Android-' : '') + n + '.dc.html'; };
+    var self = this;
+    var shown = !!(this.state && this.state.pwShown);
+    return {
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom,
+      mascotSize: g.mascot, mascotHint: g.mascot + 'px,' + g.mascot + 'px',
+      socialH: g.socialH, googleGap: g.googleGap,
+      pwShown: shown, pwHidden: !shown,
+      pwType: shown ? 'text' : 'password',
+      pwLabel: shown ? '비밀번호 숨기기' : '비밀번호 보기',
+      pwPressed: shown ? 'true' : 'false',
+      togglePw: function () { self.setState({ pwShown: !shown }); },
+      links: { next: L('Permission'), signup: L('SignUp'), self: L('Login') }
+    };
+  }
+}
+</script>
+</body>
+</html>

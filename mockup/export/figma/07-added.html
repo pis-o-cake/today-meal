@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>오늘 뭐 먹지? · 추가 상태 · 앱에서 먼저 만든 화면 (390 × 844)</title>
+<!-- Figma 가져오기용 정적 보드: 스크립트·애니메이션 없음. 글꼴: Pretendard, Jua(배민 주아체) -->
+<style>
+
+    .sc-placeholder{background:color-mix(in srgb,currentColor 8%,transparent);
+      border:1px solid color-mix(in srgb,currentColor 50%,transparent);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine 1.4s ease infinite}
+    html.sc-dc-streaming .sc-placeholder:nth-child(n+9 of .sc-placeholder)::before,
+    html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
+      background:color-mix(in srgb,currentColor 8%,transparent)}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:color-mix(in srgb,currentColor 70%,transparent);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:color-mix(in srgb,currentColor 50%,transparent);
+      background:color-mix(in srgb,currentColor 10%,transparent);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      figure, table { break-inside: avoid; }
+      #dc-root, #dc-root > .sc-host { height: auto; }
+      *, *::before, *::after {
+        print-color-adjust: exact; -webkit-print-color-adjust: exact;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  
+x-dc{display:none!important}
+@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}
+html, body { margin: 0; background: #E9EBF0; }
+.board { display: flex; align-items: flex-start; gap: 80px; padding: 80px; width: max-content; }
+.frame { display: flex; flex-direction: column; gap: 16px; }
+.label { margin: 0; font: 600 22px/1.3 'Pretendard', sans-serif; color: #4E5661; letter-spacing: -0.02em; }
+.screen { position: relative; overflow: hidden; flex-shrink: 0; background: #FFFFFF; }
+</style>
+</head>
+<body>
+<h1 style="margin: 0; padding: 60px 80px 0; font: 400 40px/1.2 'Jua', 'Pretendard', sans-serif; color: #15181D">오늘 뭐 먹지? · 추가 상태 · 앱에서 먼저 만든 화면 (390 × 844)</h1>
+<main class="board">
+<section class="frame" data-name="추가 · 확인 중">
+<h2 class="label">추가 · 확인 중</h2>
+<div class="screen" style="width: 390px; height: 844px"><div class="sc-host" data-sc-name="Listening-Processing"><div data-dc-tpl="2" style="width: 390px; height: 844px; overflow: hidden;"><div class="sc-host" data-sc-name="Listening" data-dc-tpl="3"><div data-dc-tpl="2" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; padding-top: 59px; padding-bottom: 34px; overflow: hidden; display: flex; flex-direction: column; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-synthesis: weight style; color: rgb(21, 24, 29); letter-spacing: -0.02em; background: radial-gradient(125% 80% at 50% 30%, rgb(255, 255, 255) 0%, rgb(244, 245, 255) 40%, rgb(220, 226, 255) 100%);">
+
+  <div data-dc-tpl="3" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px 0px 22px;">
+    
+    
+    <ol data-dc-tpl="29" aria-label="진행 단계" style="flex-grow: 1; min-width: 0px; list-style: none; margin: 0px; padding: 0px; display: flex; align-items: flex-end; gap: 6px;">
+      <li data-dc-tpl="30" style="flex: 1 1 0px; min-width: 0px; display: flex; flex-direction: column; gap: 9px;">
+        <div data-dc-tpl="31" style="height: 6px; border-radius: 3px; background: rgb(90, 107, 234); opacity: 0.55;"></div>
+        <div data-dc-tpl="32" style="display: flex; align-items: center; justify-content: center; gap: 4px; height: 20px; font-size: 14px; font-weight: 600; color: rgb(78, 86, 97); white-space: nowrap;">
+          <svg data-dc-tpl="33" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5A6BEA" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="34" d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          듣기<span data-dc-tpl="35" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap;">완료</span>
+        </div>
+      </li>
+      <li data-dc-tpl="36" aria-current="step" style="flex: 1 1 0px; min-width: 0px; display: flex; flex-direction: column; gap: 9px;">
+        <div data-dc-tpl="37" style="position: relative; height: 6px; border-radius: 3px; overflow: hidden; background: rgb(90, 107, 234); box-shadow: rgba(90, 107, 234, 0.333) 0px 2px 8px;">
+          <svg data-dc-tpl="38" width="100%" height="6" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; display: block;">
+            <defs data-dc-tpl="39"><linearGradient data-dc-tpl="40" id="s0-stepSheenCheck" x1="0" y1="0" x2="1" y2="0"><stop data-dc-tpl="41" offset="0" stop-color="#FFFFFF" stop-opacity="0"></stop><stop data-dc-tpl="42" offset="0.5" stop-color="#FFFFFF" stop-opacity="0.8"></stop><stop data-dc-tpl="43" offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs>
+            <rect data-dc-tpl="44" x="-11.669" y="0" width="50" height="6" fill="url(#s0-stepSheenCheck)"></rect>
+          </svg>
+        </div>
+        <div data-dc-tpl="46" style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 20px; font-size: 14px; font-weight: 800; letter-spacing: -0.03em; color: rgb(63, 79, 209); white-space: nowrap;">
+          <svg data-dc-tpl="47" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle data-dc-tpl="48" cx="8" cy="8" r="6.762" fill="#3F4FD1" fill-opacity="0.108346"></circle><circle data-dc-tpl="51" cx="8" cy="8" r="4" fill="#3F4FD1"></circle></svg>
+          확인 중
+        </div>
+      </li>
+      <li data-dc-tpl="52" style="flex: 1 1 0px; min-width: 0px; display: flex; flex-direction: column; gap: 9px;">
+        <div data-dc-tpl="53" style="height: 6px; border-radius: 3px; background: rgba(21, 24, 29, 0.1);"></div>
+        <div data-dc-tpl="54" style="display: flex; align-items: center; justify-content: center; height: 20px; font-size: 14px; font-weight: 600; color: rgb(154, 160, 168); white-space: nowrap;">반영</div>
+      </li>
+    </ol>
+    
+    
+    <a data-dc-tpl="57" aria-label="닫기" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: rgb(62, 69, 78); background: rgba(255, 255, 255, 0.74); border: 1px solid rgba(255, 255, 255, 0.95); box-sizing: border-box; text-decoration: none;">
+      <svg data-dc-tpl="58" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="59" d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+  </div>
+
+  <main data-dc-tpl="60" style="flex-grow: 1; min-height: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0px 24px; text-align: center;">
+    <div data-dc-tpl="61" style="position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center;">
+      <svg data-dc-tpl="62" width="280" height="280" viewBox="-150 -150 300 300" aria-hidden="true" style="position: absolute; left: 0px; top: 0px;">
+        <g data-dc-tpl="63" opacity="0">
+        <circle data-dc-tpl="64" cx="0" cy="8" r="129.638" fill="none" stroke="#6F7FF0" stroke-width="2" stroke-opacity="0.0753509">
+          
+          
+        </circle>
+        <circle data-dc-tpl="67" cx="0" cy="8" r="104.305" fill="none" stroke="#6F7FF0" stroke-width="2" stroke-opacity="0.192018">
+          
+          
+        </circle>
+        <circle data-dc-tpl="70" cx="0" cy="8" r="78.971" fill="none" stroke="#6F7FF0" stroke-width="2" stroke-opacity="0.308684">
+          
+          
+        </circle>
+        </g>
+        <circle data-dc-tpl="73" cx="0" cy="8" r="96" fill="#FFFFFF" opacity="0.45"></circle>
+      </svg>
+      <div class="sc-host" data-sc-name="Mascot2" data-dc-tpl="74"><div data-dc-tpl="2" style="width: 180px; height: 180px; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, sans-serif; color: rgb(51, 58, 82);"><svg data-dc-tpl="3" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="쫑긋, 듣고 있어요"><defs data-dc-tpl="4"><linearGradient data-dc-tpl="5" id="s0-m2listening180b" x1="0" y1="0" x2="0.9" y2="1"><stop data-dc-tpl="6" offset="0" stop-color="rgba(230,233,255,0.82)"></stop><stop data-dc-tpl="7" offset="1" stop-color="rgba(199,207,255,0.6)"></stop></linearGradient><linearGradient data-dc-tpl="8" id="s0-m2listening180r" x1="0" y1="0" x2="0" y2="1"><stop data-dc-tpl="9" offset="0" stop-color="rgba(255,255,255,0.95)"></stop><stop data-dc-tpl="10" offset="1" stop-color="rgba(72,86,187,0.85)"></stop></linearGradient></defs><ellipse data-dc-tpl="11" cx="100" cy="190" rx="41.278" ry="6" fill="#333A52" opacity="0.12"></ellipse><g data-dc-tpl="13" transform="matrix(1 0 0 1 0 -5.8819)"><g data-dc-tpl="15" transform="matrix(0.9994 0.0335 -0.0335 0.9994 6.2191 -3.2462)"><g data-dc-tpl="17" transform="translate(100 184)"><g data-dc-tpl="18" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="20" transform="translate(-100 -184)"><g data-dc-tpl="21" transform="rotate(0 100 184)"><rect data-dc-tpl="22" x="68" y="176" width="14" height="12" rx="4" fill="#333A52"></rect><rect data-dc-tpl="23" x="118" y="176" width="14" height="12" rx="4" fill="#333A52"></rect><rect data-dc-tpl="24" x="46" y="24" width="108" height="156" rx="32" fill="#C7CFFF" stroke="#333A52" stroke-width="5"></rect><ellipse data-dc-tpl="25" cx="80" cy="68" rx="22" ry="32" fill="hsla(0,0%,100%,0.3)" opacity="0"></ellipse><rect data-dc-tpl="26" x="52.5" y="30.5" width="95" height="143" rx="26" fill="none" stroke="hsla(0,0%,100%,0.6)" stroke-width="2" opacity="0"></rect><path data-dc-tpl="27" d="M150 124 v24 a28 28 0 0 1 -28 28 h-36" fill="none" stroke="rgba(90,107,234,0.28)" stroke-width="6" stroke-linecap="round" opacity="0"></path><path data-dc-tpl="28" d="M56 36 Q52 44 52 60" fill="none" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="29" d="M53 90 v12" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="30" d="M46 74 H154" fill="none" stroke="#333A52" stroke-width="5"></path><path data-dc-tpl="31" d="M138 40 v18" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="32" d="M138 88 v26" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="33" transform="rotate(-8 80 48)"><rect data-dc-tpl="34" x="66" y="36" width="28" height="24" rx="4" fill="#FFF3B8" stroke="#333A52" stroke-width="3"></rect><circle data-dc-tpl="35" cx="80" cy="36" r="3.5" fill="#5A6BEA" stroke="#333A52" stroke-width="2"></circle><path data-dc-tpl="36" d="M71 46 h16 M71 52 h10" fill="none" stroke="#333A52" stroke-width="2.4" stroke-linecap="round" opacity="1"></path><text data-dc-tpl="37" x="80" y="55" text-anchor="middle" font-size="17" font-weight="800" fill="#333A52" font-family="Pretendard, sans-serif" opacity="0"></text></g><circle data-dc-tpl="38" cx="72" cy="134" r="7" fill="#FF8A98" opacity="0.45"></circle><circle data-dc-tpl="39" cx="124" cy="134" r="7" fill="#FF8A98" opacity="0.45"></circle><g data-dc-tpl="40" transform="translate(0 119)"><g data-dc-tpl="41" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="43" transform="translate(0 -119)"><path data-dc-tpl="44" d="M77 119 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 z M105 119 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 z" fill="#333A52"></path><path data-dc-tpl="45" d="M0 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="46" d="M84.3 116 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 z M112.3 116 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 z" fill="#FFFFFF"></path></g></g></g><path data-dc-tpl="47" d="M0 0" fill="none" stroke="#333A52" stroke-width="4.5" stroke-linecap="round"></path><path data-dc-tpl="48" d="M92 137 a6 7 0 1 0 12 0 a6 7 0 1 0 -12 0 z" fill="#333A52"></path><path data-dc-tpl="49" d="M0 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="50" opacity="0"><path data-dc-tpl="51" d="M161 56 q-6 9 -3 13 q4 4 8 0 q2 -5 -5 -13z" fill="#A9DCFF" stroke="#333A52" stroke-width="2.2" stroke-linejoin="round" transform="matrix(1 0 0 1 0 12)" opacity="0.0877615"></path></g></g></g></g></g></g></g><path data-dc-tpl="54" d="M164 40 q7 9 0 18" fill="none" stroke="#5A6BEA" stroke-width="4.5" stroke-linecap="round" opacity="0.929201"></path><path data-dc-tpl="56" d="M173 33 q12 16 0 32" fill="none" stroke="#5A6BEA" stroke-width="4.5" stroke-linecap="round" opacity="0.645799"></path><path data-dc-tpl="58" d="M36 40 q-7 9 0 18" fill="none" stroke="#5A6BEA" stroke-width="4.5" stroke-linecap="round" opacity="0.220799"></path></svg></div></div>
+    </div>
+    <div data-dc-tpl="75" style="font-size: 38px; line-height: 1.15; font-family: Jua, Pretendard, sans-serif; font-weight: 400; letter-spacing: -0.01em; color: rgb(63, 79, 209); margin-top: 2px;"><span class="sc-interp">확인하고 있어요</span></div>
+    
+      <div data-dc-tpl="77" style="font-size: 15px; font-weight: 500; color: rgb(95, 102, 112); margin-top: 8px;">말을 마치면 바로 확인해요</div>
+    
+    
+  </main>
+
+  <section data-dc-tpl="80" aria-label="받아 적는 중" style="margin: 16px 20px 0px; padding: 16px 20px 18px; border-radius: 24px; background: rgba(255, 255, 255, 0.82); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.08) 0px 10px 28px;">
+    <div data-dc-tpl="81" style="display: flex; align-items: center; gap: 8px;">
+      <svg data-dc-tpl="82" width="30" height="20" viewBox="0 0 30 20" aria-hidden="true">
+        <rect data-dc-tpl="83" x="1" y="4.455" width="4" height="11.09" rx="2" fill="#3F4FD1">
+          
+          
+        </rect>
+        <rect data-dc-tpl="86" x="7" y="4.481" width="4" height="11.038" rx="2" fill="#3F4FD1">
+          
+          
+        </rect>
+        <rect data-dc-tpl="89" x="13" y="4.111" width="4" height="11.778" rx="2" fill="#3F4FD1">
+          
+          
+        </rect>
+        <rect data-dc-tpl="92" x="19" y="3.533" width="4" height="12.934" rx="2" fill="#3F4FD1">
+          
+          
+        </rect>
+        <rect data-dc-tpl="95" x="25" y="5.59" width="4" height="8.821" rx="2" fill="#3F4FD1">
+          
+          
+        </rect>
+      </svg>
+      <span data-dc-tpl="98" style="font-size: 13px; font-weight: 700; color: rgb(63, 79, 209);">받아 적는 중</span>
+    </div>
+    <p data-dc-tpl="99" style="margin: 10px 0px 0px; font-size: 21px; line-height: 1.45; font-weight: 600; letter-spacing: -0.03em;"><span class="sc-interp">두부 두 모랑 계란 열 개 넣었어. 두부는 10월 3일까지야</span></p>
+  </section>
+
+  <div data-dc-tpl="102" style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 16px 20px 8px;">
+    
+    
+    
+      <div data-dc-tpl="109" style="height: 18px;"></div>
+    
+    <a data-dc-tpl="110" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 26px; background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.07) 0px 6px 18px; color: rgb(21, 24, 29); text-decoration: none; font-size: 16px; font-weight: 700;">취소</a>
+  </div></div></div></div></div></div>
+</section>
+<section class="frame" data-name="추가 · 답하는 중">
+<h2 class="label">추가 · 답하는 중</h2>
+<div class="screen" style="width: 390px; height: 844px"><div class="sc-host" data-sc-name="Listening-Answering"><div data-dc-tpl="2" style="width: 390px; height: 844px; overflow: hidden;"><div class="sc-host" data-sc-name="Listening" data-dc-tpl="3"><div data-dc-tpl="2" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; padding-top: 59px; padding-bottom: 34px; overflow: hidden; display: flex; flex-direction: column; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-synthesis: weight style; color: rgb(21, 24, 29); letter-spacing: -0.02em; background: radial-gradient(125% 80% at 50% 30%, rgb(255, 255, 255) 0%, rgb(244, 245, 255) 40%, rgb(220, 226, 255) 100%);">
+
+  <div data-dc-tpl="3" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px 0px 22px;">
+    
+    
+    <ol data-dc-tpl="29" aria-label="진행 단계" style="flex-grow: 1; min-width: 0px; list-style: none; margin: 0px; padding: 0px; display: flex; align-items: flex-end; gap: 6px;">
+      <li data-dc-tpl="30" style="flex: 1 1 0px; min-width: 0px; display: flex; flex-direction: column; gap: 9px;">
+        <div data-dc-tpl="31" style="height: 6px; border-radius: 3px; background: rgb(90, 107, 234); opacity: 0.55;"></div>
+        <div data-dc-tpl="32" style="display: flex; align-items: center; justify-content: center; gap: 4px; height: 20px; font-size: 14px; font-weight: 600; color: rgb(78, 86, 97); white-space: nowrap;">
+          <svg data-dc-tpl="33" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5A6BEA" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="34" d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          듣기<span data-dc-tpl="35" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap;">완료</span>
+        </div>
+      </li>
+      <li data-dc-tpl="36" aria-current="step" style="flex: 1 1 0px; min-width: 0px; display: flex; flex-direction: column; gap: 9px;">
+        <div data-dc-tpl="37" style="position: relative; height: 6px; border-radius: 3px; overflow: hidden; background: rgb(90, 107, 234); box-shadow: rgba(90, 107, 234, 0.333) 0px 2px 8px;">
+          <svg data-dc-tpl="38" width="100%" height="6" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; display: block;">
+            <defs data-dc-tpl="39"><linearGradient data-dc-tpl="40" id="s1-stepSheenCheck" x1="0" y1="0" x2="1" y2="0"><stop data-dc-tpl="41" offset="0" stop-color="#FFFFFF" stop-opacity="0"></stop><stop data-dc-tpl="42" offset="0.5" stop-color="#FFFFFF" stop-opacity="0.8"></stop><stop data-dc-tpl="43" offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs>
+            <rect data-dc-tpl="44" x="-8.33" y="0" width="50" height="6" fill="url(#s1-stepSheenCheck)"></rect>
+          </svg>
+        </div>
+        <div data-dc-tpl="46" style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 20px; font-size: 14px; font-weight: 800; letter-spacing: -0.03em; color: rgb(63, 79, 209); white-space: nowrap;">
+          <svg data-dc-tpl="47" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle data-dc-tpl="48" cx="8" cy="8" r="6.953" fill="#3F4FD1" fill-opacity="0.091651"></circle><circle data-dc-tpl="51" cx="8" cy="8" r="4" fill="#3F4FD1"></circle></svg>
+          확인 중
+        </div>
+      </li>
+      <li data-dc-tpl="52" style="flex: 1 1 0px; min-width: 0px; display: flex; flex-direction: column; gap: 9px;">
+        <div data-dc-tpl="53" style="height: 6px; border-radius: 3px; background: rgba(21, 24, 29, 0.1);"></div>
+        <div data-dc-tpl="54" style="display: flex; align-items: center; justify-content: center; height: 20px; font-size: 14px; font-weight: 600; color: rgb(154, 160, 168); white-space: nowrap;">반영</div>
+      </li>
+    </ol>
+    
+    
+    <a data-dc-tpl="57" aria-label="닫기" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: rgb(62, 69, 78); background: rgba(255, 255, 255, 0.74); border: 1px solid rgba(255, 255, 255, 0.95); box-sizing: border-box; text-decoration: none;">
+      <svg data-dc-tpl="58" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="59" d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+  </div>
+
+  <main data-dc-tpl="60" style="flex-grow: 1; min-height: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0px 24px; text-align: center;">
+    <div data-dc-tpl="61" style="position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center;">
+      <svg data-dc-tpl="62" width="280" height="280" viewBox="-150 -150 300 300" aria-hidden="true" style="position: absolute; left: 0px; top: 0px;">
+        <g data-dc-tpl="63" opacity="0">
+        <circle data-dc-tpl="64" cx="0" cy="8" r="130.695" fill="none" stroke="#6F7FF0" stroke-width="2" stroke-opacity="0.0704815">
+          
+          
+        </circle>
+        <circle data-dc-tpl="67" cx="0" cy="8" r="105.362" fill="none" stroke="#6F7FF0" stroke-width="2" stroke-opacity="0.187148">
+          
+          
+        </circle>
+        <circle data-dc-tpl="70" cx="0" cy="8" r="80.029" fill="none" stroke="#6F7FF0" stroke-width="2" stroke-opacity="0.303815">
+          
+          
+        </circle>
+        </g>
+        <circle data-dc-tpl="73" cx="0" cy="8" r="96" fill="#FFFFFF" opacity="0.45"></circle>
+      </svg>
+      <div class="sc-host" data-sc-name="Mascot2" data-dc-tpl="74"><div data-dc-tpl="2" style="width: 180px; height: 180px; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, sans-serif; color: rgb(51, 58, 82);"><svg data-dc-tpl="3" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="쫑긋, 듣고 있어요"><defs data-dc-tpl="4"><linearGradient data-dc-tpl="5" id="s1-m2listening180b" x1="0" y1="0" x2="0.9" y2="1"><stop data-dc-tpl="6" offset="0" stop-color="rgba(230,233,255,0.82)"></stop><stop data-dc-tpl="7" offset="1" stop-color="rgba(199,207,255,0.6)"></stop></linearGradient><linearGradient data-dc-tpl="8" id="s1-m2listening180r" x1="0" y1="0" x2="0" y2="1"><stop data-dc-tpl="9" offset="0" stop-color="rgba(255,255,255,0.95)"></stop><stop data-dc-tpl="10" offset="1" stop-color="rgba(72,86,187,0.85)"></stop></linearGradient></defs><ellipse data-dc-tpl="11" cx="100" cy="190" rx="40.826" ry="6" fill="#333A52" opacity="0.12"></ellipse><g data-dc-tpl="13" transform="matrix(1 0 0 1 0 -6.2772)"><g data-dc-tpl="15" transform="matrix(0.9995 0.031 -0.031 0.9995 5.758 -3.0145)"><g data-dc-tpl="17" transform="translate(100 184)"><g data-dc-tpl="18" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="20" transform="translate(-100 -184)"><g data-dc-tpl="21" transform="rotate(0 100 184)"><rect data-dc-tpl="22" x="68" y="176" width="14" height="12" rx="4" fill="#333A52"></rect><rect data-dc-tpl="23" x="118" y="176" width="14" height="12" rx="4" fill="#333A52"></rect><rect data-dc-tpl="24" x="46" y="24" width="108" height="156" rx="32" fill="#C7CFFF" stroke="#333A52" stroke-width="5"></rect><ellipse data-dc-tpl="25" cx="80" cy="68" rx="22" ry="32" fill="hsla(0,0%,100%,0.3)" opacity="0"></ellipse><rect data-dc-tpl="26" x="52.5" y="30.5" width="95" height="143" rx="26" fill="none" stroke="hsla(0,0%,100%,0.6)" stroke-width="2" opacity="0"></rect><path data-dc-tpl="27" d="M150 124 v24 a28 28 0 0 1 -28 28 h-36" fill="none" stroke="rgba(90,107,234,0.28)" stroke-width="6" stroke-linecap="round" opacity="0"></path><path data-dc-tpl="28" d="M56 36 Q52 44 52 60" fill="none" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="29" d="M53 90 v12" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="30" d="M46 74 H154" fill="none" stroke="#333A52" stroke-width="5"></path><path data-dc-tpl="31" d="M138 40 v18" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="32" d="M138 88 v26" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="33" transform="rotate(-8 80 48)"><rect data-dc-tpl="34" x="66" y="36" width="28" height="24" rx="4" fill="#FFF3B8" stroke="#333A52" stroke-width="3"></rect><circle data-dc-tpl="35" cx="80" cy="36" r="3.5" fill="#5A6BEA" stroke="#333A52" stroke-width="2"></circle><path data-dc-tpl="36" d="M71 46 h16 M71 52 h10" fill="none" stroke="#333A52" stroke-width="2.4" stroke-linecap="round" opacity="1"></path><text data-dc-tpl="37" x="80" y="55" text-anchor="middle" font-size="17" font-weight="800" fill="#333A52" font-family="Pretendard, sans-serif" opacity="0"></text></g><circle data-dc-tpl="38" cx="72" cy="134" r="7" fill="#FF8A98" opacity="0.45"></circle><circle data-dc-tpl="39" cx="124" cy="134" r="7" fill="#FF8A98" opacity="0.45"></circle><g data-dc-tpl="40" transform="translate(0 119)"><g data-dc-tpl="41" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="43" transform="translate(0 -119)"><path data-dc-tpl="44" d="M77 119 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 z M105 119 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 z" fill="#333A52"></path><path data-dc-tpl="45" d="M0 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="46" d="M84.3 116 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 z M112.3 116 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 z" fill="#FFFFFF"></path></g></g></g><path data-dc-tpl="47" d="M0 0" fill="none" stroke="#333A52" stroke-width="4.5" stroke-linecap="round"></path><path data-dc-tpl="48" d="M92 137 a6 7 0 1 0 12 0 a6 7 0 1 0 -12 0 z" fill="#333A52"></path><path data-dc-tpl="49" d="M0 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="50" opacity="0"><path data-dc-tpl="51" d="M161 56 q-6 9 -3 13 q4 4 8 0 q2 -5 -5 -13z" fill="#A9DCFF" stroke="#333A52" stroke-width="2.2" stroke-linejoin="round" transform="matrix(1 0 0 1 0 12)" opacity="0.029242"></path></g></g></g></g></g></g></g><path data-dc-tpl="54" d="M164 40 q7 9 0 18" fill="none" stroke="#5A6BEA" stroke-width="4.5" stroke-linecap="round" opacity="0.881946"></path><path data-dc-tpl="56" d="M173 33 q12 16 0 32" fill="none" stroke="#5A6BEA" stroke-width="4.5" stroke-linecap="round" opacity="0.693054"></path><path data-dc-tpl="58" d="M36 40 q-7 9 0 18" fill="none" stroke="#5A6BEA" stroke-width="4.5" stroke-linecap="round" opacity="0.268054"></path></svg></div></div>
+    </div>
+    <div data-dc-tpl="75" style="font-size: 38px; line-height: 1.15; font-family: Jua, Pretendard, sans-serif; font-weight: 400; letter-spacing: -0.01em; color: rgb(63, 79, 209); margin-top: 2px;"><span class="sc-interp">답하고 있어요</span></div>
+    
+    
+      <div data-dc-tpl="79" style="max-width: 320px; font-size: 15px; line-height: 1.5; font-weight: 500; color: rgb(62, 69, 78); margin-top: 8px;"><span class="sc-interp">두부는 2모 남았어요. 소비기한은 10월 3일이에요.</span></div>
+    
+  </main>
+
+  <section data-dc-tpl="80" aria-label="받아 적는 중" style="margin: 16px 20px 0px; padding: 16px 20px 18px; border-radius: 24px; background: rgba(255, 255, 255, 0.82); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.08) 0px 10px 28px;">
+    <div data-dc-tpl="81" style="display: flex; align-items: center; gap: 8px;">
+      <svg data-dc-tpl="82" width="30" height="20" viewBox="0 0 30 20" aria-hidden="true">
+        <rect data-dc-tpl="83" x="1" y="4.091" width="4" height="11.819" rx="2" fill="#3F4FD1">
+          
+          
+        </rect>
+        <rect data-dc-tpl="86" x="7" y="5.075" width="4" height="9.851" rx="2" fill="#3F4FD1">
+          
+          
+        </rect>
+        <rect data-dc-tpl="89" x="13" y="4.556" width="4" height="10.888" rx="2" fill="#3F4FD1">
+          
+          
+        </rect>
+        <rect data-dc-tpl="92" x="19" y="3.667" width="4" height="12.666" rx="2" fill="#3F4FD1">
+          
+          
+        </rect>
+        <rect data-dc-tpl="95" x="25" y="5.795" width="4" height="8.41" rx="2" fill="#3F4FD1">
+          
+          
+        </rect>
+      </svg>
+      <span data-dc-tpl="98" style="font-size: 13px; font-weight: 700; color: rgb(63, 79, 209);">받아 적는 중</span>
+    </div>
+    <p data-dc-tpl="99" style="margin: 10px 0px 0px; font-size: 21px; line-height: 1.45; font-weight: 600; letter-spacing: -0.03em;"><span class="sc-interp">두부 몇 개 남았어?</span></p>
+  </section>
+
+  <div data-dc-tpl="102" style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 16px 20px 8px;">
+    
+    
+      <div data-dc-tpl="107" style="display: flex; align-items: center; justify-content: center; height: 18px; font-size: 13px; font-weight: 500; color: rgb(95, 102, 112);">4초 뒤 호출 대기로 돌아가요</div>
+    
+    
+    <a data-dc-tpl="110" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 26px; background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.07) 0px 6px 18px; color: rgb(21, 24, 29); text-decoration: none; font-size: 16px; font-weight: 700;">취소</a>
+  </div></div></div></div></div></div>
+</section>
+<section class="frame" data-name="추가 · 글래스 확인 중">
+<h2 class="label">추가 · 글래스 확인 중</h2>
+<div class="screen" style="width: 390px; height: 844px"><div class="sc-host" data-sc-name="Glass-Listening-Processing"><div data-dc-tpl="2" style="width: 390px; height: 844px; overflow: hidden;"><div class="sc-host" data-sc-name="Listening" data-dc-tpl="3"><div data-dc-tpl="2" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; padding-top: 59px; padding-bottom: 34px; overflow: hidden; display: flex; flex-direction: column; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-synthesis: weight style; color: rgb(21, 24, 29); letter-spacing: -0.02em; background: linear-gradient(rgb(255, 255, 255) 0%, rgb(238, 240, 244) 100%);">
+
+  <div data-dc-tpl="3" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px 0px 22px;">
+    
+    
+    
+      <div data-dc-tpl="56" style="flex-grow: 1;"></div>
+    
+    <a data-dc-tpl="57" aria-label="닫기" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: rgb(62, 69, 78); background: linear-gradient(135deg, rgba(255, 255, 255, 0.52) 0%, rgba(255, 255, 255, 0.14) 48%, rgba(255, 255, 255, 0.3) 100%); border: 1px solid rgba(255, 255, 255, 0.7); box-sizing: border-box; text-decoration: none; backdrop-filter: blur(12px) saturate(180%); box-shadow: rgba(255, 255, 255, 0.95) 1px 1px 0px inset, rgba(255, 255, 255, 0.45) -1px -1px 0px inset, rgba(255, 255, 255, 0.22) 0px -10px 18px inset, rgba(255, 255, 255, 0.14) 0px 8px 14px inset, rgba(20, 25, 45, 0.13) 0px 0px 0px 0.5px, rgba(20, 25, 45, 0.1) 0px 8px 22px, rgba(20, 25, 45, 0.06) 0px 1px 3px;">
+      <svg data-dc-tpl="58" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="59" d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+  </div>
+
+  <main data-dc-tpl="60" style="flex-grow: 1; min-height: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0px 24px; text-align: center;">
+    <div data-dc-tpl="61" style="position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center;">
+      <svg data-dc-tpl="62" width="280" height="280" viewBox="-150 -150 300 300" aria-hidden="true" style="position: absolute; left: 0px; top: 0px;">
+        <g data-dc-tpl="63" opacity="0">
+        <circle data-dc-tpl="64" cx="0" cy="8" r="130.167" fill="none" stroke="#1832E7" stroke-width="2" stroke-opacity="0.0729138">
+          
+          
+        </circle>
+        <circle data-dc-tpl="67" cx="0" cy="8" r="104.834" fill="none" stroke="#1832E7" stroke-width="2" stroke-opacity="0.18958">
+          
+          
+        </circle>
+        <circle data-dc-tpl="70" cx="0" cy="8" r="79.501" fill="none" stroke="#1832E7" stroke-width="2" stroke-opacity="0.306247">
+          
+          
+        </circle>
+        </g>
+        <circle data-dc-tpl="73" cx="0" cy="8" r="96" fill="#FFFFFF" opacity="0.45"></circle>
+      </svg>
+      <div class="sc-host" data-sc-name="Mascot2" data-dc-tpl="74"><div data-dc-tpl="2" style="width: 180px; height: 180px; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, sans-serif; color: rgb(51, 58, 82);"><svg data-dc-tpl="3" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="쫑긋, 듣고 있어요"><defs data-dc-tpl="4"><linearGradient data-dc-tpl="5" id="s2-m2listening180gb" x1="0" y1="0" x2="0.9" y2="1"><stop data-dc-tpl="6" offset="0" stop-color="rgba(212,217,247,0.82)"></stop><stop data-dc-tpl="7" offset="1" stop-color="rgba(160,171,238,0.6)"></stop></linearGradient><linearGradient data-dc-tpl="8" id="s2-m2listening180gr" x1="0" y1="0" x2="0" y2="1"><stop data-dc-tpl="9" offset="0" stop-color="rgba(255,255,255,0.95)"></stop><stop data-dc-tpl="10" offset="1" stop-color="rgba(38,50,133,0.85)"></stop></linearGradient></defs><ellipse data-dc-tpl="11" cx="100" cy="190" rx="41.038" ry="6" fill="rgba(48,62,166,1)" opacity="0.12"></ellipse><g data-dc-tpl="13" transform="matrix(1 0 0 1 0 -6.0914)"><g data-dc-tpl="15" transform="matrix(0.9995 0.0323 -0.0323 0.9995 5.9947 -3.1336)"><g data-dc-tpl="17" transform="translate(100 184)"><g data-dc-tpl="18" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="20" transform="translate(-100 -184)"><g data-dc-tpl="21" transform="rotate(0 100 184)"><rect data-dc-tpl="22" x="68" y="176" width="14" height="12" rx="4" fill="rgba(36,47,125,0.85)"></rect><rect data-dc-tpl="23" x="118" y="176" width="14" height="12" rx="4" fill="rgba(36,47,125,0.85)"></rect><rect data-dc-tpl="24" x="46" y="24" width="108" height="156" rx="32" fill="url(#s2-m2listening180gb)" stroke="url(#s2-m2listening180gr)" stroke-width="5"></rect><ellipse data-dc-tpl="25" cx="80" cy="68" rx="22" ry="32" fill="hsla(0,0%,100%,0.3)" opacity="1"></ellipse><rect data-dc-tpl="26" x="52.5" y="30.5" width="95" height="143" rx="26" fill="none" stroke="hsla(0,0%,100%,0.6)" stroke-width="2" opacity="1"></rect><path data-dc-tpl="27" d="M150 124 v24 a28 28 0 0 1 -28 28 h-36" fill="none" stroke="rgba(48,62,166,0.28)" stroke-width="6" stroke-linecap="round" opacity="1"></path><path data-dc-tpl="28" d="M56 36 Q52 44 52 60" fill="none" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="29" d="M53 90 v12" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="30" d="M46 74 H154" fill="none" stroke="rgba(36,47,125,0.85)" stroke-width="5"></path><path data-dc-tpl="31" d="M138 40 v18" fill="none" stroke="rgba(36,47,125,0.85)" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="32" d="M138 88 v26" fill="none" stroke="rgba(36,47,125,0.85)" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="33" transform="rotate(-8 80 48)"><rect data-dc-tpl="34" x="66" y="36" width="28" height="24" rx="4" fill="#FFF3B8" stroke="#333A52" stroke-width="3"></rect><circle data-dc-tpl="35" cx="80" cy="36" r="3.5" fill="#303EA6" stroke="#333A52" stroke-width="2"></circle><path data-dc-tpl="36" d="M71 46 h16 M71 52 h10" fill="none" stroke="#333A52" stroke-width="2.4" stroke-linecap="round" opacity="1"></path><text data-dc-tpl="37" x="80" y="55" text-anchor="middle" font-size="17" font-weight="800" fill="#333A52" font-family="Pretendard, sans-serif" opacity="0"></text></g><circle data-dc-tpl="38" cx="72" cy="134" r="7" fill="#FF8A98" opacity="0.45"></circle><circle data-dc-tpl="39" cx="124" cy="134" r="7" fill="#FF8A98" opacity="0.45"></circle><g data-dc-tpl="40" transform="translate(0 119)"><g data-dc-tpl="41" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="43" transform="translate(0 -119)"><path data-dc-tpl="44" d="M77 119 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 z M105 119 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 z" fill="#333A52"></path><path data-dc-tpl="45" d="M0 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="46" d="M84.3 116 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 z M112.3 116 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 z" fill="#FFFFFF"></path></g></g></g><path data-dc-tpl="47" d="M0 0" fill="none" stroke="#333A52" stroke-width="4.5" stroke-linecap="round"></path><path data-dc-tpl="48" d="M92 137 a6 7 0 1 0 12 0 a6 7 0 1 0 -12 0 z" fill="#333A52"></path><path data-dc-tpl="49" d="M0 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="50" opacity="0"><path data-dc-tpl="51" d="M161 56 q-6 9 -3 13 q4 4 8 0 q2 -5 -5 -13z" fill="#A9DCFF" stroke="#333A52" stroke-width="2.2" stroke-linejoin="round" transform="matrix(1 0 0 1 0 12)" opacity="0.0584455"></path></g></g></g></g></g></g></g><path data-dc-tpl="54" d="M164 40 q7 9 0 18" fill="none" stroke="#303EA6" stroke-width="4.5" stroke-linecap="round" opacity="0.905528"></path><path data-dc-tpl="56" d="M173 33 q12 16 0 32" fill="none" stroke="#303EA6" stroke-width="4.5" stroke-linecap="round" opacity="0.669472"></path><path data-dc-tpl="58" d="M36 40 q-7 9 0 18" fill="none" stroke="#303EA6" stroke-width="4.5" stroke-linecap="round" opacity="0.244472"></path></svg></div></div>
+    </div>
+    <div data-dc-tpl="75" style="font-size: 38px; line-height: 1.15; font-family: Jua, Pretendard, sans-serif; font-weight: 400; letter-spacing: -0.01em; color: rgb(29, 48, 201); margin-top: 2px;"><span class="sc-interp">확인하고 있어요</span></div>
+    
+      <div data-dc-tpl="77" style="font-size: 15px; font-weight: 500; color: rgb(95, 102, 112); margin-top: 8px;">말을 마치면 바로 확인해요</div>
+    
+    
+  </main>
+
+  <section data-dc-tpl="80" aria-label="받아 적는 중" style="margin: 16px 20px 0px; padding: 16px 20px 18px; border-radius: 24px; background: linear-gradient(rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.66) 100%); border: 1px solid rgba(255, 255, 255, 0.92); backdrop-filter: blur(24px) saturate(180%); box-shadow: rgba(255, 255, 255, 0.95) 0px 1px 0px inset, rgba(20, 25, 45, 0.04) 0px -1px 0px inset, rgba(20, 25, 45, 0.07) 0px 0px 0px 0.5px, rgba(20, 25, 45, 0.08) 0px 8px 24px;">
+    <div data-dc-tpl="81" style="display: flex; align-items: center; gap: 8px;">
+      <svg data-dc-tpl="82" width="30" height="20" viewBox="0 0 30 20" aria-hidden="true">
+        <rect data-dc-tpl="83" x="1" y="4.273" width="4" height="11.455" rx="2" fill="#1930E6">
+          
+          
+        </rect>
+        <rect data-dc-tpl="86" x="7" y="4.778" width="4" height="10.444" rx="2" fill="#1930E6">
+          
+          
+        </rect>
+        <rect data-dc-tpl="89" x="13" y="4.334" width="4" height="11.333" rx="2" fill="#1930E6">
+          
+          
+        </rect>
+        <rect data-dc-tpl="92" x="19" y="3.6" width="4" height="12.8" rx="2" fill="#1930E6">
+          
+          
+        </rect>
+        <rect data-dc-tpl="95" x="25" y="5.692" width="4" height="8.615" rx="2" fill="#1930E6">
+          
+          
+        </rect>
+      </svg>
+      <span data-dc-tpl="98" style="font-size: 13px; font-weight: 700; color: rgb(29, 48, 201);">받아 적는 중</span>
+    </div>
+    <p data-dc-tpl="99" style="margin: 10px 0px 0px; font-size: 21px; line-height: 1.45; font-weight: 600; letter-spacing: -0.03em;"><span class="sc-interp">두부 두 모랑 계란 열 개 넣었어. 두부는 10월 3일까지야</span></p>
+  </section>
+
+  <div data-dc-tpl="102" style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 16px 20px 8px;">
+    
+    
+    
+      <div data-dc-tpl="109" style="height: 18px;"></div>
+    
+    <a data-dc-tpl="110" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 26px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.52) 0%, rgba(255, 255, 255, 0.14) 48%, rgba(255, 255, 255, 0.3) 100%); border: 1px solid rgba(255, 255, 255, 0.7); color: rgb(21, 24, 29); text-decoration: none; font-size: 16px; font-weight: 700; backdrop-filter: blur(12px) saturate(180%); box-shadow: rgba(255, 255, 255, 0.95) 1px 1px 0px inset, rgba(255, 255, 255, 0.45) -1px -1px 0px inset, rgba(255, 255, 255, 0.22) 0px -10px 18px inset, rgba(255, 255, 255, 0.14) 0px 8px 14px inset, rgba(20, 25, 45, 0.13) 0px 0px 0px 0.5px, rgba(20, 25, 45, 0.1) 0px 8px 22px, rgba(20, 25, 45, 0.06) 0px 1px 3px;">취소</a>
+  </div></div></div></div></div></div>
+</section>
+<section class="frame" data-name="추가 · 글래스 답하는 중">
+<h2 class="label">추가 · 글래스 답하는 중</h2>
+<div class="screen" style="width: 390px; height: 844px"><div class="sc-host" data-sc-name="Glass-Listening-Answering"><div data-dc-tpl="2" style="width: 390px; height: 844px; overflow: hidden;"><div class="sc-host" data-sc-name="Listening" data-dc-tpl="3"><div data-dc-tpl="2" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; padding-top: 59px; padding-bottom: 34px; overflow: hidden; display: flex; flex-direction: column; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-synthesis: weight style; color: rgb(21, 24, 29); letter-spacing: -0.02em; background: linear-gradient(rgb(255, 255, 255) 0%, rgb(238, 240, 244) 100%);">
+
+  <div data-dc-tpl="3" style="display: flex; align-items: center; gap: 14px; padding: 10px 16px 0px 22px;">
+    
+    
+    
+      <div data-dc-tpl="56" style="flex-grow: 1;"></div>
+    
+    <a data-dc-tpl="57" aria-label="닫기" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: rgb(62, 69, 78); background: linear-gradient(135deg, rgba(255, 255, 255, 0.52) 0%, rgba(255, 255, 255, 0.14) 48%, rgba(255, 255, 255, 0.3) 100%); border: 1px solid rgba(255, 255, 255, 0.7); box-sizing: border-box; text-decoration: none; backdrop-filter: blur(12px) saturate(180%); box-shadow: rgba(255, 255, 255, 0.95) 1px 1px 0px inset, rgba(255, 255, 255, 0.45) -1px -1px 0px inset, rgba(255, 255, 255, 0.22) 0px -10px 18px inset, rgba(255, 255, 255, 0.14) 0px 8px 14px inset, rgba(20, 25, 45, 0.13) 0px 0px 0px 0.5px, rgba(20, 25, 45, 0.1) 0px 8px 22px, rgba(20, 25, 45, 0.06) 0px 1px 3px;">
+      <svg data-dc-tpl="58" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="59" d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+  </div>
+
+  <main data-dc-tpl="60" style="flex-grow: 1; min-height: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0px 24px; text-align: center;">
+    <div data-dc-tpl="61" style="position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center;">
+      <svg data-dc-tpl="62" width="280" height="280" viewBox="-150 -150 300 300" aria-hidden="true" style="position: absolute; left: 0px; top: 0px;">
+        <g data-dc-tpl="63" opacity="0">
+        <circle data-dc-tpl="64" cx="0" cy="8" r="129.638" fill="none" stroke="#1832E7" stroke-width="2" stroke-opacity="0.0753509">
+          
+          
+        </circle>
+        <circle data-dc-tpl="67" cx="0" cy="8" r="104.305" fill="none" stroke="#1832E7" stroke-width="2" stroke-opacity="0.192018">
+          
+          
+        </circle>
+        <circle data-dc-tpl="70" cx="0" cy="8" r="78.971" fill="none" stroke="#1832E7" stroke-width="2" stroke-opacity="0.308684">
+          
+          
+        </circle>
+        </g>
+        <circle data-dc-tpl="73" cx="0" cy="8" r="96" fill="#FFFFFF" opacity="0.45"></circle>
+      </svg>
+      <div class="sc-host" data-sc-name="Mascot2" data-dc-tpl="74"><div data-dc-tpl="2" style="width: 180px; height: 180px; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, sans-serif; color: rgb(51, 58, 82);"><svg data-dc-tpl="3" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="쫑긋, 듣고 있어요"><defs data-dc-tpl="4"><linearGradient data-dc-tpl="5" id="s3-m2listening180gb" x1="0" y1="0" x2="0.9" y2="1"><stop data-dc-tpl="6" offset="0" stop-color="rgba(212,217,247,0.82)"></stop><stop data-dc-tpl="7" offset="1" stop-color="rgba(160,171,238,0.6)"></stop></linearGradient><linearGradient data-dc-tpl="8" id="s3-m2listening180gr" x1="0" y1="0" x2="0" y2="1"><stop data-dc-tpl="9" offset="0" stop-color="rgba(255,255,255,0.95)"></stop><stop data-dc-tpl="10" offset="1" stop-color="rgba(38,50,133,0.85)"></stop></linearGradient></defs><ellipse data-dc-tpl="11" cx="100" cy="190" rx="42.146" ry="6" fill="rgba(48,62,166,1)" opacity="0.12"></ellipse><g data-dc-tpl="13" transform="matrix(1 0 0 1 0 -5.1223)"><g data-dc-tpl="15" transform="matrix(0.9993 0.0367 -0.0367 0.9993 6.8115 -3.5417)"><g data-dc-tpl="17" transform="translate(100 184)"><g data-dc-tpl="18" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="20" transform="translate(-100 -184)"><g data-dc-tpl="21" transform="rotate(0 100 184)"><rect data-dc-tpl="22" x="68" y="176" width="14" height="12" rx="4" fill="rgba(36,47,125,0.85)"></rect><rect data-dc-tpl="23" x="118" y="176" width="14" height="12" rx="4" fill="rgba(36,47,125,0.85)"></rect><rect data-dc-tpl="24" x="46" y="24" width="108" height="156" rx="32" fill="url(#s3-m2listening180gb)" stroke="url(#s3-m2listening180gr)" stroke-width="5"></rect><ellipse data-dc-tpl="25" cx="80" cy="68" rx="22" ry="32" fill="hsla(0,0%,100%,0.3)" opacity="1"></ellipse><rect data-dc-tpl="26" x="52.5" y="30.5" width="95" height="143" rx="26" fill="none" stroke="hsla(0,0%,100%,0.6)" stroke-width="2" opacity="1"></rect><path data-dc-tpl="27" d="M150 124 v24 a28 28 0 0 1 -28 28 h-36" fill="none" stroke="rgba(48,62,166,0.28)" stroke-width="6" stroke-linecap="round" opacity="1"></path><path data-dc-tpl="28" d="M56 36 Q52 44 52 60" fill="none" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="29" d="M53 90 v12" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="30" d="M46 74 H154" fill="none" stroke="rgba(36,47,125,0.85)" stroke-width="5"></path><path data-dc-tpl="31" d="M138 40 v18" fill="none" stroke="rgba(36,47,125,0.85)" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="32" d="M138 88 v26" fill="none" stroke="rgba(36,47,125,0.85)" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="33" transform="rotate(-8 80 48)"><rect data-dc-tpl="34" x="66" y="36" width="28" height="24" rx="4" fill="#FFF3B8" stroke="#333A52" stroke-width="3"></rect><circle data-dc-tpl="35" cx="80" cy="36" r="3.5" fill="#303EA6" stroke="#333A52" stroke-width="2"></circle><path data-dc-tpl="36" d="M71 46 h16 M71 52 h10" fill="none" stroke="#333A52" stroke-width="2.4" stroke-linecap="round" opacity="1"></path><text data-dc-tpl="37" x="80" y="55" text-anchor="middle" font-size="17" font-weight="800" fill="#333A52" font-family="Pretendard, sans-serif" opacity="0"></text></g><circle data-dc-tpl="38" cx="72" cy="134" r="7" fill="#FF8A98" opacity="0.45"></circle><circle data-dc-tpl="39" cx="124" cy="134" r="7" fill="#FF8A98" opacity="0.45"></circle><g data-dc-tpl="40" transform="translate(0 119)"><g data-dc-tpl="41" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="43" transform="translate(0 -119)"><path data-dc-tpl="44" d="M77 119 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 z M105 119 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 z" fill="#333A52"></path><path data-dc-tpl="45" d="M0 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="46" d="M84.3 116 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 z M112.3 116 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 z" fill="#FFFFFF"></path></g></g></g><path data-dc-tpl="47" d="M0 0" fill="none" stroke="#333A52" stroke-width="4.5" stroke-linecap="round"></path><path data-dc-tpl="48" d="M92 137 a6 7 0 1 0 12 0 a6 7 0 1 0 -12 0 z" fill="#333A52"></path><path data-dc-tpl="49" d="M0 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="50" opacity="0"><path data-dc-tpl="51" d="M161 56 q-6 9 -3 13 q4 4 8 0 q2 -5 -5 -13z" fill="#A9DCFF" stroke="#333A52" stroke-width="2.2" stroke-linejoin="round" transform="matrix(1 0 0 1 0 12)" opacity="0.175537"></path></g></g></g></g></g></g></g><path data-dc-tpl="54" d="M164 40 q7 9 0 18" fill="none" stroke="#303EA6" stroke-width="4.5" stroke-linecap="round" opacity="0.999921"></path><path data-dc-tpl="56" d="M173 33 q12 16 0 32" fill="none" stroke="#303EA6" stroke-width="4.5" stroke-linecap="round" opacity="0.574921"></path><path data-dc-tpl="58" d="M36 40 q-7 9 0 18" fill="none" stroke="#303EA6" stroke-width="4.5" stroke-linecap="round" opacity="0.150079"></path></svg></div></div>
+    </div>
+    <div data-dc-tpl="75" style="font-size: 38px; line-height: 1.15; font-family: Jua, Pretendard, sans-serif; font-weight: 400; letter-spacing: -0.01em; color: rgb(29, 48, 201); margin-top: 2px;"><span class="sc-interp">답하고 있어요</span></div>
+    
+    
+      <div data-dc-tpl="79" style="max-width: 320px; font-size: 15px; line-height: 1.5; font-weight: 500; color: rgb(62, 69, 78); margin-top: 8px;"><span class="sc-interp">두부는 2모 남았어요. 소비기한은 10월 3일이에요.</span></div>
+    
+  </main>
+
+  <section data-dc-tpl="80" aria-label="받아 적는 중" style="margin: 16px 20px 0px; padding: 16px 20px 18px; border-radius: 24px; background: linear-gradient(rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.66) 100%); border: 1px solid rgba(255, 255, 255, 0.92); backdrop-filter: blur(24px) saturate(180%); box-shadow: rgba(255, 255, 255, 0.95) 0px 1px 0px inset, rgba(20, 25, 45, 0.04) 0px -1px 0px inset, rgba(20, 25, 45, 0.07) 0px 0px 0px 0.5px, rgba(20, 25, 45, 0.08) 0px 8px 24px;">
+    <div data-dc-tpl="81" style="display: flex; align-items: center; gap: 8px;">
+      <svg data-dc-tpl="82" width="30" height="20" viewBox="0 0 30 20" aria-hidden="true">
+        <rect data-dc-tpl="83" x="1" y="4.455" width="4" height="11.09" rx="2" fill="#1930E6">
+          
+          
+        </rect>
+        <rect data-dc-tpl="86" x="7" y="4.481" width="4" height="11.038" rx="2" fill="#1930E6">
+          
+          
+        </rect>
+        <rect data-dc-tpl="89" x="13" y="4.111" width="4" height="11.778" rx="2" fill="#1930E6">
+          
+          
+        </rect>
+        <rect data-dc-tpl="92" x="19" y="3.533" width="4" height="12.934" rx="2" fill="#1930E6">
+          
+          
+        </rect>
+        <rect data-dc-tpl="95" x="25" y="5.59" width="4" height="8.821" rx="2" fill="#1930E6">
+          
+          
+        </rect>
+      </svg>
+      <span data-dc-tpl="98" style="font-size: 13px; font-weight: 700; color: rgb(29, 48, 201);">받아 적는 중</span>
+    </div>
+    <p data-dc-tpl="99" style="margin: 10px 0px 0px; font-size: 21px; line-height: 1.45; font-weight: 600; letter-spacing: -0.03em;"><span class="sc-interp">두부 몇 개 남았어?</span></p>
+  </section>
+
+  <div data-dc-tpl="102" style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 16px 20px 8px;">
+    
+    
+      <div data-dc-tpl="107" style="display: flex; align-items: center; justify-content: center; height: 18px; font-size: 13px; font-weight: 500; color: rgb(95, 102, 112);">4초 뒤 호출 대기로 돌아가요</div>
+    
+    
+    <a data-dc-tpl="110" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 26px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.52) 0%, rgba(255, 255, 255, 0.14) 48%, rgba(255, 255, 255, 0.3) 100%); border: 1px solid rgba(255, 255, 255, 0.7); color: rgb(21, 24, 29); text-decoration: none; font-size: 16px; font-weight: 700; backdrop-filter: blur(12px) saturate(180%); box-shadow: rgba(255, 255, 255, 0.95) 1px 1px 0px inset, rgba(255, 255, 255, 0.45) -1px -1px 0px inset, rgba(255, 255, 255, 0.22) 0px -10px 18px inset, rgba(255, 255, 255, 0.14) 0px 8px 14px inset, rgba(20, 25, 45, 0.13) 0px 0px 0px 0.5px, rgba(20, 25, 45, 0.1) 0px 8px 22px, rgba(20, 25, 45, 0.06) 0px 1px 3px;">취소</a>
+  </div></div></div></div></div></div>
+</section>
+<section class="frame" data-name="추가 · 냉장고 검색">
+<h2 class="label">추가 · 냉장고 검색</h2>
+<div class="screen" style="width: 390px; height: 844px"><div class="sc-host" data-sc-name="Fridge-Search"><div data-dc-tpl="2" style="width: 390px; height: 844px; overflow: hidden;"><div class="sc-host" data-sc-name="Fridge" data-dc-tpl="3"><div data-dc-tpl="2" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; padding-top: 59px; overflow: hidden; display: flex; flex-direction: column; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-synthesis: weight style; color: rgb(21, 24, 29); letter-spacing: -0.02em; background: radial-gradient(130% 70% at 50% 0%, rgb(255, 255, 255) 0%, rgb(246, 246, 249) 45%, rgb(232, 234, 240) 100%);">
+
+  <header data-dc-tpl="3" style="display: flex; flex-direction: column; gap: 14px; padding: 10px 20px 0px;">
+    
+    
+      <div data-dc-tpl="15" style="display: flex; align-items: center; gap: 4px; height: 56px;">
+        <label data-dc-tpl="16" style="flex-grow: 1; min-width: 0px; display: flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box; padding: 0px 16px 0px 14px; border-radius: 24px; background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.07) 0px 6px 18px;">
+          <svg data-dc-tpl="17" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6670" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle data-dc-tpl="18" cx="11" cy="11" r="6.5"></circle><path data-dc-tpl="19" d="M16 16l4.5 4.5"></path></svg>
+          <input data-dc-tpl="20" type="search" aria-label="재료 검색" placeholder="재료 이름으로 찾기" value="두" style="flex-grow: 1; min-width: 0px; height: 100%; padding: 0px; border: 0px; background: transparent; font-family: inherit; font-size: 16px; color: rgb(21, 24, 29); outline: none;">
+        </label>
+        <a data-dc-tpl="21" aria-label="검색 지우기" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: rgb(62, 69, 78); text-decoration: none;">
+          <svg data-dc-tpl="22" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="23" d="M6 6l12 12M18 6L6 18"></path></svg>
+        </a>
+      </div>
+    
+    <div data-dc-tpl="24" role="group" aria-label="보관 위치" style="display: flex; gap: 4px; height: 48px; box-sizing: border-box; padding: 4px; border-radius: 24px; background: rgba(255, 255, 255, 0.62); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.05) 0px 6px 18px;">
+      
+        <button data-dc-tpl="26" type="button" aria-pressed="true" style="flex-grow: 1; flex-basis: 0px; height: 38px; border: 0px; border-radius: 19px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em; background: rgb(255, 255, 255); color: rgb(21, 24, 29); font-weight: 700; box-shadow: rgba(20, 25, 35, 0.08) 0px 4px 12px;"><span class="sc-interp">전체</span><span data-dc-tpl="27" style="font-size: 12px; font-weight: 500; color: rgb(138, 145, 153); margin-left: 4px;"><span class="sc-interp">8</span></span></button>
+      
+        <button data-dc-tpl="26" type="button" aria-pressed="false" style="flex-grow: 1; flex-basis: 0px; height: 38px; border: 0px; border-radius: 19px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em; background: transparent; color: rgb(95, 102, 112); font-weight: 500;"><span class="sc-interp">냉장</span><span data-dc-tpl="27" style="font-size: 12px; font-weight: 500; color: rgb(138, 145, 153); margin-left: 4px;"><span class="sc-interp">6</span></span></button>
+      
+        <button data-dc-tpl="26" type="button" aria-pressed="false" style="flex-grow: 1; flex-basis: 0px; height: 38px; border: 0px; border-radius: 19px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em; background: transparent; color: rgb(95, 102, 112); font-weight: 500;"><span class="sc-interp">냉동</span><span data-dc-tpl="27" style="font-size: 12px; font-weight: 500; color: rgb(138, 145, 153); margin-left: 4px;"><span class="sc-interp">1</span></span></button>
+      
+        <button data-dc-tpl="26" type="button" aria-pressed="false" style="flex-grow: 1; flex-basis: 0px; height: 38px; border: 0px; border-radius: 19px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em; background: transparent; color: rgb(95, 102, 112); font-weight: 500;"><span class="sc-interp">실온</span><span data-dc-tpl="27" style="font-size: 12px; font-weight: 500; color: rgb(138, 145, 153); margin-left: 4px;"><span class="sc-interp">1</span></span></button>
+      
+    </div>
+    <div data-dc-tpl="28" role="group" aria-label="기한 상태로 거르기" style="display: flex; gap: 6px; margin-top: -4px; margin-right: -20px; overflow: hidden;">
+      
+        <button data-dc-tpl="30" type="button" aria-pressed="true" style="flex-shrink: 0; display: flex; align-items: center; gap: 4px; height: 36px; box-sizing: border-box; padding: 0px 12px; border-radius: 18px; cursor: pointer; font-family: inherit; font-size: 13px; letter-spacing: -0.02em; background: rgb(21, 24, 29); border: 1px solid rgb(21, 24, 29); color: rgb(255, 255, 255); font-weight: 700;">
+          
+          <span class="sc-interp">전체</span><span data-dc-tpl="34" style="font-size: 12px; font-weight: 500; opacity: 0.7; margin-left: 3px;"><span class="sc-interp">8</span></span>
+        </button>
+      
+        <button data-dc-tpl="30" type="button" aria-pressed="false" style="flex-shrink: 0; display: flex; align-items: center; gap: 4px; height: 36px; box-sizing: border-box; padding: 0px 12px 0px 8px; border-radius: 18px; cursor: pointer; font-family: inherit; font-size: 13px; letter-spacing: -0.02em; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(21, 24, 29, 0.08); color: rgb(62, 69, 78); font-weight: 600;">
+          
+            <svg data-dc-tpl="32" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path data-dc-tpl="33" d="M14 22 h7 M27 22 h7 M20 31 h8" fill="none" stroke="#4F5B6E" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          
+          <span class="sc-interp">지남</span><span data-dc-tpl="34" style="font-size: 12px; font-weight: 500; opacity: 0.7; margin-left: 3px;"><span class="sc-interp">1</span></span>
+        </button>
+      
+        <button data-dc-tpl="30" type="button" aria-pressed="false" style="flex-shrink: 0; display: flex; align-items: center; gap: 4px; height: 36px; box-sizing: border-box; padding: 0px 12px 0px 8px; border-radius: 18px; cursor: pointer; font-family: inherit; font-size: 13px; letter-spacing: -0.02em; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(21, 24, 29, 0.08); color: rgb(62, 69, 78); font-weight: 600;">
+          
+            <svg data-dc-tpl="32" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path data-dc-tpl="33" d="M18 19 v6 M30 19 v6 M13 15 l6 -2 M35 15 l-6 -2 M22 30 a2.4 2.4 0 1 0 4.8 0 a2.4 2.4 0 1 0 -4.8 0" fill="none" stroke="#D8431F" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          
+          <span class="sc-interp">코앞</span><span data-dc-tpl="34" style="font-size: 12px; font-weight: 500; opacity: 0.7; margin-left: 3px;"><span class="sc-interp">1</span></span>
+        </button>
+      
+        <button data-dc-tpl="30" type="button" aria-pressed="false" style="flex-shrink: 0; display: flex; align-items: center; gap: 4px; height: 36px; box-sizing: border-box; padding: 0px 12px 0px 8px; border-radius: 18px; cursor: pointer; font-family: inherit; font-size: 13px; letter-spacing: -0.02em; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(21, 24, 29, 0.08); color: rgb(62, 69, 78); font-weight: 600;">
+          
+            <svg data-dc-tpl="32" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path data-dc-tpl="33" d="M18 19 v6 M30 19 v6 M20 31 h8" fill="none" stroke="#A8690A" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          
+          <span class="sc-interp">며칠</span><span data-dc-tpl="34" style="font-size: 12px; font-weight: 500; opacity: 0.7; margin-left: 3px;"><span class="sc-interp">3</span></span>
+        </button>
+      
+        <button data-dc-tpl="30" type="button" aria-pressed="false" style="flex-shrink: 0; display: flex; align-items: center; gap: 4px; height: 36px; box-sizing: border-box; padding: 0px 12px 0px 8px; border-radius: 18px; cursor: pointer; font-family: inherit; font-size: 13px; letter-spacing: -0.02em; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(21, 24, 29, 0.08); color: rgb(62, 69, 78); font-weight: 600;">
+          
+            <svg data-dc-tpl="32" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path data-dc-tpl="33" d="M13 24 q4.5 -5 9 0 M26 24 q4.5 -5 9 0 M18 30 q6 6 12 0" fill="none" stroke="#1B7F43" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          
+          <span class="sc-interp">넉넉</span><span data-dc-tpl="34" style="font-size: 12px; font-weight: 500; opacity: 0.7; margin-left: 3px;"><span class="sc-interp">2</span></span>
+        </button>
+      
+        <button data-dc-tpl="30" type="button" aria-pressed="false" style="flex-shrink: 0; display: flex; align-items: center; gap: 4px; height: 36px; box-sizing: border-box; padding: 0px 12px 0px 8px; border-radius: 18px; cursor: pointer; font-family: inherit; font-size: 13px; letter-spacing: -0.02em; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(21, 24, 29, 0.08); color: rgb(62, 69, 78); font-weight: 600;">
+          
+            <svg data-dc-tpl="32" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path data-dc-tpl="33" d="M18 21 v1 M30 21 v1 M20 31 q4 -2.5 8 0" fill="none" stroke="#5F6A80" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          
+          <span class="sc-interp">모름</span><span data-dc-tpl="34" style="font-size: 12px; font-weight: 500; opacity: 0.7; margin-left: 3px;"><span class="sc-interp">1</span></span>
+        </button>
+      
+    </div>
+  </header>
+
+  <div data-dc-tpl="35" style="flex-grow: 1; min-height: 0px; overflow: hidden; padding: 16px 20px 0px;">
+    <div data-dc-tpl="36" style="display: grid; grid-template-columns: repeat(2, minmax(0px, 1fr)); gap: 12px;">
+      
+        <a data-dc-tpl="38" aria-label="두부 기한 코앞 자세히 보기" style="display: flex; flex-direction: column; padding: 14px; border-radius: 24px; background: rgba(255, 255, 255, 0.88); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.06) 0px 8px 24px; color: rgb(21, 24, 29); text-decoration: none;">
+          <div data-dc-tpl="39" style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+            <span data-dc-tpl="40" style="display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; padding: 3px 7px 3px 5px; border-radius: 8px; white-space: nowrap; letter-spacing: -0.03em; background: rgb(255, 228, 219); color: rgb(176, 52, 26);"><svg data-dc-tpl="41" width="14" height="14" viewBox="0 0 48 48" aria-hidden="true"><path data-dc-tpl="42" d="M18 19 v6 M30 19 v6 M13 15 l6 -2 M35 15 l-6 -2 M22 30 a2.4 2.4 0 1 0 4.8 0 a2.4 2.4 0 1 0 -4.8 0" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span class="sc-interp">기한 코앞</span></span>
+            <span data-dc-tpl="43" style="flex-shrink: 0; font-size: 12px; font-weight: 500; color: rgb(138, 145, 153);"><span class="sc-interp">냉장</span></span>
+          </div>
+          <div data-dc-tpl="44" style="font-size: 17px; font-weight: 700; margin-top: 12px;"><span class="sc-interp">두부</span></div>
+          <div data-dc-tpl="45" style="display: flex; align-items: baseline; gap: 2px; margin-top: 2px;">
+            <span data-dc-tpl="46" style="font-size: 26px; font-weight: 800; letter-spacing: -0.04em;"><span class="sc-interp">2</span></span>
+            <span data-dc-tpl="47" style="font-size: 15px; font-weight: 600; color: rgb(62, 69, 78);"><span class="sc-interp">모</span></span>
+            
+          </div>
+          <div data-dc-tpl="50" style="height: 6px; margin-top: 12px; border-radius: 3px; background: rgb(238, 240, 244); overflow: hidden;">
+            <div data-dc-tpl="51" style="height: 100%; width: 16%; border-radius: 3px; background: rgb(240, 116, 87);"></div>
+          </div>
+          <div data-dc-tpl="52" style="font-size: 12px; line-height: 1.45; font-weight: 500; color: rgb(95, 102, 112); margin-top: 7px;"><span class="sc-interp">소비기한 2026.10.03</span></div>
+          <div data-dc-tpl="53" style="font-size: 12px; line-height: 1.45; font-weight: 600; color: rgb(176, 52, 26);"><span class="sc-interp">D-1</span></div>
+        </a>
+      
+    </div>
+  </div>
+
+  <nav data-dc-tpl="54" aria-label="주요 화면" style="position: absolute; left: 0px; right: 0px; bottom: 0px; height: 98px; box-sizing: border-box; padding: 0px 12px 34px; display: flex; border-radius: 28px 28px 0px 0px; background: rgba(255, 255, 255, 0.72); border-top: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.07) 0px -12px 32px; backdrop-filter: blur(18px);">
+    <a data-dc-tpl="55" style="flex-grow: 1; flex-basis: 0px; min-width: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: rgb(124, 131, 140); font-weight: 500;">
+      <svg data-dc-tpl="56" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="57" d="M5 6.5a3 4 0 1 0 6 0a3 4 0 1 0 -6 0M8 10.5V21M15 3l.5 18M19 3l-1 18"></path></svg>
+      뭐 먹지?
+    </a>
+    <a data-dc-tpl="58" aria-current="page" style="flex-grow: 1; flex-basis: 0px; min-width: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: rgb(21, 24, 29); font-weight: 700;">
+      <svg data-dc-tpl="59" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect data-dc-tpl="60" x="5" y="2.5" width="14" height="19" rx="3"></rect><path data-dc-tpl="61" d="M5 10h14M8.5 6v1.5M8.5 13v3"></path></svg>
+      냉장고
+    </a>
+    <a data-dc-tpl="62" style="flex-grow: 1; flex-basis: 0px; min-width: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: rgb(124, 131, 140); font-weight: 500;">
+      <svg data-dc-tpl="63" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="64" d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M3 13.5h2 M19 13.5h2 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+      조리
+    </a>
+    <a data-dc-tpl="65" style="flex-grow: 1; flex-basis: 0px; min-width: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: rgb(124, 131, 140); font-weight: 500;">
+      <svg data-dc-tpl="66" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle data-dc-tpl="67" cx="12" cy="12" r="9"></circle><path data-dc-tpl="68" d="M12 7v5l3 2"></path></svg>
+      기록
+    </a>
+    <a data-dc-tpl="69" style="flex-grow: 1; flex-basis: 0px; min-width: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: rgb(124, 131, 140); font-weight: 500;">
+      <svg data-dc-tpl="70" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle data-dc-tpl="71" cx="12" cy="8" r="4"></circle><path data-dc-tpl="72" d="M4.5 20.5a7.5 7.5 0 0 1 15 0"></path></svg>
+      마이페이지
+    </a>
+  </nav></div></div></div></div></div>
+</section>
+<section class="frame" data-name="추가 · 재료 삭제 확인">
+<h2 class="label">추가 · 재료 삭제 확인</h2>
+<div class="screen" style="width: 390px; height: 844px"><div class="sc-host" data-sc-name="FridgeItem-Delete"><div data-dc-tpl="2" style="width: 390px; height: 844px; overflow: hidden;"><div class="sc-host" data-sc-name="FridgeItem" data-dc-tpl="3"><div data-dc-tpl="2" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; padding-top: 59px; padding-bottom: 34px; overflow: hidden; display: flex; flex-direction: column; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-synthesis: weight style; color: rgb(21, 24, 29); letter-spacing: -0.02em; background: radial-gradient(130% 70% at 50% 0%, rgb(255, 255, 255) 0%, rgb(246, 246, 249) 45%, rgb(232, 234, 240) 100%);">
+
+  <div data-dc-tpl="3" style="display: grid; grid-template-columns: 64px 1fr 64px; align-items: center; padding: 8px 16px 0px;">
+    <a data-dc-tpl="4" aria-label="뒤로" style="width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: rgb(21, 24, 29); background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.06) 0px 4px 12px; text-decoration: none;">
+      
+        <svg data-dc-tpl="6" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="7" d="M15 5l-7 7 7 7"></path></svg>
+      
+      
+    </a>
+    <h1 data-dc-tpl="11" style="margin: 0px; text-align: center; font-size: 17px; font-weight: 700; letter-spacing: -0.03em;">재료 정보</h1>
+    <a data-dc-tpl="12" style="justify-self: end; display: flex; align-items: center; height: 44px; padding: 0px 4px; color: rgb(176, 52, 26); text-decoration: none; font-size: 15px; font-weight: 600;">삭제</a>
+  </div>
+
+  <div data-dc-tpl="13" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px 0px;">
+    <div data-dc-tpl="14" style="width: 76px; height: 76px; flex-shrink: 0; border-radius: 24px; background: rgb(255, 228, 219); display: flex; align-items: center; justify-content: center;">
+      <div class="sc-host" data-sc-name="Mascot2" data-dc-tpl="15"><div data-dc-tpl="2" style="width: 68px; height: 68px; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, sans-serif; color: rgb(51, 58, 82);"><svg data-dc-tpl="3" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="빨리 먹어야 해요!"><defs data-dc-tpl="4"><linearGradient data-dc-tpl="5" id="s5-m2urgent68b" x1="0" y1="0" x2="0.9" y2="1"><stop data-dc-tpl="6" offset="0" stop-color="rgba(255,228,220,0.82)"></stop><stop data-dc-tpl="7" offset="1" stop-color="rgba(255,194,178,0.6)"></stop></linearGradient><linearGradient data-dc-tpl="8" id="s5-m2urgent68r" x1="0" y1="0" x2="0" y2="1"><stop data-dc-tpl="9" offset="0" stop-color="rgba(255,255,255,0.95)"></stop><stop data-dc-tpl="10" offset="1" stop-color="rgba(186,70,46,0.85)"></stop></linearGradient></defs><ellipse data-dc-tpl="11" cx="100" cy="190" rx="53" ry="6" fill="#333A52" opacity="0.12"></ellipse><g data-dc-tpl="13" transform="matrix(1 0 0 1 0 5)"><g data-dc-tpl="15" transform="matrix(0.9962 -0.0872 0.0872 0.9962 -15.6561 9.4157)"><g data-dc-tpl="17" transform="translate(100 184)"><g data-dc-tpl="18" transform="matrix(1.05 0 0 0.94 0 0)"><g data-dc-tpl="20" transform="translate(-100 -184)"><g data-dc-tpl="21" transform="rotate(0 100 184)"><rect data-dc-tpl="22" x="68" y="176" width="14" height="12" rx="4" fill="#333A52"></rect><rect data-dc-tpl="23" x="118" y="176" width="14" height="12" rx="4" fill="#333A52"></rect><rect data-dc-tpl="24" x="46" y="24" width="108" height="156" rx="32" fill="#FFC2B2" stroke="#333A52" stroke-width="5"></rect><ellipse data-dc-tpl="25" cx="80" cy="68" rx="22" ry="32" fill="hsla(0,0%,100%,0.3)" opacity="0"></ellipse><rect data-dc-tpl="26" x="52.5" y="30.5" width="95" height="143" rx="26" fill="none" stroke="hsla(0,0%,100%,0.6)" stroke-width="2" opacity="0"></rect><path data-dc-tpl="27" d="M150 124 v24 a28 28 0 0 1 -28 28 h-36" fill="none" stroke="rgba(232,87,58,0.28)" stroke-width="6" stroke-linecap="round" opacity="0"></path><path data-dc-tpl="28" d="M56 36 Q52 44 52 60" fill="none" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="29" d="M53 90 v12" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="30" d="M46 74 H154" fill="none" stroke="#333A52" stroke-width="5"></path><path data-dc-tpl="31" d="M138 40 v18" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="32" d="M138 88 v26" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="33" transform="rotate(-8 80 48)"><rect data-dc-tpl="34" x="66" y="36" width="28" height="24" rx="4" fill="#FFF3B8" stroke="#333A52" stroke-width="3"></rect><circle data-dc-tpl="35" cx="80" cy="36" r="3.5" fill="#E8573A" stroke="#333A52" stroke-width="2"></circle><path data-dc-tpl="36" d="M71 46 h16 M71 52 h10" fill="none" stroke="#333A52" stroke-width="2.4" stroke-linecap="round" opacity="0"></path><text data-dc-tpl="37" x="80" y="55" text-anchor="middle" font-size="17" font-weight="800" fill="#333A52" font-family="Pretendard, sans-serif" opacity="1">!</text></g><circle data-dc-tpl="38" cx="72" cy="134" r="7" fill="#FF8A98" opacity="0.45"></circle><circle data-dc-tpl="39" cx="124" cy="134" r="7" fill="#FF8A98" opacity="0.45"></circle><g data-dc-tpl="40" transform="translate(0 119)"><g data-dc-tpl="41" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="43" transform="translate(0 -119)"><path data-dc-tpl="44" d="M79 118 a5 5 0 0 1 10 0 v6 a5 5 0 0 1 -10 0 z M107 118 a5 5 0 0 1 10 0 v6 a5 5 0 0 1 -10 0 z" fill="#333A52"></path><path data-dc-tpl="45" d="M0 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="46" d="M0 0" fill="#FFFFFF"></path></g></g></g><path data-dc-tpl="47" d="M75 107 L90 102 M121 107 L106 102" fill="none" stroke="#333A52" stroke-width="4.5" stroke-linecap="round"></path><path data-dc-tpl="48" d="M93.5 141 a4.5 4.5 0 1 0 9 0 a4.5 4.5 0 1 0 -9 0 z" fill="#333A52"></path><path data-dc-tpl="49" d="M0 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="50" opacity="1"><path data-dc-tpl="51" d="M161 56 q-6 9 -3 13 q4 4 8 0 q2 -5 -5 -13z" fill="#A9DCFF" stroke="#333A52" stroke-width="2.2" stroke-linejoin="round" transform="matrix(1 0 0 1 0 12)" opacity="0.0584316"></path></g></g></g></g></g></g></g><path data-dc-tpl="54" d="M164 40 q7 9 0 18" fill="none" stroke="#E8573A" stroke-width="4.5" stroke-linecap="round" opacity="0"></path><path data-dc-tpl="56" d="M173 33 q12 16 0 32" fill="none" stroke="#E8573A" stroke-width="4.5" stroke-linecap="round" opacity="0"></path><path data-dc-tpl="58" d="M36 40 q-7 9 0 18" fill="none" stroke="#E8573A" stroke-width="4.5" stroke-linecap="round" opacity="0"></path></svg></div></div>
+    </div>
+    <div data-dc-tpl="16" style="display: flex; flex-direction: column; gap: 4px; min-width: 0px;">
+      <span data-dc-tpl="17" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; padding: 3px 8px 3px 6px; border-radius: 8px; background: rgb(255, 228, 219); color: rgb(176, 52, 26);">
+        <svg data-dc-tpl="18" width="14" height="14" viewBox="0 0 48 48" aria-hidden="true"><path data-dc-tpl="19" d="M18 19 v6 M30 19 v6 M13 15 l6 -2 M35 15 l-6 -2 M22 30 a2.4 2.4 0 1 0 4.8 0 a2.4 2.4 0 1 0 -4.8 0" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        기한 코앞
+      </span>
+      <span data-dc-tpl="20" style="font-size: 30px; line-height: 1.15; font-family: Jua, Pretendard, sans-serif; font-weight: 400; letter-spacing: -0.01em;">두부</span>
+      <span data-dc-tpl="21" style="font-size: 14px; font-weight: 600; color: rgb(176, 52, 26);"><span class="sc-interp">소비기한</span> 2026.10.03 · D-1</span>
+    </div>
+  </div>
+
+  <section data-dc-tpl="22" aria-label="재료 고치기" style="margin: 16px 20px 0px; border-radius: 22px; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.06) 0px 8px 24px;">
+    <div data-dc-tpl="23" style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0px 12px 0px 16px;">
+      <span data-dc-tpl="24" style="width: 64px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: rgb(95, 102, 112);">이름</span>
+      <span data-dc-tpl="25" style="flex-grow: 1; font-size: 16px; font-weight: 700;">두부</span>
+      <button data-dc-tpl="26" type="button" aria-label="이름 고치기" style="width: 40px; height: 40px; padding: 0px; border: 0px; border-radius: 50%; background: transparent; color: rgb(138, 145, 153); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+        <svg data-dc-tpl="27" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="28" d="M4 20h4L19 9l-4-4L4 16z M13.5 6.5l4 4"></path></svg>
+      </button>
+    </div>
+    <div data-dc-tpl="29" style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0px 12px 0px 16px; border-top: 1px solid rgba(21, 24, 29, 0.06);">
+      <span data-dc-tpl="30" style="width: 64px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: rgb(95, 102, 112);">수량</span>
+      <span data-dc-tpl="31" style="flex-grow: 1;"></span>
+      <div data-dc-tpl="32" style="display: flex; align-items: center; gap: 2px; padding: 3px; border-radius: 22px; background: rgb(241, 242, 245);">
+        <button data-dc-tpl="33" type="button" aria-label="수량 줄이기" style="width: 36px; height: 36px; padding: 0px; border: 0px; border-radius: 50%; background: rgb(255, 255, 255); color: rgb(21, 24, 29); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: rgba(20, 25, 35, 0.1) 0px 1px 3px;">
+          <svg data-dc-tpl="34" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="35" d="M6 12h12"></path></svg>
+        </button>
+        <span data-dc-tpl="36" title="눌러서 수량 직접 입력" style="min-width: 56px; text-align: center; font-size: 16px; font-weight: 700; text-decoration: underline 1.5px rgb(138, 145, 153); text-underline-offset: 4px; cursor: text;"><span class="sc-interp">2</span>모</span>
+        <button data-dc-tpl="37" type="button" aria-label="수량 늘리기" style="width: 36px; height: 36px; padding: 0px; border: 0px; border-radius: 50%; background: rgb(255, 255, 255); color: rgb(21, 24, 29); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: rgba(20, 25, 35, 0.1) 0px 1px 3px;">
+          <svg data-dc-tpl="38" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path data-dc-tpl="39" d="M6 12h12M12 6v12"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div data-dc-tpl="40" style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0px 12px 0px 16px; border-top: 1px solid rgba(21, 24, 29, 0.06);">
+      <span data-dc-tpl="41" style="width: 64px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: rgb(95, 102, 112);">보관</span>
+      <div data-dc-tpl="42" role="radiogroup" aria-label="보관 위치" style="flex-grow: 1; display: flex; gap: 2px; padding: 3px; border-radius: 20px; background: rgb(241, 242, 245);">
+        
+          <button data-dc-tpl="44" type="button" role="radio" aria-checked="true" style="flex-grow: 1; flex-basis: 0px; height: 34px; padding: 0px; border: 0px; border-radius: 17px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em; background: rgb(255, 255, 255); color: rgb(21, 24, 29); font-weight: 700; box-shadow: rgba(20, 25, 35, 0.1) 0px 2px 6px;"><span class="sc-interp">냉장</span></button>
+        
+          <button data-dc-tpl="44" type="button" role="radio" aria-checked="false" style="flex-grow: 1; flex-basis: 0px; height: 34px; padding: 0px; border: 0px; border-radius: 17px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em; background: transparent; color: rgb(95, 102, 112); font-weight: 500;"><span class="sc-interp">냉동</span></button>
+        
+          <button data-dc-tpl="44" type="button" role="radio" aria-checked="false" style="flex-grow: 1; flex-basis: 0px; height: 34px; padding: 0px; border: 0px; border-radius: 17px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em; background: transparent; color: rgb(95, 102, 112); font-weight: 500;"><span class="sc-interp">실온</span></button>
+        
+      </div>
+    </div>
+    <div data-dc-tpl="45" style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0px 12px 0px 16px; border-top: 1px solid rgba(21, 24, 29, 0.06);">
+      <span data-dc-tpl="46" style="width: 64px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: rgb(95, 102, 112);">날짜 종류</span>
+      <div data-dc-tpl="47" role="radiogroup" aria-label="날짜 종류" style="flex-grow: 1; display: flex; gap: 2px; padding: 3px; border-radius: 20px; background: rgb(241, 242, 245);">
+        
+          <button data-dc-tpl="49" type="button" role="radio" aria-checked="true" style="flex-grow: 1; flex-basis: 0px; height: 34px; padding: 0px; border: 0px; border-radius: 17px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em; background: rgb(255, 255, 255); color: rgb(21, 24, 29); font-weight: 700; box-shadow: rgba(20, 25, 35, 0.1) 0px 2px 6px;"><span class="sc-interp">소비기한</span></button>
+        
+          <button data-dc-tpl="49" type="button" role="radio" aria-checked="false" style="flex-grow: 1; flex-basis: 0px; height: 34px; padding: 0px; border: 0px; border-radius: 17px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em; background: transparent; color: rgb(95, 102, 112); font-weight: 500;"><span class="sc-interp">유통기한</span></button>
+        
+          <button data-dc-tpl="49" type="button" role="radio" aria-checked="false" style="flex-grow: 1; flex-basis: 0px; height: 34px; padding: 0px; border: 0px; border-radius: 17px; cursor: pointer; font-family: inherit; font-size: 14px; letter-spacing: -0.02em; background: transparent; color: rgb(95, 102, 112); font-weight: 500;"><span class="sc-interp">점검 알림</span></button>
+        
+      </div>
+    </div>
+    <div data-dc-tpl="50" style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0px 12px 0px 16px; border-top: 1px solid rgba(21, 24, 29, 0.06);">
+      <span data-dc-tpl="51" style="width: 64px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: rgb(95, 102, 112);">날짜</span>
+      <span data-dc-tpl="52" style="flex-grow: 1; font-size: 16px; font-weight: 700;">2026.10.03 (토)</span>
+      <button data-dc-tpl="53" type="button" aria-label="날짜 고르기" style="width: 40px; height: 40px; padding: 0px; border: 0px; border-radius: 50%; background: transparent; color: rgb(138, 145, 153); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+        <svg data-dc-tpl="54" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect data-dc-tpl="55" x="3.5" y="5" width="17" height="15.5" rx="3"></rect><path data-dc-tpl="56" d="M3.5 10h17M8 3v4M16 3v4"></path></svg>
+      </button>
+    </div>
+  </section>
+  <div data-dc-tpl="57" style="display: flex; align-items: center; gap: 6px; padding: 10px 24px 0px; font-size: 13px; font-weight: 500; color: rgb(107, 114, 123);">
+    <svg data-dc-tpl="58" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="59" d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z M5.5 11a6.5 6.5 0 0 0 13 0 M12 17.5V21"></path></svg>
+    말로도 고쳐요 · “두부 기한 10월 5일로 바꿔”
+  </div>
+
+  <section data-dc-tpl="60" aria-label="이 재료로 만들 수 있는 요리" style="display: flex; flex-direction: column; gap: 10px; padding: 18px 0px 0px 20px;">
+    <div data-dc-tpl="61" style="display: flex; align-items: baseline; justify-content: space-between; padding-right: 20px;">
+      <span data-dc-tpl="62" style="font-size: 17px; font-weight: 800; letter-spacing: -0.03em;">두부로 만들 수 있어요</span>
+      <a data-dc-tpl="63" style="font-size: 13px; font-weight: 600; color: rgb(95, 102, 112); text-decoration: none;">모두 보기</a>
+    </div>
+    <div data-dc-tpl="64" style="display: flex; gap: 10px; overflow: hidden;">
+      
+        <a data-dc-tpl="66" style="flex-shrink: 0; width: 148px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 20px; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.06) 0px 6px 18px; color: rgb(21, 24, 29); text-decoration: none;">
+          <span data-dc-tpl="67" style="width: 34px; height: 34px; border-radius: 12px; background: rgb(255, 241, 235); color: rgb(216, 67, 31); display: flex; align-items: center; justify-content: center;">
+            <svg data-dc-tpl="68" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="69" d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+          </span>
+          <span data-dc-tpl="70" style="font-size: 15px; font-weight: 700;"><span class="sc-interp">두부계란전</span></span>
+          <span data-dc-tpl="71" style="font-size: 12px; font-weight: 500; color: rgb(107, 114, 123);"><span class="sc-interp">2인분 · 15분</span></span>
+          <span data-dc-tpl="72" style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 7px; background: rgb(221, 243, 228); color: rgb(23, 112, 60);"><span class="sc-interp">재료 다 있어요</span></span>
+        </a>
+      
+        <a data-dc-tpl="66" style="flex-shrink: 0; width: 148px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 20px; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.06) 0px 6px 18px; color: rgb(21, 24, 29); text-decoration: none;">
+          <span data-dc-tpl="67" style="width: 34px; height: 34px; border-radius: 12px; background: rgb(255, 241, 235); color: rgb(216, 67, 31); display: flex; align-items: center; justify-content: center;">
+            <svg data-dc-tpl="68" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="69" d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+          </span>
+          <span data-dc-tpl="70" style="font-size: 15px; font-weight: 700;"><span class="sc-interp">두부조림</span></span>
+          <span data-dc-tpl="71" style="font-size: 12px; font-weight: 500; color: rgb(107, 114, 123);"><span class="sc-interp">2인분 · 20분</span></span>
+          <span data-dc-tpl="72" style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 7px; background: rgb(221, 243, 228); color: rgb(23, 112, 60);"><span class="sc-interp">재료 다 있어요</span></span>
+        </a>
+      
+        <a data-dc-tpl="66" style="flex-shrink: 0; width: 148px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 20px; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.06) 0px 6px 18px; color: rgb(21, 24, 29); text-decoration: none;">
+          <span data-dc-tpl="67" style="width: 34px; height: 34px; border-radius: 12px; background: rgb(255, 241, 235); color: rgb(216, 67, 31); display: flex; align-items: center; justify-content: center;">
+            <svg data-dc-tpl="68" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="69" d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+          </span>
+          <span data-dc-tpl="70" style="font-size: 15px; font-weight: 700;"><span class="sc-interp">마파두부</span></span>
+          <span data-dc-tpl="71" style="font-size: 12px; font-weight: 500; color: rgb(107, 114, 123);"><span class="sc-interp">2인분 · 25분</span></span>
+          <span data-dc-tpl="72" style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 7px; background: rgb(240, 241, 244); color: rgb(95, 102, 112);"><span class="sc-interp">다진 고기 필요</span></span>
+        </a>
+      
+    </div>
+  </section>
+
+  <div data-dc-tpl="73" style="margin-top: auto; padding: 12px 20px 8px;">
+    <a data-dc-tpl="74" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: rgb(21, 24, 29); color: rgb(255, 255, 255); text-decoration: none; font-size: 17px; font-weight: 700; box-shadow: rgba(20, 25, 35, 0.22) 0px 10px 22px;">저장</a>
+  </div>
+  
+    <div data-dc-tpl="76" role="dialog" aria-modal="true" aria-label="재료 버리기 확인" style="position: absolute; inset: 0px; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 0px 32px; background: rgba(15, 17, 22, 0.38);">
+      <div data-dc-tpl="77" style="width: 100%; max-width: 320px; box-sizing: border-box; padding: 24px 22px 16px; border-radius: 28px; background: rgb(255, 255, 255); box-shadow: rgba(15, 17, 22, 0.24) 0px 24px 60px; display: flex; flex-direction: column; gap: 8px;">
+        <span data-dc-tpl="78" style="font-size: 20px; font-weight: 700; letter-spacing: -0.03em;">두부를 버릴까요?</span>
+        <span data-dc-tpl="79" style="font-size: 14px; line-height: 1.5; font-weight: 500; color: rgb(95, 102, 112);">기록에는 남아요. 되돌리려면 다시 등록해야 해요.</span>
+        <div data-dc-tpl="80" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px;">
+          <a data-dc-tpl="81" style="display: flex; align-items: center; height: 44px; padding: 0px 16px; border-radius: 22px; color: rgb(62, 69, 78); text-decoration: none; font-size: 15px; font-weight: 700;">취소</a>
+          <a data-dc-tpl="82" style="display: flex; align-items: center; height: 44px; padding: 0px 20px; border-radius: 22px; background: rgb(216, 67, 31); color: rgb(255, 255, 255); text-decoration: none; font-size: 15px; font-weight: 700;">삭제</a>
+        </div>
+      </div>
+    </div>
+  </div></div></div></div></div>
+</section>
+<section class="frame" data-name="추가 · 추천 고르는 중">
+<h2 class="label">추가 · 추천 고르는 중</h2>
+<div class="screen" style="width: 390px; height: 844px"><div class="sc-host" data-sc-name="CookHome-Thinking"><div data-dc-tpl="2" style="width: 390px; height: 844px; overflow: hidden;"><div class="sc-host" data-sc-name="CookHome" data-dc-tpl="3"><div data-dc-tpl="2" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; padding-top: 59px; overflow: hidden; display: flex; flex-direction: column; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-synthesis: weight style; color: rgb(21, 24, 29); letter-spacing: -0.02em; background: radial-gradient(130% 70% at 50% 0%, rgb(255, 255, 255) 0%, rgb(251, 247, 244) 45%, rgb(242, 233, 226) 100%);">
+
+  <header data-dc-tpl="3" style="display: flex; align-items: center; gap: 10px; padding: 10px 20px 0px;">
+    <div data-dc-tpl="4" style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+      <h1 data-dc-tpl="5" style="margin: 0px; font-size: 30px; line-height: 1.2; font-family: Jua, Pretendard, sans-serif; font-weight: 400; letter-spacing: -0.01em;">조리</h1>
+      <span data-dc-tpl="6" style="font-size: 14px; font-weight: 500; color: rgb(95, 102, 112);">단계별로 읽어 주고 타이머도 맞춰요</span>
+    </div>
+    <div class="sc-host" data-sc-name="Mascot2" data-dc-tpl="7"><div data-dc-tpl="2" style="width: 56px; height: 56px; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, sans-serif; color: rgb(51, 58, 82);"><svg data-dc-tpl="3" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="반가워요"><defs data-dc-tpl="4"><linearGradient data-dc-tpl="5" id="s6-m2hello56b" x1="0" y1="0" x2="0.9" y2="1"><stop data-dc-tpl="6" offset="0" stop-color="rgba(230,233,255,0.82)"></stop><stop data-dc-tpl="7" offset="1" stop-color="rgba(199,207,255,0.6)"></stop></linearGradient><linearGradient data-dc-tpl="8" id="s6-m2hello56r" x1="0" y1="0" x2="0" y2="1"><stop data-dc-tpl="9" offset="0" stop-color="rgba(255,255,255,0.95)"></stop><stop data-dc-tpl="10" offset="1" stop-color="rgba(72,86,187,0.85)"></stop></linearGradient></defs><ellipse data-dc-tpl="11" cx="100" cy="190" rx="43" ry="6" fill="#333A52" opacity="0.12"></ellipse><g data-dc-tpl="13" transform="matrix(1 0 0 1 0 -6.9999)"><g data-dc-tpl="15" transform="matrix(0.9998 0.0206 -0.0206 0.9998 3.8122 -2.0212)"><g data-dc-tpl="17" transform="translate(100 184)"><g data-dc-tpl="18" transform="matrix(0.99 0 0 1.02 0 0)"><g data-dc-tpl="20" transform="translate(-100 -184)"><g data-dc-tpl="21" transform="rotate(0 100 184)"><rect data-dc-tpl="22" x="68" y="176" width="14" height="12" rx="4" fill="#333A52"></rect><rect data-dc-tpl="23" x="118" y="176" width="14" height="12" rx="4" fill="#333A52"></rect><rect data-dc-tpl="24" x="46" y="24" width="108" height="156" rx="32" fill="#C7CFFF" stroke="#333A52" stroke-width="5"></rect><ellipse data-dc-tpl="25" cx="80" cy="68" rx="22" ry="32" fill="hsla(0,0%,100%,0.3)" opacity="0"></ellipse><rect data-dc-tpl="26" x="52.5" y="30.5" width="95" height="143" rx="26" fill="none" stroke="hsla(0,0%,100%,0.6)" stroke-width="2" opacity="0"></rect><path data-dc-tpl="27" d="M150 124 v24 a28 28 0 0 1 -28 28 h-36" fill="none" stroke="rgba(90,107,234,0.28)" stroke-width="6" stroke-linecap="round" opacity="0"></path><path data-dc-tpl="28" d="M56 36 Q52 44 52 60" fill="none" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="29" d="M53 90 v12" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="30" d="M46 74 H154" fill="none" stroke="#333A52" stroke-width="5"></path><path data-dc-tpl="31" d="M138 40 v18" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="32" d="M138 88 v26" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="33" transform="rotate(-8 80 48)"><rect data-dc-tpl="34" x="66" y="36" width="28" height="24" rx="4" fill="#FFF3B8" stroke="#333A52" stroke-width="3"></rect><circle data-dc-tpl="35" cx="80" cy="36" r="3.5" fill="#5A6BEA" stroke="#333A52" stroke-width="2"></circle><path data-dc-tpl="36" d="M71 46 h16 M71 52 h10" fill="none" stroke="#333A52" stroke-width="2.4" stroke-linecap="round" opacity="1"></path><text data-dc-tpl="37" x="80" y="55" text-anchor="middle" font-size="17" font-weight="800" fill="#333A52" font-family="Pretendard, sans-serif" opacity="0"></text></g><circle data-dc-tpl="38" cx="72" cy="134" r="7" fill="#FF8A98" opacity="0.5"></circle><circle data-dc-tpl="39" cx="124" cy="134" r="7" fill="#FF8A98" opacity="0.5"></circle><g data-dc-tpl="40" transform="translate(0 119)"><g data-dc-tpl="41" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="43" transform="translate(0 -119)"><path data-dc-tpl="44" d="M0 0" fill="#333A52"></path><path data-dc-tpl="45" d="M77 121 q7 -9 14 0 M105 121 q7 -9 14 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="46" d="M0 0" fill="#FFFFFF"></path></g></g></g><path data-dc-tpl="47" d="M0 0" fill="none" stroke="#333A52" stroke-width="4.5" stroke-linecap="round"></path><path data-dc-tpl="48" d="M0 0" fill="#333A52"></path><path data-dc-tpl="49" d="M91 135 q7 8 14 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="50" opacity="0"><path data-dc-tpl="51" d="M161 56 q-6 9 -3 13 q4 4 8 0 q2 -5 -5 -13z" fill="#A9DCFF" stroke="#333A52" stroke-width="2.2" stroke-linejoin="round" transform="matrix(1 0 0 1 0 12)" opacity="0.0293474"></path></g></g></g></g></g></g></g><path data-dc-tpl="54" d="M164 40 q7 9 0 18" fill="none" stroke="#5A6BEA" stroke-width="4.5" stroke-linecap="round" opacity="0"></path><path data-dc-tpl="56" d="M173 33 q12 16 0 32" fill="none" stroke="#5A6BEA" stroke-width="4.5" stroke-linecap="round" opacity="0"></path><path data-dc-tpl="58" d="M36 40 q-7 9 0 18" fill="none" stroke="#5A6BEA" stroke-width="4.5" stroke-linecap="round" opacity="0"></path></svg></div></div>
+  </header>
+
+  <div data-dc-tpl="8" style="flex-grow: 1; min-height: 0px; overflow: hidden; display: flex; flex-direction: column; gap: 14px; padding: 16px 20px 0px;">
+    <section data-dc-tpl="9" aria-label="냉장고 재료로 요리하기" style="display: flex; flex-direction: column; padding: 16px 16px 6px; border-radius: 24px; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.06) 0px 8px 24px;">
+      <div data-dc-tpl="10" style="display: flex; align-items: center; gap: 8px;">
+        <span data-dc-tpl="11" style="display: inline-flex; align-items: center; height: 22px; padding: 0px 8px; border-radius: 11px; background: rgb(238, 240, 255); color: rgb(63, 79, 209); font-size: 12px; font-weight: 800;">AI 추천</span>
+        <span data-dc-tpl="12" style="font-size: 17px; font-weight: 800; letter-spacing: -0.03em;">냉장고 재료로 요리하기</span>
+        <button data-dc-tpl="13" type="button" aria-label="추천 새로 받기" style="margin-left: auto; width: 36px; height: 36px; padding: 0px; border: 0px; border-radius: 50%; background: transparent; color: rgb(138, 145, 153); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0.4;">
+          <svg data-dc-tpl="14" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="15" d="M20 12a8 8 0 1 1-2.4-5.7M20 4v4.5h-4.5"></path></svg>
+        </button>
+      </div>
+      
+        <div data-dc-tpl="17" role="status" aria-label="추천을 고르는 중" style="display: flex; flex-direction: column; align-items: center; padding: 14px 0px 18px;">
+          <div class="sc-host" data-sc-name="Mascot2" data-dc-tpl="18"><div data-dc-tpl="2" style="width: 84px; height: 84px; font-family: Pretendard, &quot;Apple SD Gothic Neo&quot;, sans-serif; color: rgb(51, 58, 82);"><svg data-dc-tpl="3" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="확인 질문"><defs data-dc-tpl="4"><linearGradient data-dc-tpl="5" id="s6-m2asking84b" x1="0" y1="0" x2="0.9" y2="1"><stop data-dc-tpl="6" offset="0" stop-color="rgba(255,241,217,0.82)"></stop><stop data-dc-tpl="7" offset="1" stop-color="rgba(255,224,170,0.6)"></stop></linearGradient><linearGradient data-dc-tpl="8" id="s6-m2asking84r" x1="0" y1="0" x2="0" y2="1"><stop data-dc-tpl="9" offset="0" stop-color="rgba(255,255,255,0.95)"></stop><stop data-dc-tpl="10" offset="1" stop-color="rgba(182,123,36,0.85)"></stop></linearGradient></defs><ellipse data-dc-tpl="11" cx="100" cy="190" rx="46.606" ry="6" fill="#333A52" opacity="0.12"></ellipse><g data-dc-tpl="13" transform="matrix(1 0 0 1 0 -2.0903)"><g data-dc-tpl="15" transform="matrix(0.9996 0.0275 -0.0275 0.9996 5.0921 -2.6775)"><g data-dc-tpl="17" transform="translate(100 184)"><g data-dc-tpl="18" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="20" transform="translate(-100 -184)"><g data-dc-tpl="21" transform="rotate(0 100 184)"><rect data-dc-tpl="22" x="68" y="176" width="14" height="12" rx="4" fill="#333A52"></rect><rect data-dc-tpl="23" x="118" y="176" width="14" height="12" rx="4" fill="#333A52"></rect><rect data-dc-tpl="24" x="46" y="24" width="108" height="156" rx="32" fill="#FFE0AA" stroke="#333A52" stroke-width="5"></rect><ellipse data-dc-tpl="25" cx="80" cy="68" rx="22" ry="32" fill="hsla(0,0%,100%,0.3)" opacity="0"></ellipse><rect data-dc-tpl="26" x="52.5" y="30.5" width="95" height="143" rx="26" fill="none" stroke="hsla(0,0%,100%,0.6)" stroke-width="2" opacity="0"></rect><path data-dc-tpl="27" d="M150 124 v24 a28 28 0 0 1 -28 28 h-36" fill="none" stroke="rgba(227,154,45,0.28)" stroke-width="6" stroke-linecap="round" opacity="0"></path><path data-dc-tpl="28" d="M56 36 Q52 44 52 60" fill="none" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="29" d="M53 90 v12" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="30" d="M46 74 H154" fill="none" stroke="#333A52" stroke-width="5"></path><path data-dc-tpl="31" d="M138 40 v18" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="32" d="M138 88 v26" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="33" transform="rotate(-8 80 48)"><rect data-dc-tpl="34" x="66" y="36" width="28" height="24" rx="4" fill="#FFF3B8" stroke="#333A52" stroke-width="3"></rect><circle data-dc-tpl="35" cx="80" cy="36" r="3.5" fill="#E39A2D" stroke="#333A52" stroke-width="2"></circle><path data-dc-tpl="36" d="M71 46 h16 M71 52 h10" fill="none" stroke="#333A52" stroke-width="2.4" stroke-linecap="round" opacity="0"></path><text data-dc-tpl="37" x="80" y="55" text-anchor="middle" font-size="17" font-weight="800" fill="#333A52" font-family="Pretendard, sans-serif" opacity="1">?</text></g><circle data-dc-tpl="38" cx="72" cy="134" r="7" fill="#FF8A98" opacity="0.35"></circle><circle data-dc-tpl="39" cx="124" cy="134" r="7" fill="#FF8A98" opacity="0.35"></circle><g data-dc-tpl="40" transform="translate(0 119)"><g data-dc-tpl="41" transform="matrix(1 0 0 1 0 0)"><g data-dc-tpl="43" transform="translate(0 -119)"><path data-dc-tpl="44" d="M79 119 a5 5 0 0 1 10 0 v4 a5 5 0 0 1 -10 0 z M107 119 a5 5 0 0 1 10 0 v4 a5 5 0 0 1 -10 0 z" fill="#333A52"></path><path data-dc-tpl="45" d="M0 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><path data-dc-tpl="46" d="M0 0" fill="#FFFFFF"></path></g></g></g><path data-dc-tpl="47" d="M76 105 q7 -6 14 -2 M106 107 h14" fill="none" stroke="#333A52" stroke-width="4.5" stroke-linecap="round"></path><path data-dc-tpl="48" d="M0 0" fill="#333A52"></path><path data-dc-tpl="49" d="M92 139 q6 -4 12 0" fill="none" stroke="#333A52" stroke-width="5" stroke-linecap="round"></path><g data-dc-tpl="50" opacity="0"><path data-dc-tpl="51" d="M161 56 q-6 9 -3 13 q4 4 8 0 q2 -5 -5 -13z" fill="#A9DCFF" stroke="#333A52" stroke-width="2.2" stroke-linejoin="round" transform="matrix(1 0 0 1 0 12)" opacity="0.0293474"></path></g></g></g></g></g></g></g><path data-dc-tpl="54" d="M164 40 q7 9 0 18" fill="none" stroke="#E39A2D" stroke-width="4.5" stroke-linecap="round" opacity="0"></path><path data-dc-tpl="56" d="M173 33 q12 16 0 32" fill="none" stroke="#E39A2D" stroke-width="4.5" stroke-linecap="round" opacity="0"></path><path data-dc-tpl="58" d="M36 40 q-7 9 0 18" fill="none" stroke="#E39A2D" stroke-width="4.5" stroke-linecap="round" opacity="0"></path></svg></div></div>
+          <span data-dc-tpl="19" style="margin-top: 10px; font-size: 16px; font-weight: 700;">냉장고를 뒤져보는 중</span>
+          <svg data-dc-tpl="20" width="300" height="20" viewBox="0 0 300 20" aria-hidden="true" style="margin-top: 6px; overflow: visible;"><text data-dc-tpl="21" x="150" y="15" text-anchor="middle" font-size="13" font-weight="500" fill="#6B727B" font-family="Pretendard, sans-serif" opacity="1">냉장고 문을 열어보는 중…</text><text data-dc-tpl="23" x="150" y="15" text-anchor="middle" font-size="13" font-weight="500" fill="#6B727B" font-family="Pretendard, sans-serif" opacity="0">기한 코앞인 재료부터 챙기는 중…</text><text data-dc-tpl="25" x="150" y="15" text-anchor="middle" font-size="13" font-weight="500" fill="#6B727B" font-family="Pretendard, sans-serif" opacity="0">뭐랑 뭐가 어울릴지 짝지어 보는 중…</text><text data-dc-tpl="27" x="150" y="15" text-anchor="middle" font-size="13" font-weight="500" fill="#6B727B" font-family="Pretendard, sans-serif" opacity="0">오늘 몇 분이나 걸릴지 어림잡는 중…</text><text data-dc-tpl="29" x="150" y="15" text-anchor="middle" font-size="13" font-weight="500" fill="#6B727B" font-family="Pretendard, sans-serif" opacity="0">이거 맛있으려나 혼자 고민하는 중…</text></svg>
+          <svg data-dc-tpl="31" width="40" height="20" viewBox="0 0 40 20" aria-hidden="true" style="margin-top: 12px;"><circle data-dc-tpl="32" cx="4" cy="12.332" r="4" fill="#E08E00" opacity="0.85"></circle><circle data-dc-tpl="34" cx="20" cy="8.582" r="4" fill="#E08E00" opacity="0.65"></circle><circle data-dc-tpl="36" cx="36" cy="7.168" r="4" fill="#E08E00" opacity="0.45"></circle></svg>
+        </div>
+      
+      
+    </section>
+
+    <section data-dc-tpl="52" aria-label="영상 레시피로 요리하기" style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 24px; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.06) 0px 8px 24px;">
+      <div data-dc-tpl="53" style="display: flex; flex-direction: column; gap: 4px;">
+        <span data-dc-tpl="54" style="font-size: 17px; font-weight: 800; letter-spacing: -0.03em;">영상 레시피로 요리하기</span>
+        <span data-dc-tpl="55" style="font-size: 13px; font-weight: 500; color: rgb(107, 114, 123);">유튜브 링크를 넣으면 단계별로 정리해 드려요</span>
+      </div>
+      <div data-dc-tpl="56" style="display: flex; gap: 8px;">
+        <label data-dc-tpl="57" style="flex-grow: 1; min-width: 0px; display: flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box; padding: 0px 12px; border-radius: 14px; background: rgb(244, 245, 248); border: 1px solid rgba(21, 24, 29, 0.06);">
+          <svg data-dc-tpl="58" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A9199" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="59" d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1 M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"></path></svg>
+          <input data-dc-tpl="60" type="url" inputmode="url" aria-label="유튜브 링크" placeholder="링크 붙여넣기" style="flex-grow: 1; min-width: 0px; height: 100%; padding: 0px; border: 0px; background: transparent; font-family: inherit; font-size: 15px; color: rgb(21, 24, 29); outline: none;">
+        </label>
+        <button data-dc-tpl="61" type="button" style="flex-shrink: 0; height: 48px; padding: 0px 16px; border: 0px; border-radius: 14px; background: rgb(21, 24, 29); color: rgb(255, 255, 255); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer;">정리하기</button>
+      </div>
+      <div data-dc-tpl="62" style="display: flex; gap: 12px; padding: 12px; border-radius: 18px; background: rgb(248, 249, 251); border: 1px solid rgba(21, 24, 29, 0.05);">
+        <div data-dc-tpl="63" aria-hidden="true" style="position: relative; width: 92px; height: 64px; flex-shrink: 0; border-radius: 12px; background: linear-gradient(135deg, rgb(58, 63, 75) 0%, rgb(107, 114, 128) 100%); display: flex; align-items: center; justify-content: center;">
+          <span data-dc-tpl="64" style="width: 30px; height: 30px; border-radius: 50%; background: rgba(255, 255, 255, 0.9); display: flex; align-items: center; justify-content: center; color: rgb(21, 24, 29);">
+            <svg data-dc-tpl="65" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path data-dc-tpl="66" d="M7 4.5v15l12-7.5z"></path></svg>
+          </span>
+        </div>
+        <div data-dc-tpl="67" style="flex-grow: 1; min-width: 0px; display: flex; flex-direction: column; gap: 3px;">
+          <span data-dc-tpl="68" style="font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">초간단 두부조림</span>
+          <span data-dc-tpl="69" style="font-size: 12px; font-weight: 500; color: rgb(107, 114, 123);">5단계 · 약 20분 · 재료 6개 중 5개</span>
+          <span data-dc-tpl="70" style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 7px; background: rgb(255, 239, 210); color: rgb(143, 90, 8);">대파만 없어요</span>
+        </div>
+      </div>
+      <a data-dc-tpl="71" style="display: flex; align-items: center; justify-content: center; gap: 6px; height: 48px; border-radius: 24px; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(21, 24, 29, 0.1); color: rgb(21, 24, 29); text-decoration: none; font-size: 15px; font-weight: 700;">
+        <svg data-dc-tpl="72" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="73" d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+        이 레시피로 조리 시작
+      </a>
+    </section>
+
+    <div data-dc-tpl="74" style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 500; color: rgb(107, 114, 123);">
+      <svg data-dc-tpl="75" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="76" d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z M5.5 11a6.5 6.5 0 0 0 13 0 M12 17.5V21"></path></svg>
+      “헤이 키친, 두부로 뭐 해 먹지?”
+    </div>
+  </div>
+
+  <nav data-dc-tpl="77" aria-label="주요 화면" style="position: absolute; left: 0px; right: 0px; bottom: 0px; height: 98px; box-sizing: border-box; padding: 0px 12px 34px; display: flex; border-radius: 28px 28px 0px 0px; background: rgba(255, 255, 255, 0.72); border-top: 1px solid rgba(255, 255, 255, 0.95); box-shadow: rgba(20, 25, 35, 0.07) 0px -12px 32px; backdrop-filter: blur(18px);">
+    <a data-dc-tpl="78" style="flex-grow: 1; flex-basis: 0px; min-width: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: rgb(124, 131, 140); font-weight: 500;">
+      <svg data-dc-tpl="79" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="80" d="M5 6.5a3 4 0 1 0 6 0a3 4 0 1 0 -6 0M8 10.5V21M15 3l.5 18M19 3l-1 18"></path></svg>
+      뭐 먹지?
+    </a>
+    <a data-dc-tpl="81" style="flex-grow: 1; flex-basis: 0px; min-width: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: rgb(124, 131, 140); font-weight: 500;">
+      <svg data-dc-tpl="82" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect data-dc-tpl="83" x="5" y="2.5" width="14" height="19" rx="3"></rect><path data-dc-tpl="84" d="M5 10h14M8.5 6v1.5M8.5 13v3"></path></svg>
+      냉장고
+    </a>
+    <a data-dc-tpl="85" aria-current="page" style="flex-grow: 1; flex-basis: 0px; min-width: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: rgb(21, 24, 29); font-weight: 700;">
+      <svg data-dc-tpl="86" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="87" d="M5 11h14v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z M3.5 11h17 M10 8.5h4 M3 13.5h2 M19 13.5h2 M9.5 6c0-1.2 1-1.3 1-2.5 M13.5 6c0-1.2 1-1.3 1-2.5"></path></svg>
+      조리
+    </a>
+    <a data-dc-tpl="88" style="flex-grow: 1; flex-basis: 0px; min-width: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: rgb(124, 131, 140); font-weight: 500;">
+      <svg data-dc-tpl="89" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle data-dc-tpl="90" cx="12" cy="12" r="9"></circle><path data-dc-tpl="91" d="M12 7v5l3 2"></path></svg>
+      기록
+    </a>
+    <a data-dc-tpl="92" style="flex-grow: 1; flex-basis: 0px; min-width: 0px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12px; white-space: nowrap; color: rgb(124, 131, 140); font-weight: 500;">
+      <svg data-dc-tpl="93" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle data-dc-tpl="94" cx="12" cy="8" r="4"></circle><path data-dc-tpl="95" d="M4.5 20.5a7.5 7.5 0 0 1 15 0"></path></svg>
+      마이페이지
+    </a>
+  </nav></div></div></div></div></div>
+</section>
+</main>
+</body>
+</html>

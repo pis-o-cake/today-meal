@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>로그인</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:'Pretendard';src:url(../assets/fonts/PretendardVariable.woff2) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(../assets/fonts/Jua-Regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
+
+  <header style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 24px 0; text-align: center">
+    <dc-import name="Mascot2" theme="{{themeName}}" mood="hello" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+    <h1 style="margin: 6px 0 0; font-size: 32px; line-height: 1.2; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em">오늘 뭐 먹지?</h1>
+    <div style="font-size: 15px; font-weight: 500; color: {{K.c1}}; margin-top: 4px">말로 관리하는 우리 집 냉장고</div>
+  </header>
+
+  <section aria-label="이메일로 로그인" style="display: flex; flex-direction: column; gap: 12px; padding: 20px 20px 0">
+    <label style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 700; color: {{K.c2}}; padding-left: 2px">이메일</span>
+      <input type="email" name="email" autocomplete="email" inputmode="email" placeholder="example@email.com" style="width: 100%; height: 52px; box-sizing: border-box; padding: 0 16px; border-radius: 12px; border: 1px solid {{K.c3}}; background: {{K.c4}}; font-family: inherit; font-size: 16px; color: {{K.c0}}; outline-color: {{K.c5}}; {{K.fx}}">
+    </label>
+    <div style="position: relative">
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 700; color: {{K.c2}}; padding-left: 2px">비밀번호</span>
+        <input type="{{pwType}}" name="password" autocomplete="current-password" placeholder="비밀번호 입력" style="width: 100%; height: 52px; box-sizing: border-box; padding: 0 52px 0 16px; border-radius: 12px; border: 1px solid {{K.c3}}; background: {{K.c4}}; font-family: inherit; font-size: 16px; color: {{K.c0}}; outline-color: {{K.c5}}; {{K.fx}}">
+      </label>
+      <button type="button" aria-label="{{pwLabel}}" aria-pressed="{{pwPressed}}" onClick="{{togglePw}}" style="position: absolute; right: 4px; bottom: 4px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 10px; background: transparent; color: {{K.c6}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <sc-if value="{{pwHidden}}" hint-placeholder-val="{{ true }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </sc-if>
+        <sc-if value="{{pwShown}}" hint-placeholder-val="{{ false }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 5.6A10 10 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.6 6.6C4 8.3 2.5 12 2.5 12S6 18.5 12 18.5a9.4 9.4 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"></path></svg>
+        </sc-if>
+      </button>
+    </div>
+    <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; height: 52px; margin-top: 4px; border-radius: 12px; background: {{K.c7}}; color: {{K.c8}}; text-decoration: none; font-size: 16px; font-weight: 700; box-shadow: 0 10px 22px {{K.c9}}; {{K.fxa}}">로그인</a>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 4px">
+      <a href="{{links.self}}" style="display: flex; align-items: center; height: 44px; padding: 0 12px; color: {{K.c1}}; text-decoration: none; font-size: 14px; font-weight: 600">비밀번호 찾기</a>
+      <span aria-hidden="true" style="width: 1px; height: 12px; background: {{K.c10}}"></span>
+      <a href="{{links.signup}}" style="display: flex; align-items: center; height: 44px; padding: 0 12px; color: {{K.c11}}; text-decoration: none; font-size: 14px; font-weight: 700">회원가입</a>
+    </div>
+  </section>
+
+  <section aria-label="간편 로그인" style="display: flex; flex-direction: column; gap: 8px; padding: 6px 20px 0">
+    <div aria-hidden="true" style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: {{K.c12}}">
+      <span style="flex-grow: 1; height: 1px; background: {{K.c13}}"></span>
+      또는 간편 로그인
+      <span style="flex-grow: 1; height: 1px; background: {{K.c13}}"></span>
+    </div>
+
+    <a href="{{links.next}}" aria-label="카카오 로그인" style="display: flex; align-items: center; justify-content: center; height: {{socialH}}px; border-radius: 12px; background: {{K.c14}}; text-decoration: none; overflow: hidden">
+      <img src="../assets/img/kakao_login_kr_large.svg" width="336" height="46" alt="" style="display: block; flex-shrink: 0">
+    </a>
+    <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; gap: {{googleGap}}px; height: {{socialH}}px; box-sizing: border-box; border-radius: 12px; background: {{K.c15}}; border: 1px solid {{K.c16}}; color: {{K.c17}}; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; font-synthesis: weight style; text-decoration: none; font-size: 15px; font-weight: 500">
+      <img src="../assets/img/google_g.svg" width="20" height="20" alt="" style="display: block; flex-shrink: 0">
+      Google 계정으로 로그인
+    </a>
+
+    <a href="{{links.next}}" style="display: flex; align-items: center; justify-content: center; height: 40px; margin-top: 2px; color: {{K.c1}}; text-decoration: underline; text-underline-offset: 3px; font-size: 14px; font-weight: 600">로그인 없이 둘러보기</a>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var THEME = this.props.theme || 'pastel';
+    var K = ({"pastel":{"c0":"#15181D","c1":"#5F6670","c2":"#3E454E","c3":"rgba(79,95,224,0.22)","c4":"rgba(255,255,255,0.94)","c5":"#4F5FE0","c6":"#6B727B","c7":"#4F5FE0","c8":"#FFFFFF","c9":"rgba(79,95,224,0.28)","c10":"#C5CAD3","c11":"#3F4FD1","c12":"#8A9199","c13":"rgba(21,24,29,0.1)","c14":"#FEE500","c15":"#FFFFFF","c16":"#747775","c17":"#1F1F1F","root":"radial-gradient(125% 80% at 50% 22%, #FFFFFF 0%, #F6F7FF 42%, #E1E6FF 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#5F6670","c2":"#3E454E","c3":"rgba(43,64,238,0.22)","c4":"#FFFFFF","c5":"#2B40EE","c6":"#6B727B","c7":"#2B40EE","c8":"#FFFFFF","c9":"rgba(43,64,238,0.28)","c10":"#C5CAD3","c11":"#1024C6","c12":"#8A9199","c13":"rgba(21,24,29,0.1)","c14":"#FEE500","c15":"#FFFFFF","c16":"#747775","c17":"#1F1F1F","root":"radial-gradient(120% 45% at 50% 0%, rgba(61,92,245,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"#5F6670","c2":"#3E454E","c3":"rgba(54,73,226,0.22)","c4":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c5":"#3649E2","c6":"#6B727B","c7":"linear-gradient(180deg, rgba(99,114,233,0.94) 0%, rgba(54,73,226,0.94) 100%)","c8":"#FFFFFF","c9":"rgba(32,53,223,0.28)","c10":"rgba(120,128,150,0.3)","c11":"#1D30C9","c12":"#8A9199","c13":"rgba(21,24,29,0.1)","c14":"#FEE500","c15":"#FFFFFF","c16":"#747775","c17":"#1F1F1F","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#BDC1C6","c2":"#BDC1C6","c3":"rgba(138,180,248,0.29)","c4":"rgba(45,46,49,0.96)","c5":"#8AB4F8","c6":"#9AA0A6","c7":"#8AB4F8","c8":"#202124","c9":"rgba(138,180,248,0.17)","c10":"#5F6368","c11":"#8AB4F8","c12":"#9AA0A6","c13":"rgba(232,234,237,0.12)","c14":"#FEE500","c15":"#131314","c16":"#8E918F","c17":"#E3E3E3","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
+    var android = (this.props.platform || 'ios') === 'android';
+    var g = android ? { w: 412, h: 915, top: 40, bottom: 24, mascot: 112, socialH: 52, googleGap: 10 } : { w: 390, h: 844, top: 59, bottom: 34, mascot: 84, socialH: 50, googleGap: 12 };
+    var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
+    var self = this;
+    var shown = !!(this.state && this.state.pwShown);
+    return { K: K, themeName: THEME, FNT: FNT,
+      w: g.w, h: g.h, top: g.top, bottom: g.bottom,
+      mascotSize: g.mascot, mascotHint: g.mascot + 'px,' + g.mascot + 'px',
+      socialH: g.socialH, googleGap: g.googleGap,
+      pwShown: shown, pwHidden: !shown,
+      pwType: shown ? 'text' : 'password',
+      pwLabel: shown ? '비밀번호 숨기기' : '비밀번호 보기',
+      pwPressed: shown ? 'true' : 'false',
+      togglePw: function () { self.setState({ pwShown: !shown }); },
+      links: { next: L('Permission'), signup: L('SignUp'), self: L('Login') }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -8,34 +8,39 @@
 <body>
 <x-dc>
 <helmet>
-<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}body{margin:0}</style>
+<style>@font-face{font-family:'Pretendard';src:url(/_blob/1b43482c59fb171bdbae3b012829170f) format('woff2');font-weight:45 920;font-style:normal;font-display:swap}@font-face{font-family:'Jua';src:url(/_blob/b80c3f239a19ae2ac0629973c9271ec7) format('woff2');font-weight:400;font-style:normal;font-display:swap}body{margin:0}</style>
 </helmet>
-<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; padding-top: {{top}}px; padding-bottom: {{bottom}}px; overflow: hidden; display: flex; flex-direction: column; font-family: {{FNT.root}}; font-synthesis: {{FNT.syn}}; color: {{K.c0}}; letter-spacing: -0.02em; background: {{K.root}}">
 
   <div style="display: flex; align-items: center; gap: 14px; padding: 10px 16px 0 22px">
+    <sc-if value="{{hasSteps}}" hint-placeholder-val="{{ true }}">
     <ol aria-label="진행 단계" style="flex-grow: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; align-items: flex-end; gap: 6px">
       <li style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 9px">
         <div style="height: 6px; border-radius: 3px; background: {{K.c1}}; opacity: 0.55"></div>
-        <div style="display: flex; align-items: center; gap: 4px; height: 20px; font-size: 14px; font-weight: 600; color: {{K.c2}}; white-space: nowrap">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 4px; height: 20px; font-size: 14px; font-weight: 600; color: {{K.c2}}; white-space: nowrap">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{K.c22}}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
           듣기<span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">완료</span>
         </div>
       </li>
       <li style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 9px">
         <div style="height: 6px; border-radius: 3px; background: {{K.c1}}; opacity: 0.55"></div>
-        <div style="display: flex; align-items: center; gap: 4px; height: 20px; font-size: 14px; font-weight: 600; color: {{K.c2}}; white-space: nowrap">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 4px; height: 20px; font-size: 14px; font-weight: 600; color: {{K.c2}}; white-space: nowrap">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{K.c22}}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
           확인<span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">완료</span>
         </div>
       </li>
       <li aria-current="step" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 9px">
         <div style="height: 6px; border-radius: 3px; background: {{K.c1}}; box-shadow: 0 2px 8px #23A05A55"></div>
-        <div style="display: flex; align-items: center; gap: 5px; height: 20px; font-size: 14px; font-weight: 800; letter-spacing: -0.03em; color: {{K.c3}}; white-space: nowrap">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 20px; font-size: 14px; font-weight: 800; letter-spacing: -0.03em; color: {{K.c3}}; white-space: nowrap">
           <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="{{K.c23}}"></circle><path d="M6.5 12.5l3.5 3.5 7.5-8" fill="none" stroke="{{K.c24}}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
           반영 완료
         </div>
       </li>
     </ol>
+    </sc-if>
+    <sc-if value="{{noSteps}}" hint-placeholder-val="{{ false }}">
+      <div style="flex-grow: 1"></div>
+    </sc-if>
     <a href="{{links.home}}" aria-label="닫기" style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: {{K.c4}}; background: {{K.c5}}; border: 1px solid {{K.c6}}; box-sizing: border-box; text-decoration: none; {{K.fxc}}">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
     </a>
@@ -46,12 +51,17 @@
       <dc-import name="Mascot" mood="done" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
     </sc-if>
     <sc-if value="{{c2}}" hint-placeholder-val="{{ false }}">
-      <dc-import name="Mascot2" theme="{{themeName}}" mood="done" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
+      <dc-import name="Mascot2" theme="{{themeName}}" mood="{{heroMood}}" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
     </sc-if>
     <sc-if value="{{c3}}" hint-placeholder-val="{{ false }}">
       <dc-import name="Mascot3" mood="done" size="{{mascotSize}}" hint-size="{{mascotHint}}"></dc-import>
     </sc-if>
-    <div style="font-size: 42px; line-height: 1.1; font-weight: 800; letter-spacing: -0.05em; color: {{K.c3}}; margin-top: 4px">반영했어요</div>
+    <sc-if value="{{hasSteps}}" hint-placeholder-val="{{ true }}">
+      <div style="font-size: 40px; line-height: 1.15; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em; color: {{K.c3}}; margin-top: 4px">반영했어요</div>
+    </sc-if>
+    <sc-if value="{{noSteps}}" hint-placeholder-val="{{ false }}">
+      <div style="font-size: 38px; line-height: 1.15; font-family: 'Jua', 'Pretendard', sans-serif; font-weight: 400; letter-spacing: -0.01em; color: hsl(232,55%,42%); margin-top: 4px">반영했어요</div>
+    </sc-if>
     <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; max-width: 320px; text-align: left">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{K.c25}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"></path></svg>
       <span style="font-size: 15px; line-height: 1.5; font-weight: 500; color: {{K.c4}}">“두부 2모, 계란 10개 등록했어요. 두부 소비기한은 2026년 10월 3일이에요.”</span>
@@ -101,18 +111,21 @@
   <div style="text-align: center; font-size: 13px; font-weight: 500; color: {{K.c13}}; padding: 12px 20px 8px">4초 뒤 호출 대기로 돌아가요</div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"character":{"editor":"enum","options":["1","2","3"],"default":"2"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"platform":{"editor":"enum","options":["ios","android"],"default":"ios"},"character":{"editor":"enum","options":["1","2","3"],"default":"2"},"theme":{"editor":"enum","options":["pastel","white","glass","dark"],"default":"pastel"},"font":{"editor":"enum","options":["mixed","jua"],"default":"mixed"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var THEME = this.props.theme || 'pastel';
     var K = ({"pastel":{"c0":"#15181D","c1":"#23A05A","c2":"#4E5661","c3":"#1B7F43","c4":"#3E454E","c5":"rgba(255,255,255,0.74)","c6":"rgba(255,255,255,0.95)","c7":"rgba(255,255,255,0.84)","c8":"rgba(255,255,255,0.95)","c9":"rgba(20,25,35,0.08)","c10":"#FFE4DB","c11":"#B0341A","c12":"#EEF0F3","c13":"#5F6670","c14":"rgba(21,24,29,0.07)","c15":"#ECEEF2","c16":"rgba(255,255,255,0.8)","c17":"rgba(20,25,35,0.07)","c18":"#15181D","c19":"#15181D","c20":"#FFFFFF","c21":"rgba(20,25,35,0.22)","c22":"#23A05A","c23":"#1B7F43","c24":"#FFFFFF","c25":"#1B7F43","root":"radial-gradient(125% 80% at 50% 24%, #FFFFFF 0%, #F3FBF6 40%, #D3EFDD 100%)","fx":"","fxd":"","fxa":"","fxc":""},"white":{"c0":"#15181D","c1":"#11D467","c2":"#4E5661","c3":"#0C8E40","c4":"#3E454E","c5":"#FFFFFF","c6":"rgba(17,20,26,0.07)","c7":"#FFFFFF","c8":"rgba(17,20,26,0.07)","c9":"rgba(20,25,35,0.08)","c10":"#FFDCD1","c11":"#BB2D0F","c12":"#EEF0F3","c13":"#5F6670","c14":"rgba(21,24,29,0.07)","c15":"#ECEEF2","c16":"#FFFFFF","c17":"rgba(20,25,35,0.07)","c18":"#15181D","c19":"#15181D","c20":"#FFFFFF","c21":"rgba(20,25,35,0.22)","c22":"#28BD6A","c23":"#28BD64","c24":"#FFFFFF","c25":"#28BD64","root":"radial-gradient(120% 45% at 50% 0%, rgba(61,245,127,0.08) 0%, rgba(255,255,255,0) 70%), #F6F7F9","fx":"","fxd":"","fxa":"","fxc":""},"glass":{"c0":"#15181D","c1":"linear-gradient(180deg, rgba(54,226,130,0.94) 0%, rgba(29,201,104,0.94) 100%)","c2":"#4E5661","c3":"#138741","c4":"#3E454E","c5":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c6":"rgba(255,255,255,0.7)","c7":"linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 100%)","c8":"rgba(255,255,255,0.92)","c9":"rgba(20,25,45,0.08)","c10":"rgba(255,83,26,0.13)","c11":"#B13419","c12":"rgba(120,128,150,0.10)","c13":"#5F6670","c14":"rgba(21,24,29,0.07)","c15":"rgba(120,128,150,0.10)","c16":"linear-gradient(135deg, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.3) 100%)","c17":"rgba(20,25,45,0.07)","c18":"rgba(255,255,255,0.16)","c19":"linear-gradient(180deg, rgba(58,62,72,0.92) 0%, rgba(18,20,26,0.94) 100%)","c20":"#FFFFFF","c21":"rgba(20,25,45,0.2)","c22":"#19E673","c23":"#19E66B","c24":"#FFFFFF","c25":"#19E66B","root":"linear-gradient(180deg, #FFFFFF 0%, #EEF0F4 100%)","fx":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(20,25,45,0.04), 0 0 0 0.5px rgba(20,25,45,0.07), 0 8px 24px rgba(20,25,45,0.08)","fxd":"backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(15,17,22,0.22)","fxa":"box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.12), 0 10px 22px rgba(20,25,45,0.16)","fxc":"backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.95), inset -1px -1px 0 rgba(255,255,255,0.45), inset 0 -10px 18px rgba(255,255,255,0.22), inset 0 8px 14px rgba(255,255,255,0.14), 0 0 0 0.5px rgba(20,25,45,0.13), 0 8px 22px rgba(20,25,45,0.10), 0 1px 3px rgba(20,25,45,0.06)"},"dark":{"c0":"#E8EAED","c1":"#81C995","c2":"#BDC1C6","c3":"#81C995","c4":"#BDC1C6","c5":"rgba(45,46,49,0.96)","c6":"rgba(232,234,237,0.08)","c7":"rgba(45,46,49,0.96)","c8":"rgba(232,234,237,0.08)","c9":"rgba(0,0,0,0.14)","c10":"rgba(252,173,112,0.16)","c11":"#F28B82","c12":"#3C4043","c13":"#BDC1C6","c14":"rgba(232,234,237,0.11)","c15":"#3C4043","c16":"rgba(45,46,49,0.96)","c17":"rgba(0,0,0,0.13)","c18":"#E8EAED","c19":"#E8EAED","c20":"#202124","c21":"rgba(0,0,0,0.3)","c22":"#81C995","c23":"#81C995","c24":"#FFFFFF","c25":"#81C995","root":"#202124","fx":"","fxd":"","fxa":"","fxc":""}})[THEME] || {};
+    var FNT = (this.props.font === 'jua') ? { root: "'Jua', 'Pretendard', sans-serif", syn: 'none' } : { root: "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif", syn: 'weight style' };
     var android = (this.props.platform || 'ios') === 'android';
     var ch = String(this.props.character || '2');
     var c2 = ch === '2';
     var c3 = ch === '3';
     var g = android ? { w: 412, h: 915, top: 40, bottom: 24, mascot: 176 } : { w: 390, h: 844, top: 59, bottom: 34, mascot: 140 };
     var L = function (n) { return (android ? 'Android-' : ({white: 'White-', glass: 'Glass-', dark: 'Dark-'})[THEME] || '') + n + '.dc.html'; };
-    return { K: K, themeName: THEME,
+    // 글래스는 한 화면에서 끝난다: 단계 막대 없이, 듣던 캐릭터(보라) 그대로 결과를 알린다.
+    var single = THEME === 'glass';
+    return { K: K, themeName: THEME, FNT: FNT, hasSteps: !single, noSteps: single, heroMood: single ? 'listening' : 'done',
       w: g.w, h: g.h, top: g.top, bottom: g.bottom,
       c1: !c2 && !c3, c2: c2, c3: c3,
       mascotSize: g.mascot, mascotHint: g.mascot + 'px,' + g.mascot + 'px',
