@@ -143,6 +143,10 @@ body {
 .item--first { z-index: 2; transition: transform .7s var(--ease) .15s, border-color .2s var(--ease), box-shadow .2s var(--ease); }
 .slide--shelf.s1 .item { transform: translateY(calc(var(--to) * 152px)); }
 .slide--shelf.s1 .item--first { border-color: var(--green); box-shadow: 0 14px 30px rgba(29, 34, 31, .14); }
+.who { display: inline-block; margin: 0 0 30px; padding: 10px 24px; border-radius: 999px; background: var(--paper); font-size: 28px; font-weight: 750; color: var(--green); letter-spacing: -0.01em; }
+.pain { list-style: none; margin: 44px 0 0; padding: 0; display: grid; row-gap: 18px; }
+.pain li { position: relative; padding-left: 32px; font-size: 38px; line-height: 1.4; font-weight: 650; color: var(--ink-2); letter-spacing: -0.02em; }
+.pain li::before { content: ''; position: absolute; left: 0; top: .5em; width: 14px; height: 14px; border-radius: 50%; background: var(--green); }
 .item__icon { width: 64px; height: 64px; color: var(--ink); }
 .item__icon svg { width: 100%; height: 100%; display: block; }
 .item__name { font-size: 46px; font-weight: 750; letter-spacing: -0.03em; }
@@ -170,10 +174,8 @@ body {
   opacity: 0; transform: scale(1.015); transition: opacity .55s var(--ease), transform .7s var(--ease);
 }
 .bands__tag { position: absolute; left: 0; top: -44px; }
-.slide--bands:not(.s1) [data-band="soon"],
-.slide--bands.s1:not(.s2) [data-band="urgent"],
-.slide--bands.s2:not(.s3) [data-band="unknown"],
-.slide--bands.s3 [data-band="fresh"] { opacity: 1; transform: none; }
+.slide--bands:not(.s1) [data-band="urgent"],
+.slide--bands.s1 [data-band="unknown"] { opacity: 1; transform: none; }
 .legend { list-style: none; margin: 0; padding: 0; display: grid; row-gap: 18px; }
 .legend li {
   display: flex; align-items: center; gap: 18px;
@@ -184,10 +186,9 @@ body {
 .legend li::before { content: ''; width: 22px; height: 22px; border-radius: 50%; background: currentColor; opacity: .55; flex: none; }
 .legend span { display: flex; flex-direction: column; }
 .legend small { display: block; margin-top: 4px; font-size: 22px; font-weight: 600; opacity: .8; }
-.slide--bands:not(.s1) [data-leg="soon"] { background: var(--soon-soft); color: var(--soon); transform: translateX(-10px); }
-.slide--bands.s1:not(.s2) [data-leg="urgent"] { background: var(--urgent-soft); color: var(--urgent); transform: translateX(-10px); }
-.slide--bands.s2:not(.s3) [data-leg="unknown"] { background: var(--unknown-soft); color: var(--unknown); transform: translateX(-10px); }
-.slide--bands.s3 [data-leg="fresh"] { background: var(--fresh-soft); color: var(--fresh); transform: translateX(-10px); }
+.slide--bands:not(.s1) [data-leg="urgent"] { background: var(--urgent-soft); color: var(--urgent); transform: translateX(-10px); }
+.slide--bands.s1 [data-leg="unknown"] { background: var(--unknown-soft); color: var(--unknown); transform: translateX(-10px); }
+.legend [data-leg="soon"], .legend [data-leg="fresh"] { font-size: 26px; padding-top: 10px; padding-bottom: 10px; }
 
 /* ---------- 4. 말로 기록하고, 먹은 만큼 맞추고 ---------- */
 .slide--voice { display: grid; grid-template-columns: 1fr 470px; column-gap: 100px; align-items: center; padding-right: 220px; }
@@ -216,7 +217,7 @@ body {
   display: flex; flex-direction: column; justify-content: center;
   font-size: 42px; font-weight: 800; letter-spacing: -0.035em;
 }
-.mflow li small { margin-top: 6px; font-size: 24px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
+.mflow li small { margin-top: 6px; font-size: 24px; line-height: 1.25; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
 .mflow li:not(:last-child)::after {
   content: ''; position: absolute; right: -32px; top: 50%; margin-top: -10px;
   border-style: solid; border-width: 10px 0 10px 16px; border-color: transparent transparent transparent var(--ink-2);
@@ -231,6 +232,7 @@ body {
 .yt__card { position: absolute; left: 860px; top: 600px; width: 900px; padding: 38px 44px; border-radius: 30px; box-shadow: inset 0 0 0 4px var(--ink-2); background: var(--cream); }
 .yt__card b { display: block; font-size: 46px; font-weight: 850; letter-spacing: -0.035em; }
 .yt__card p { margin: 18px 0 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0 18px; font-size: 32px; font-weight: 650; color: var(--ink-2); }
+.yt__note { display: inline-block; margin-top: 20px; padding: 6px 18px; border-radius: 999px; font-style: normal; font-size: 26px; font-weight: 750; color: var(--urgent); background: var(--urgent-soft); }
 .yt__card i { width: 36px; height: 3px; background: var(--ink-2); position: relative; }
 .yt__card i::after { content: ''; position: absolute; right: -2px; top: -6px; border-style: solid; border-width: 7.5px 0 7.5px 11px; border-color: transparent transparent transparent var(--ink-2); }
 
@@ -271,31 +273,32 @@ body {
 .slide--demo.is-failed .demo__status { color: var(--urgent); }
 
 /* ---------- 7. 단계별 AI ---------- */
-.ai { position: absolute; left: 160px; right: 160px; top: 290px; list-style: none; margin: 0; padding: 0; display: grid; row-gap: 18px; }
-.ai li {
-  display: grid; grid-template-columns: 420px 520px 1fr; column-gap: 40px; align-items: center;
-  padding: 26px 40px; border-radius: 26px; background: var(--paper);
-  opacity: .3; transition: opacity .45s var(--ease), box-shadow .45s var(--ease);
-}
-.ai li.ai__head { opacity: 1; background: transparent; padding-top: 0; padding-bottom: 0; font-size: 24px; font-weight: 700; color: var(--muted); }
-.slide--ai.s1 [data-row="1"], .slide--ai.s2 [data-row="2"], .slide--ai.s3 [data-row="3"], .slide--ai.s4 [data-row="4"] { opacity: 1; }
-.slide--ai.s1:not(.s2) [data-row="1"], .slide--ai.s2:not(.s3) [data-row="2"],
-.slide--ai.s3:not(.s4) [data-row="3"], .slide--ai.s4:not(.s5) [data-row="4"] { box-shadow: inset 0 0 0 4px var(--green); }
-.ai__stage { font-size: 32px; font-weight: 700; color: var(--ink-2); }
-.ai__tool { font-size: 46px; font-weight: 850; letter-spacing: -0.035em; color: var(--ink); }
-.ai__tool small { display: block; font-size: 22px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
-.ai__why { font-size: 31px; line-height: 1.4; font-weight: 650; color: var(--green); }
-.ai__cue { display: inline-block; margin-left: 12px; padding: 4px 14px; border-radius: 999px; font-size: 20px; font-weight: 750; color: var(--paper); background: var(--ink-2); vertical-align: middle; letter-spacing: 0; }
+.tools { position: absolute; left: 160px; right: 160px; top: 262px; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 20px; }
+.tools li { padding: 16px 26px; border-radius: 22px; background: var(--paper); display: flex; flex-direction: column; }
+.tools span { font-size: 22px; font-weight: 650; color: var(--muted); letter-spacing: -0.01em; }
+.tools b { margin-top: 2px; font-size: 34px; font-weight: 850; letter-spacing: -0.03em; }
+.cases { position: absolute; left: 160px; right: 160px; top: 410px; display: grid; grid-template-columns: 1040px 1fr; column-gap: 40px; }
+.case h3 { margin: 0 0 22px; font-size: 34px; font-weight: 850; letter-spacing: -0.03em; }
+.themes { display: flex; align-items: flex-end; gap: 16px; }
+.themes figure { margin: 0; display: flex; flex-direction: column; align-items: center; }
+.themes img { display: block; height: 360px; border-radius: 18px; box-shadow: 0 0 0 3px var(--line); }
+.themes figcaption { margin-top: 12px; font-size: 22px; font-weight: 700; color: var(--muted); }
+.themes .is-pick img, .themes .is-real img { box-shadow: 0 0 0 5px var(--green), 0 16px 30px rgba(29, 34, 31, .14); }
+.themes .is-pick figcaption, .themes .is-real figcaption { color: var(--green); }
+.themes__arrow { align-self: center; margin: 0 6px 30px; width: 40px; height: 3px; background: var(--ink-2); position: relative; flex: none; }
+.themes__arrow::after { content: ''; position: absolute; right: -2px; top: -7px; border-style: solid; border-width: 8.5px 0 8.5px 13px; border-color: transparent transparent transparent var(--ink-2); }
+.fix { list-style: none; margin: 0; padding: 0; display: grid; row-gap: 16px; }
+.fix li { padding: 20px 24px; border-radius: 22px; background: var(--paper); font-size: 27px; line-height: 1.42; font-weight: 650; color: var(--ink-2); letter-spacing: -0.02em; }
+.fix span { display: block; margin-bottom: 4px; font-size: 22px; font-weight: 800; color: var(--green); }
 .ai__more { position: absolute; left: 160px; top: 930px; margin: 0; font-size: 34px; font-weight: 750; color: var(--ink); }
 
 /* ---------- 7. 기술 선택과 제약 ---------- */
-.tech { position: absolute; left: 160px; right: 160px; top: 290px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 80px; }
+.tech { position: absolute; left: 160px; right: 160px; top: 390px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 80px; }
 .tech h3 { margin: 0; font-size: 48px; font-weight: 850; letter-spacing: -0.035em; }
-.tech__need { margin: 18px 0 0; font-size: 30px; line-height: 1.5; font-weight: 600; color: var(--ink-2); }
 .tech__pick { margin: 26px 0 0; padding: 28px 32px; border-radius: 26px; background: var(--paper); font-size: 32px; line-height: 1.5; font-weight: 650; }
 .tech__pick b { color: var(--green); }
 .tech__sub { display: block; margin-top: 14px; font-size: 26px; line-height: 1.45; font-weight: 600; color: var(--muted); }
-.wake { position: relative; margin-top: 26px; height: 420px; }
+.wake { position: relative; margin-top: 26px; height: 330px; }
 .wake__heard { list-style: none; margin: 0; padding: 0; display: grid; row-gap: 16px; width: 300px; }
 .wake__heard li {
   height: 66px; display: flex; align-items: center; padding: 0 24px; border-radius: 16px; background: var(--paper);
@@ -309,13 +312,26 @@ body {
   border-radius: 24px; box-shadow: inset 0 0 0 3px var(--green);
   font-size: 26px; line-height: 1.45; font-weight: 650; color: var(--ink-2);
 }
+.wake__rule small { display: block; margin-top: 12px; font-size: 22px; font-weight: 700; color: var(--muted); }
 .wake__rule b { display: block; font-size: 38px; font-weight: 850; color: var(--green); margin-bottom: 8px; }
 .wake__heard, .wake svg, .wake__rule { transition: opacity .45s var(--ease), transform .5s var(--ease); }
 .slide--tech:not(.s1) .wake svg, .slide--tech:not(.s1) .wake__rule { opacity: 0; transform: translateX(-12px); }
 
+.roles { position: absolute; left: 160px; right: 160px; top: 262px; margin: 0; display: flex; align-items: center; gap: 26px; font-size: 30px; font-weight: 650; color: var(--ink-2); }
+.roles span { padding: 14px 28px; border-radius: 20px; background: var(--paper); }
+.roles b { margin-right: 14px; font-weight: 850; color: var(--green); }
+.roles i { width: 40px; height: 3px; background: var(--ink-2); position: relative; flex: none; }
+.roles i::after { content: ''; position: absolute; right: -2px; top: -7px; border-style: solid; border-width: 8.5px 0 8.5px 13px; border-color: transparent transparent transparent var(--ink-2); }
+.scope { position: absolute; left: 160px; right: 160px; top: 860px; display: grid; row-gap: 12px; }
+.scope p { margin: 0; font-size: 28px; font-weight: 600; color: var(--ink-2); letter-spacing: -0.015em; }
+.scope b { display: inline-block; width: 200px; font-weight: 850; color: var(--green); }
+.scope p + p b { color: var(--muted); }
+
 /* ---------- 9. 마무리 ---------- */
 .close__end { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .close__fridge { width: 300px; height: 300px; }
+.close__next { margin: 44px 0 0; font-size: 32px; font-weight: 600; color: var(--ink-2); letter-spacing: -0.015em; }
+.close__next b { margin-right: 18px; font-weight: 850; color: var(--green); }
 .close__words { margin: 44px 0 0; text-align: center; font-size: 80px; line-height: 1.3; font-weight: 800; letter-spacing: -0.04em; }
 
 /* ---------- 진행 표시 ---------- */
@@ -380,10 +396,14 @@ body {
     </section>
 
     <!-- 2 -->
-    <section class="slide slide--shelf" data-steps="1" aria-label="답은 냉장고 안에 있는데">
+    <section class="slide slide--shelf" data-steps="2" aria-label="답은 냉장고 안에 있는데">
       <div class="shelf__text">
+        <p class="who">집에서 자주 요리하는 1~2인 가구</p>
         <h2 class="title">답은 냉장고 안에<br>있는데</h2>
-        <p class="lead">무엇이 남았는지,<br>무엇부터 먹어야 할지</p>
+        <ol class="pain">
+          <li>무엇부터 먹어야 할지 모르겠다</li>
+          <li data-step="2">재고를 매번 기록하기 번거롭다</li>
+        </ol>
       </div>
       <ol class="shelf__list" aria-label="냉장고 재료">
         <li class="item" style="--from:0; --to:2">
@@ -410,25 +430,23 @@ body {
     </section>
 
     <!-- 3 -->
-    <section class="slide slide--bands" data-steps="3" aria-label="기한별로, 먼저 쓸 재료부터">
+    <section class="slide slide--bands" data-steps="1" aria-label="기한별로, 먼저 쓸 재료부터">
       <div class="bands__text">
         <h2 class="title">기한별로,<br>먼저 쓸 재료부터</h2>
-        <p class="lead">먼저 먹을 재료와,<br>아직 여유 있는 재료를 한눈에</p>
+        <p class="lead">먼저 써야 할 재료와,<br>기한을 모르는 재료를 놓치지 않게</p>
       </div>
       <div class="bands__phone">
         <span class="tag bands__tag">실제 앱 화면</span>
         <div class="bands__screen">
-          <img data-band="soon" src="assets/img/home-soon.png" alt="며칠 안에 먹어요: 두부 2모, 계란 10개">
           <img data-band="urgent" src="assets/img/home-urgent.png" alt="빨리 먹어야 해요: 삼겹살 300g">
           <img data-band="unknown" src="assets/img/home-unknown.png" alt="언제까지 먹어야 해요: 대파 1단">
-          <img data-band="fresh" src="assets/img/home-fresh.png" alt="천천히 먹어도 돼요">
         </div>
       </div>
       <ul class="legend" aria-label="기한 칸">
         <li data-leg="urgent"><span>빨리 먹어야 해요<small>삼겹살 300g · D-1</small></span></li>
-        <li data-leg="soon"><span>며칠 안에 먹어요<small>두부 2모 · 계란 10개</small></span></li>
-        <li data-leg="fresh"><span>천천히 먹어도 돼요<small>아직 여유</small></span></li>
-        <li data-leg="unknown"><span>언제까지 먹어야 해요?<small>기한을 입력하지 않은 대파</small></span></li>
+        <li data-leg="unknown"><span>언제까지 먹어야 해요?<small>기한을 말하지 않은 대파</small></span></li>
+        <li data-leg="soon"><span>며칠 안에 먹어요</span></li>
+        <li data-leg="fresh"><span>천천히 먹어도 돼요</span></li>
       </ul>
     </section>
 
@@ -459,7 +477,7 @@ body {
         <li>메뉴 추천</li>
         <li>인분 조절</li>
         <li class="mflow__cook">단계별 조리</li>
-        <li>재고 반영<small>추천 메뉴 조리 완료 시</small></li>
+        <li>재고 반영<small>추천 조리 완료 시<br>조리한 인분 기준</small></li>
       </ol>
       <div class="mshots">
         <div class="mshot"><span class="tag">추천 메뉴</span><img src="assets/img/menu-list.png" alt="조리 탭 추천 메뉴 세 가지"></div>
@@ -468,8 +486,9 @@ body {
       <div class="yt" data-step="1">
         <svg class="yt__line" viewBox="0 0 40 200" aria-hidden="true"><path d="M20 196 V4" /></svg>
         <div class="yt__card">
-          <b>유튜브에서 본 요리도</b>
-          <p>링크 입력 <i></i> 재료·조리 순서 분석 <i></i> 조리 안내</p>
+          <b>직접 고른 영상 레시피도</b>
+          <p>유튜브 링크 <i></i> 재료·조리 순서 분석 <i></i> 같은 조리 안내</p>
+          <em class="yt__note">재고 자동 차감 없음</em>
         </div>
       </div>
     </section>
@@ -491,21 +510,42 @@ body {
     </section>
 
     <!-- 7 -->
-    <section class="slide slide--ai" data-steps="5" aria-label="단계마다, 필요한 AI">
+    <section class="slide slide--ai" data-steps="3" aria-label="단계마다, 필요한 AI">
       <h2 class="title">단계마다, 필요한 AI</h2>
-      <ol class="ai">
-        <li class="ai__head" aria-hidden="true"><span>단계</span><span>활용 도구</span><span>선택 목적</span></li>
-        <li data-row="1"><span class="ai__stage">기획·설계·기술 검증</span><span class="ai__tool">GPT / Astra</span><span class="ai__why">빠른 응답으로 선택지 비교·방향 조정</span></li>
-        <li data-row="2"><span class="ai__stage">디자인</span><span class="ai__tool">Claude Design <span class="ai__cue">직접 보기</span></span><span class="ai__why">애니메이션 목업으로 화면·테마 비교</span></li>
-        <li data-row="3"><span class="ai__stage">구현</span><span class="ai__tool">Claude Code</span><span class="ai__why">앱·서버 개발, 테스트·배포</span></li>
-        <li data-row="4"><span class="ai__stage">문서·검토 기준</span><span class="ai__tool"><small>기존 자체 도구</small>engsys</span><span class="ai__why">문서 정책과 hook·검증 절차 적용</span></li>
-      </ol>
-      <p class="ai__more" data-step="5">시연 영상 편집과 웹 발표자료 제작에도 AI 활용</p>
+      <ul class="tools" aria-label="단계별 도구">
+        <li><span>기획·검증</span><b>GPT / Astra</b></li>
+        <li><span>디자인</span><b>Claude Design</b></li>
+        <li><span>구현</span><b>Claude Code</b></li>
+        <li><span>작업 기준 · 기존 자체 도구</span><b>engsys</b></li>
+      </ul>
+      <div class="cases">
+        <div class="case" data-step="1">
+          <h3>시안을 비교해 고르고, 그대로 구현</h3>
+          <div class="themes">
+            <figure><img src="assets/img/theme-pastel.png" alt="파스텔 테마 시안"><figcaption>파스텔</figcaption></figure>
+            <figure><img src="assets/img/theme-white.png" alt="화이트 테마 시안"><figcaption>화이트</figcaption></figure>
+            <figure class="is-pick"><img src="assets/img/theme-glass.png" alt="글래스 테마 시안"><figcaption>글래스 선택</figcaption></figure>
+            <figure><img src="assets/img/theme-dark.png" alt="다크 테마 시안"><figcaption>다크</figcaption></figure>
+            <i class="themes__arrow" aria-hidden="true"></i>
+            <figure class="is-real"><img src="assets/img/home-urgent.png" alt="실제 앱 홈 화면"><figcaption>실제 앱</figcaption></figure>
+          </div>
+        </div>
+        <div class="case" data-step="2">
+          <h3>실기기에서 찾고, 고치고, 확인</h3>
+          <ol class="fix">
+            <li><span>문제</span>‘네?’라고 답한 뒤에야 들어 앞말이 잘림</li>
+            <li><span>수정</span>짧은 신호음 뒤 바로 듣기</li>
+            <li><span>확인</span>시연 촬영에서 신호음 → 명령 순서 확인</li>
+          </ol>
+        </div>
+      </div>
+      <p class="ai__more" data-step="3">시연 영상 편집과 웹 발표자료 제작에도 AI 활용</p>
     </section>
 
     <!-- 8 -->
-    <section class="slide slide--tech" data-steps="1" aria-label="기술 선택과 제약 해결">
+    <section class="slide slide--tech" data-steps="2" aria-label="기술 선택과 제약 해결">
       <h2 class="title">기술 선택과 제약 해결</h2>
+      <p class="roles"><span><b>AI</b>말과 영상을 해석</span><i aria-hidden="true"></i><span><b>서버</b>대상과 수량을 검증해 저장</span></p>
       <div class="tech">
         <div>
           <h3>유튜브 링크를 조리 안내로</h3>
@@ -513,7 +553,6 @@ body {
         </div>
         <div>
           <h3>한국식 발음도 같은 호출로</h3>
-          <p class="tech__need">“헤이 키친”의 다양한 인식 결과를<br>발음 유사성으로 판별</p>
           <div class="wake">
             <ul class="wake__heard" aria-label="실기기에서 받아쓴 결과">
               <li>헤이키친</li>
@@ -524,9 +563,13 @@ body {
             <svg viewBox="0 0 140 360" aria-hidden="true">
               <path d="M0 33 C70 33 70 156 140 156 M0 115 C70 115 70 156 140 156 M0 197 C70 197 70 156 140 156 M0 279 C70 279 70 156 140 156" />
             </svg>
-            <div class="wake__rule"><b>“헤이 키친”</b>호출로 판단</div>
+            <div class="wake__rule"><b>“헤이 키친”</b>발음이 비슷하면 호출로 판단<small>앱이 화면에 떠 있을 때만 감지</small></div>
           </div>
         </div>
+      </div>
+      <div class="scope" data-step="2">
+        <p><b>시연에서 확인</b>음성 등록 · 사용량·잔량 보정 · 추천 조리 후 차감 · 영상 레시피 분석</p>
+        <p><b>아직 검증 전</b>호출 인식률 · iOS 설치 · 정정·취소의 실기기 확인</p>
       </div>
     </section>
 
@@ -535,6 +578,7 @@ body {
       <div class="close__end">
         <div class="close__fridge" data-fridge data-mood="smile"></div>
         <p class="close__words">“오늘 뭐 먹지?”라는 고민을,<br>냉장고를 비우는 한 끼로 연결합니다.</p>
+        <p class="close__next"><b>다음 검증</b>실제 가정에서 기록이 꾸준히 이어지는지 · 추천이 실제 식사로 이어지는지</p>
       </div>
     </section>
 

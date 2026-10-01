@@ -9,18 +9,19 @@
 | `index.html` | 청중 화면. CSS·JS·교체 값을 모두 포함 |
 | `presenter.html` | 발표자 창(대본·노트·시간). 청중 화면에서 `P`로 연다 |
 | `assets/fonts/` | Pretendard |
-| `assets/img/home-*.png` | 3장 실제 앱 홈 화면(10/1 실기기 녹화에서 추출) |
+| `assets/img/home-*.png` | 3·7장 실제 앱 홈 화면(10/1 실기기 녹화에서 추출) |
+| `assets/img/theme-*.png` | 7장 테마 시안 4종(`mockup/export/png/*Main.png` 축소본) |
 | `assets/img/rec-*.png`, `menu-list.png`, `cook-timer.png` | 4·5장 실제 앱 화면 |
 | `assets/video/demo.mp4` | 6장 시연 영상 = `demo/final/voiceover/today-meal-90s-v4-ai-voice-leda.mp4` 복사본 |
 
-시연 영상은 5장에서 Space로 무대 가득 재생한다. 재생이 막히면 같은 파일을 플레이어로 전체 화면 재생한다.
+시연 영상은 6장에서 Space로 무대 가득 재생한다. 재생이 막히면 같은 파일을 플레이어로 전체 화면 재생한다.
 
 ## 발표 순서
 
 1. `index.html` 더블클릭 → `F` 전체 화면.
 2. 필요하면 `P`로 발표자 창을 열어 다른 화면에 둔다.
 3. 6장 "실제 앱 시연"에서 한 문장 말한 뒤 Space로 영상을 재생한다. 끝나면 `→`로 7장.
-4. 7장 두 번째 Space 뒤 미리 열어 둔 Claude Design 창으로 5초 전환했다가 돌아온다.
+4. 누를 키와 시점은 발표자 창 대본의 녹색 키 줄을 따른다.
 
 ## 키
 
@@ -32,7 +33,7 @@
 | PageDown·↓ / PageUp·↑ | Space / 이전 단계 (리모컨) |
 | 1~9, Home, End | 직접 이동 |
 
-주소의 `#3.1`은 3장 1단계다. 새로고침해도 위치가 유지된다.
+주소의 `#3.1`은 3장 1단계로 이동한다. 새로고침하면 항상 1장부터 시작한다.
 
 ## 웹 배포
 
